@@ -97,6 +97,8 @@ Install from a **local clone** of this repository (folder that contains `.templa
 dotnet new install .
 ```
 
+The repository root **`Lemon.Template.Wpf.sln`** is the full developer solution (includes the template pack, publisher tool, and nested solution folders). The **NuGet package** ships a slimmer solution that only loads the WPF app and a few shared files—see **`packaging/Lemon.Template.Wpf.sln`** (paths are written for that packaged layout, not for opening from `packaging/` on disk).
+
 Create a new project (default `sourceName` is `Lemon.Template.Wpf`; replace `-n` / `-o` with your app name):
 
 ```bash
@@ -131,6 +133,12 @@ After indexing on nuget.org, install with:
 dotnet new install Lemon.Templates.Wpf
 ```
 
+To pin a specific package version, use **`@`** (not `::`, which is deprecated):
+
+```bash
+dotnet new install Lemon.Templates.Wpf@1.0.1
+```
+
 ---
 
 ## :gear: Configuration
@@ -152,6 +160,7 @@ Serilog writes rolling files to `Logs/log-YYYYMMDD.txt` under the working direct
 Lemon.Template.Wpf/
 ├── .template.config/          # dotnet new template manifest
 ├── .templateignore            # Files excluded when packing/installing the template
+├── packaging/                 # Consumer .sln used only inside the NuGet template (not the full dev solution)
 ├── Lemon.Template.Wpf.TemplatePack.csproj   # NuGet template pack (PackageType=Template)
 ├── src/Lemon.Template.Wpf/    # Main WPF application
 │   ├── Commons/               # Shared constants

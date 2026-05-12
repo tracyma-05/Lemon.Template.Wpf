@@ -35,7 +35,8 @@
     <Content Include=".template.config\**\*" PackagePath="content\Lemon.Template.Wpf\.template.config\%(RecursiveDir)%(Filename)%(Extension)" />
     <Content Include=".templateignore" PackagePath="content\Lemon.Template.Wpf\" />
     <Content Include="common.props" PackagePath="content\Lemon.Template.Wpf\" />
-    <Content Include="Lemon.Template.Wpf.sln" PackagePath="content\Lemon.Template.Wpf\" />
+    <!-- Consumer-facing sln only (avoids tools/template-pack/.template.config nodes from the dev solution). -->
+    <Content Include="packaging\Lemon.Template.Wpf.sln" PackagePath="content\Lemon.Template.Wpf\Lemon.Template.Wpf.sln" />
     <Content Include="LICENSE.txt" PackagePath="content\Lemon.Template.Wpf\" />
     <Content Include="README.md" PackagePath="content\Lemon.Template.Wpf\" />
     <Content Include="src\**\*" Exclude="src\**\bin\**;src\**\obj\**" PackagePath="content\Lemon.Template.Wpf\src\%(RecursiveDir)%(Filename)%(Extension)" />
