@@ -1,0 +1,14 @@
+<Project>
+  <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+    <Version>1.0.1</Version>
+    <Authors>Tracy Ma</Authors>
+    <Description>Material Design WPF starter — dotnet new template.</Description>
+    <NoWarn>$(NoWarn);CS1591;CS0436</NoWarn>
+
+    <!-- NuGet / assembly: source repository (shows on nuget.org after publish) -->
+    <PackageProjectUrl>https://github.com/tracyma-05/Lemon.Template.Wpf</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/tracyma-05/Lemon.Template.Wpf</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+  </PropertyGroup>
+</Project>

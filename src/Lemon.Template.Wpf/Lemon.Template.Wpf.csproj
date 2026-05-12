@@ -1,0 +1,50 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+    <Import Project="..\..\common.props" />
+
+    <PropertyGroup>
+        <OutputType>WinExe</OutputType>
+        <TargetFramework>net11.0-windows</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <UseWPF>true</UseWPF>
+        <ApplicationIcon>Assets\Images\logo.ico</ApplicationIcon>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    </ItemGroup>
+
+	
+    <ItemGroup>
+        <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+        <PackageReference Include="H.NotifyIcon.Wpf" Version="2.4.1" />
+        <PackageReference Include="Hangfire.AspNetCore" Version="1.8.22" />
+        <PackageReference Include="Hangfire.Storage.SQLite" Version="0.4.2" />
+        <PackageReference Include="MaterialDesignColors" Version="5.3.1" />
+        <PackageReference Include="MaterialDesignThemes" Version="5.3.1" />
+        <PackageReference Include="Microsoft.Data.Sqlite" Version="11.0.0-preview.3.26207.106" />
+        <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3965-prerelease" />
+        <PackageReference Include="Volo.Abp.Autofac" Version="10.3.0" />
+        <PackageReference Include="Volo.Abp.BackgroundJobs.HangFire" Version="10.3.0" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Serilog.Extensions.Hosting" Version="10.0.0" />
+        <PackageReference Include="Serilog.Extensions.Logging" Version="10.0.0" />
+        <PackageReference Include="Serilog.Sinks.Async" Version="2.1.0" />
+        <PackageReference Include="Serilog.Sinks.File" Version="8.0.0-nblumhardt-02322" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Remove="appsettings.json" />
+      <None Remove="Assets\logo.ico" />
+      <None Remove="Assets\logo.png" />
+      <Content Include="appsettings.json">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </Content>
+      <Resource Include="Assets\Images\logo.ico" />
+      <Resource Include="Assets\Images\logo.png" />
+    </ItemGroup>
+
+</Project>

@@ -1,0 +1,43 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <Import Project="common.props" />
+  <!-- NuGet template pack: installs as `dotnet new install <PackageId>` -->
+  <PropertyGroup>
+    <TargetFramework>net11.0</TargetFramework>
+    <IncludeBuildOutput>false</IncludeBuildOutput>
+    <IncludeContentInPack>true</IncludeContentInPack>
+    <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+    <NoWarn>$(NoWarn);NU5128</NoWarn>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <EnableDefaultEmbeddedResourceItems>false</EnableDefaultEmbeddedResourceItems>
+    <NoPackageAnalysis>true</NoPackageAnalysis>
+    <!-- Include .templateignore (dot-prefixed) in the nupkg -->
+    <NoDefaultExcludes>true</NoDefaultExcludes>
+
+    <PackageType>Template</PackageType>
+    <PackageId>Lemon.Templates.Wpf</PackageId>
+    <!-- Keep in sync with main app: common.props → Version -->
+    <PackageVersion>$(Version)</PackageVersion>
+    <Authors>$(Authors)</Authors>
+    <Description>$(Description)</Description>
+    <PackageTags>dotnet-new;template;WPF;MaterialDesign;Hangfire</PackageTags>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <!-- NuGet.org only allows PackageIcon as .png / .jpg (not .ico). Use the same artwork as the app. -->
+    <PackageIcon>logo.png</PackageIcon>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="\" />
+    <None Include="src\Lemon.Template.Wpf\Assets\Images\logo.png" Pack="true" PackagePath="logo.png" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include=".template.config\**\*" PackagePath="content\Lemon.Template.Wpf\.template.config\%(RecursiveDir)%(Filename)%(Extension)" />
+    <Content Include=".templateignore" PackagePath="content\Lemon.Template.Wpf\" />
+    <Content Include="common.props" PackagePath="content\Lemon.Template.Wpf\" />
+    <Content Include="Lemon.Template.Wpf.sln" PackagePath="content\Lemon.Template.Wpf\" />
+    <Content Include="LICENSE.txt" PackagePath="content\Lemon.Template.Wpf\" />
+    <Content Include="README.md" PackagePath="content\Lemon.Template.Wpf\" />
+    <Content Include="src\**\*" Exclude="src\**\bin\**;src\**\obj\**" PackagePath="content\Lemon.Template.Wpf\src\%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+</Project>

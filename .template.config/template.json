@@ -1,0 +1,13 @@
+{
+    "author": "Tracy Ma",
+    "classifications": [ "WPF", "Desktop", "Material Design" ],
+    "name": "Material Design WPF starter",
+    "identity": "Lemon.Template.Wpf",
+    "shortName": "lemon-wpf",
+    "tags": {
+        "language": "C#",
+        "type": "project"
+    },
+    "sourceName": "Lemon.Template.Wpf",
+    "preferNameDirectory": true
+}

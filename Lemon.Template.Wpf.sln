@@ -1,0 +1,63 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 18
+VisualStudioVersion = 18.6.11723.189
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lemon.Template.Wpf", "src\Lemon.Template.Wpf\Lemon.Template.Wpf.csproj", "{7CC4F9BA-520E-4D2E-92A5-8B91BFA08CBF}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{25D4C66E-2173-478D-ABBE-0E9FC0E93B57}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "solution-items", "solution-items", "{3F490618-CA01-4F6D-A75B-00EB67792063}"
+	ProjectSection(SolutionItems) = preProject
+		.gitattributes = .gitattributes
+		.gitignore = .gitignore
+		.templateignore = .templateignore
+		common.props = common.props
+		LICENSE.txt = LICENSE.txt
+		README.md = README.md
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = ".template.config", ".template.config", "{76463AC9-9C15-4DB3-846B-D342F74F5A0F}"
+	ProjectSection(SolutionItems) = preProject
+		.template.config\template.json = .template.config\template.json
+	EndProjectSection
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{39A967A0-FA9D-474A-8F01-EA486E541339}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NuGet.TemplatePublisher", "tools\NuGet.TemplatePublisher\NuGet.TemplatePublisher.csproj", "{1A7FA7D9-1D90-BD74-F4F2-869FC9807A7D}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "template-pack", "template-pack", "{A3CE0BD6-134C-44D7-9337-214ED5D59BC6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lemon.Template.Wpf.TemplatePack", "Lemon.Template.Wpf.TemplatePack.csproj", "{98EF323E-F71F-80AB-1A01-3DCF3F2F30B4}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{7CC4F9BA-520E-4D2E-92A5-8B91BFA08CBF}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7CC4F9BA-520E-4D2E-92A5-8B91BFA08CBF}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7CC4F9BA-520E-4D2E-92A5-8B91BFA08CBF}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7CC4F9BA-520E-4D2E-92A5-8B91BFA08CBF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1A7FA7D9-1D90-BD74-F4F2-869FC9807A7D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1A7FA7D9-1D90-BD74-F4F2-869FC9807A7D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1A7FA7D9-1D90-BD74-F4F2-869FC9807A7D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1A7FA7D9-1D90-BD74-F4F2-869FC9807A7D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{98EF323E-F71F-80AB-1A01-3DCF3F2F30B4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{98EF323E-F71F-80AB-1A01-3DCF3F2F30B4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{98EF323E-F71F-80AB-1A01-3DCF3F2F30B4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{98EF323E-F71F-80AB-1A01-3DCF3F2F30B4}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{7CC4F9BA-520E-4D2E-92A5-8B91BFA08CBF} = {25D4C66E-2173-478D-ABBE-0E9FC0E93B57}
+		{1A7FA7D9-1D90-BD74-F4F2-869FC9807A7D} = {39A967A0-FA9D-474A-8F01-EA486E541339}
+		{98EF323E-F71F-80AB-1A01-3DCF3F2F30B4} = {A3CE0BD6-134C-44D7-9337-214ED5D59BC6}
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {46767120-D568-4146-9352-E25F7C5CF03D}
+	EndGlobalSection
+EndGlobal

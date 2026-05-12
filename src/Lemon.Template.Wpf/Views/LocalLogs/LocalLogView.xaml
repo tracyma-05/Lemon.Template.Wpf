@@ -1,0 +1,55 @@
+<UserControl x:Class="Lemon.Template.Wpf.Views.LocalLogs.LocalLogView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             mc:Ignorable="d"
+             d:DesignHeight="600" d:DesignWidth="900">
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <materialDesign:Card Grid.Row="0" Padding="12" Margin="10">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="220" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+                <TextBlock Grid.Column="0"
+                      Text="Date"
+                      VerticalAlignment="Center"
+                      Margin="0,0,12,0" />
+                <DatePicker Grid.Column="1"
+                       SelectedDate="{Binding SelectedDate, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                       materialDesign:HintAssist.Hint="Log date" />
+                <Button Grid.Column="2"
+                        Margin="20,0,0,0"
+                        MinWidth="100"
+                        Style="{StaticResource MaterialDesignRaisedButton}"
+                        Content="Load"
+                        Command="{Binding LoadCommand}" />
+            </Grid>
+        </materialDesign:Card>
+
+        <materialDesign:Card Grid.Row="1" Margin="10" Padding="0">
+            <TextBox x:Name="LogTextBox"
+                         MinWidth="0"
+                         MinHeight="0"
+                         Text="{Binding LogContent}"
+                         IsReadOnly="True"
+                         TextWrapping="Wrap"
+                         VerticalContentAlignment="Top"
+                         VerticalScrollBarVisibility="Disabled"
+                         HorizontalScrollBarVisibility="Disabled"
+                         FontFamily="Consolas"
+                         FontSize="12"
+                         BorderThickness="0"
+                         Background="Transparent"
+                         TextChanged="LogTextBox_OnTextChanged"
+                         materialDesign:HintAssist.Hint="Local Serilog file (Logs/log-yyyyMMdd.txt)" />
+        </materialDesign:Card>
+    </Grid>
+</UserControl>
