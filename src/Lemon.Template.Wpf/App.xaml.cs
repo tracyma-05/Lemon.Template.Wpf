@@ -91,7 +91,8 @@ public partial class App : Application
             mainWindow.ContentRendered += OnMainContentRendered;
             mainWindow.Show();
 
-            InitializeTrayIcon();
+            Current.MainWindow = mainWindow;
+            InitializeTrayIcon(mainWindow);
         }
         catch (Exception ex)
         {
@@ -118,9 +119,9 @@ public partial class App : Application
         _taskbarIcon = null;
     }
 
-    private void InitializeTrayIcon()
+    private void InitializeTrayIcon(MainWindow mainWindow)
     {
-        var title = Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyTitleAttribute>()?.Title ?? "Lemon.Template.Wpf";
+        var title = Assembly.GetExecutingAssembly().GetCustomAttribute<AssemblyTitleAttribute>()?.Title ?? "Pitaya.Work";
 
         var contextMenu = new ContextMenu();
         var exitItem = new MenuItem { Header = "Exit" };
@@ -143,9 +144,42 @@ public partial class App : Application
             IconSource = iconSource,
             ContextMenu = contextMenu,
             MenuActivation = PopupActivationMode.RightClick,
+            NoLeftClickDelay = true,
         };
 
+        _taskbarIcon.TrayLeftMouseDown += (_, _) => BringMainWindowToFront(mainWindow);
+
         _taskbarIcon.ForceCreate();
+    }
+
+    private static void BringMainWindowToFront(MainWindow mainWindow)
+    {
+        var dispatcher = mainWindow.Dispatcher;
+        if (dispatcher.CheckAccess())
+        {
+            ActivateMainWindow(mainWindow);
+        }
+        else
+        {
+            _ = dispatcher.InvokeAsync(() => ActivateMainWindow(mainWindow), DispatcherPriority.Normal);
+        }
+    }
+
+    private static void ActivateMainWindow(MainWindow mainWindow)
+    {
+        if (mainWindow.WindowState == WindowState.Minimized)
+        {
+            mainWindow.WindowState = WindowState.Normal;
+        }
+
+        mainWindow.Show();
+
+        // Brief Topmost toggle helps foreground when Activate() alone is ignored.
+        var wasTopmost = mainWindow.Topmost;
+        mainWindow.Topmost = true;
+        mainWindow.Topmost = wasTopmost;
+
+        _ = mainWindow.Activate();
     }
 
     private void ExceptionHandler(ExceptionHandler handler)

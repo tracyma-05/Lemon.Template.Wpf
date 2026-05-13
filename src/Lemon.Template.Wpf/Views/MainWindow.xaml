@@ -42,7 +42,7 @@
                             </Grid.ColumnDefinitions>
                             <Image Grid.Column="0" Width="20" Height="20" VerticalAlignment="Center" Source="/Assets/Images/logo.ico" />
                             <TextBlock Grid.Column="1"
-                                       Text="WPF App"
+                                       Text="Lemon.Template.Wpf"
                                        Margin="5,0"
                                        VerticalAlignment="Center"
                                        FontSize="14"
