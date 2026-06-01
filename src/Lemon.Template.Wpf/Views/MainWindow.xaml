@@ -51,156 +51,160 @@
                                        TextWrapping="NoWrap" />
                         </Grid>
                     </DockPanel>
-                    <ItemsControl Grid.Row="1" Margin="10" ItemsSource="{Binding NavigationItems}">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate>
-                                <ContentControl>
-                                    <Expander Padding="0" materialDesign:ExpanderAssist.HorizontalHeaderPadding="0 10" Style="{DynamicResource MaterialDesignExpander}" Background="Transparent">
-                                        <Expander.Header>
-                                            <StackPanel Orientation="Horizontal">
-                                                <materialDesign:PackIcon Width="24" Height="24" HorizontalAlignment="Center" VerticalAlignment="Center" Kind="{Binding Icon}" ToolTip="{Binding Title}" />
-                                                <TextBlock Text="{Binding Title}" Margin="12 0" VerticalAlignment="Center" FontSize="16" >
-                                                    <TextBlock.Style>
-                                                        <Style TargetType="TextBlock">
-                                                            <Setter Property="Visibility" Value="Visible"/>
-                                                            <Style.Triggers>
-                                                                <DataTrigger Binding="{Binding IsMenuCollapsed, RelativeSource={RelativeSource AncestorType=Window}}" Value="True">
-                                                                    <Setter Property="Visibility" Value="Collapsed"/>
-                                                                </DataTrigger>
-                                                            </Style.Triggers>
-                                                        </Style>
-                                                    </TextBlock.Style>
-                                                </TextBlock>
-                                            </StackPanel>
-                                        </Expander.Header>
-                                        <Expander.Content>
-                                            <ItemsControl ItemsSource="{Binding Items}">
-                                                <ItemsControl.ItemTemplate>
-                                                    <DataTemplate>
-                                                        <RadioButton IsChecked="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Command="{Binding RelativeSource={RelativeSource AncestorType=Window, Mode=FindAncestor}, Path=DataContext.NavigateCommand}" CommandParameter="{Binding .}" Height="35" GroupName="Menu">
-                                                            <RadioButton.Template>
-                                                                <ControlTemplate TargetType="RadioButton">
-                                                                    <Grid Background="Transparent" Opacity="0.7">
-                                                                        <Grid.ColumnDefinitions>
-                                                                            <ColumnDefinition Width="auto" />
-                                                                            <ColumnDefinition />
-                                                                        </Grid.ColumnDefinitions>
-                                                                        <Border x:Name="bg" Grid.ColumnSpan="2" CornerRadius="2" />
-                                                                        <materialDesign:PackIcon Width="20" Height="20" Margin="10 0 10 0" HorizontalAlignment="Center" VerticalAlignment="Center" Kind="{Binding Icon}" ToolTip="{Binding Title}" />
-                                                                        <TextBlock Grid.Column="1" Text="{Binding Title}" Margin="12 0" VerticalAlignment="Center" >
-                                                                            <TextBlock.Style>
-                                                                                <Style TargetType="TextBlock">
-                                                                                    <Setter Property="Visibility" Value="Visible"/>
-                                                                                    <Style.Triggers>
-                                                                                        <DataTrigger Binding="{Binding IsMenuCollapsed, RelativeSource={RelativeSource AncestorType=Window}}" Value="True">
-                                                                                            <Setter Property="Visibility" Value="Collapsed"/>
-                                                                                        </DataTrigger>
-                                                                                    </Style.Triggers>
-                                                                                </Style>
-                                                                            </TextBlock.Style>
-                                                                        </TextBlock>
-                                                                    </Grid>
-                                                                    <ControlTemplate.Triggers>
-                                                                        <Trigger Property="IsChecked" Value="true">
-                                                                            <Setter TargetName="bg" Property="Background" Value="{DynamicResource MaterialDesignCardBackground}" />
-                                                                        </Trigger>
-                                                                    </ControlTemplate.Triggers>
+                    <ScrollViewer Grid.Row="1"
+                                    VerticalScrollBarVisibility="Auto"
+                                    HorizontalScrollBarVisibility="Disabled">
+                        <ItemsControl Margin="10" ItemsSource="{Binding NavigationItems}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <ContentControl>
+                                        <Expander Padding="0" materialDesign:ExpanderAssist.HorizontalHeaderPadding="0 10" Style="{DynamicResource MaterialDesignExpander}" Background="Transparent">
+                                            <Expander.Header>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <materialDesign:PackIcon Width="24" Height="24" HorizontalAlignment="Center" VerticalAlignment="Center" Kind="{Binding Icon}" ToolTip="{Binding Title}" />
+                                                    <TextBlock Text="{Binding Title}" Margin="12 0" VerticalAlignment="Center" FontSize="16" >
+                                                        <TextBlock.Style>
+                                                            <Style TargetType="TextBlock">
+                                                                <Setter Property="Visibility" Value="Visible"/>
+                                                                <Style.Triggers>
+                                                                    <DataTrigger Binding="{Binding IsMenuCollapsed, RelativeSource={RelativeSource AncestorType=Window}}" Value="True">
+                                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                                    </DataTrigger>
+                                                                </Style.Triggers>
+                                                            </Style>
+                                                        </TextBlock.Style>
+                                                    </TextBlock>
+                                                </StackPanel>
+                                            </Expander.Header>
+                                            <Expander.Content>
+                                                <ItemsControl ItemsSource="{Binding Items}">
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate>
+                                                            <RadioButton IsChecked="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Command="{Binding RelativeSource={RelativeSource AncestorType=Window, Mode=FindAncestor}, Path=DataContext.NavigateCommand}" CommandParameter="{Binding .}" Height="35" GroupName="Menu">
+                                                                <RadioButton.Template>
+                                                                    <ControlTemplate TargetType="RadioButton">
+                                                                        <Grid Background="Transparent" Opacity="0.7">
+                                                                            <Grid.ColumnDefinitions>
+                                                                                <ColumnDefinition Width="auto" />
+                                                                                <ColumnDefinition />
+                                                                            </Grid.ColumnDefinitions>
+                                                                            <Border x:Name="bg" Grid.ColumnSpan="2" CornerRadius="2" />
+                                                                            <materialDesign:PackIcon Width="20" Height="20" Margin="10 0 10 0" HorizontalAlignment="Center" VerticalAlignment="Center" Kind="{Binding Icon}" ToolTip="{Binding Title}" />
+                                                                            <TextBlock Grid.Column="1" Text="{Binding Title}" Margin="12 0" VerticalAlignment="Center" >
+                                                                                <TextBlock.Style>
+                                                                                    <Style TargetType="TextBlock">
+                                                                                        <Setter Property="Visibility" Value="Visible"/>
+                                                                                        <Style.Triggers>
+                                                                                            <DataTrigger Binding="{Binding IsMenuCollapsed, RelativeSource={RelativeSource AncestorType=Window}}" Value="True">
+                                                                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                                                                            </DataTrigger>
+                                                                                        </Style.Triggers>
+                                                                                    </Style>
+                                                                                </TextBlock.Style>
+                                                                            </TextBlock>
+                                                                        </Grid>
+                                                                        <ControlTemplate.Triggers>
+                                                                            <Trigger Property="IsChecked" Value="true">
+                                                                                <Setter TargetName="bg" Property="Background" Value="{DynamicResource MaterialDesignCardBackground}" />
+                                                                            </Trigger>
+                                                                        </ControlTemplate.Triggers>
+                                                                    </ControlTemplate>
+                                                                </RadioButton.Template>
+                                                            </RadioButton>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                            </Expander.Content>
+                                        </Expander>
+                                        <ContentControl.Style>
+                                            <Style TargetType="ContentControl">
+                                                <Style.Triggers>
+                                                    <DataTrigger Binding="{Binding Items.Count}" Value="0">
+                                                        <Setter Property="Template">
+                                                            <Setter.Value>
+                                                                <ControlTemplate TargetType="ContentControl">
+                                                                    <RadioButton IsChecked="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Command="{Binding RelativeSource={RelativeSource AncestorType=Window, Mode=FindAncestor}, Path=DataContext.NavigateCommand}" CommandParameter="{Binding .}" Height="35" GroupName="Menu">
+                                                                        <RadioButton.Template>
+                                                                            <ControlTemplate TargetType="RadioButton">
+                                                                                <Grid Background="Transparent">
+                                                                                    <Grid.ColumnDefinitions>
+                                                                                        <ColumnDefinition Width="auto" />
+                                                                                        <ColumnDefinition />
+                                                                                    </Grid.ColumnDefinitions>
+                                                                                    <Border x:Name="bg" Grid.ColumnSpan="2" CornerRadius="2" />
+                                                                                    <materialDesign:PackIcon Width="20" HorizontalAlignment="Center" VerticalAlignment="Center" Height="20" Kind="{Binding Icon}" ToolTip="{Binding Title}" />
+                                                                                    <TextBlock Grid.Column="1" Text="{Binding Title}" Margin="12 0" VerticalAlignment="Center" FontSize="16" >
+                                                                                        <TextBlock.Style>
+                                                                                            <Style TargetType="TextBlock">
+                                                                                                <Setter Property="Visibility" Value="Visible"/>
+                                                                                                <Style.Triggers>
+                                                                                                    <DataTrigger Binding="{Binding IsMenuCollapsed, RelativeSource={RelativeSource AncestorType=Window}}" Value="True">
+                                                                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                                                                    </DataTrigger>
+                                                                                                </Style.Triggers>
+                                                                                            </Style>
+                                                                                        </TextBlock.Style>
+                                                                                    </TextBlock>
+                                                                                </Grid>
+                                                                                <ControlTemplate.Triggers>
+                                                                                    <Trigger Property="IsChecked" Value="true">
+                                                                                        <Setter TargetName="bg" Property="Background" Value="{DynamicResource MaterialDesignCardBackground}" />
+                                                                                    </Trigger>
+                                                                                </ControlTemplate.Triggers>
+                                                                            </ControlTemplate>
+                                                                        </RadioButton.Template>
+                                                                    </RadioButton>
                                                                 </ControlTemplate>
-                                                            </RadioButton.Template>
-                                                        </RadioButton>
-                                                    </DataTemplate>
-                                                </ItemsControl.ItemTemplate>
-                                            </ItemsControl>
-                                        </Expander.Content>
-                                    </Expander>
-                                    <ContentControl.Style>
-                                        <Style TargetType="ContentControl">
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding Items.Count}" Value="0">
-                                                    <Setter Property="Template">
-                                                        <Setter.Value>
-                                                            <ControlTemplate TargetType="ContentControl">
-                                                                <RadioButton IsChecked="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Command="{Binding RelativeSource={RelativeSource AncestorType=Window, Mode=FindAncestor}, Path=DataContext.NavigateCommand}" CommandParameter="{Binding .}" Height="35" GroupName="Menu">
-                                                                    <RadioButton.Template>
-                                                                        <ControlTemplate TargetType="RadioButton">
-                                                                            <Grid Background="Transparent">
-                                                                                <Grid.ColumnDefinitions>
-                                                                                    <ColumnDefinition Width="auto" />
-                                                                                    <ColumnDefinition />
-                                                                                </Grid.ColumnDefinitions>
-                                                                                <Border x:Name="bg" Grid.ColumnSpan="2" CornerRadius="2" />
-                                                                                <materialDesign:PackIcon Width="20" HorizontalAlignment="Center" VerticalAlignment="Center" Height="20" Kind="{Binding Icon}" ToolTip="{Binding Title}" />
-                                                                                <TextBlock Grid.Column="1" Text="{Binding Title}" Margin="12 0" VerticalAlignment="Center" FontSize="16" >
-                                                                                    <TextBlock.Style>
-                                                                                        <Style TargetType="TextBlock">
-                                                                                            <Setter Property="Visibility" Value="Visible"/>
-                                                                                            <Style.Triggers>
-                                                                                                <DataTrigger Binding="{Binding IsMenuCollapsed, RelativeSource={RelativeSource AncestorType=Window}}" Value="True">
-                                                                                                    <Setter Property="Visibility" Value="Collapsed"/>
-                                                                                                </DataTrigger>
-                                                                                            </Style.Triggers>
-                                                                                        </Style>
-                                                                                    </TextBlock.Style>
-                                                                                </TextBlock>
-                                                                            </Grid>
-                                                                            <ControlTemplate.Triggers>
-                                                                                <Trigger Property="IsChecked" Value="true">
-                                                                                    <Setter TargetName="bg" Property="Background" Value="{DynamicResource MaterialDesignCardBackground}" />
-                                                                                </Trigger>
-                                                                            </ControlTemplate.Triggers>
-                                                                        </ControlTemplate>
-                                                                    </RadioButton.Template>
-                                                                </RadioButton>
-                                                            </ControlTemplate>
-                                                        </Setter.Value>
-                                                    </Setter>
-                                                </DataTrigger>
-                                                <DataTrigger Binding="{Binding Items}" Value="{x:Null}">
-                                                    <Setter Property="Template">
-                                                        <Setter.Value>
-                                                            <ControlTemplate TargetType="ContentControl">
-                                                                <RadioButton IsChecked="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Command="{Binding RelativeSource={RelativeSource AncestorType=Window, Mode=FindAncestor}, Path=DataContext.NavigateCommand}" CommandParameter="{Binding .}" Height="35" GroupName="Menu">
-                                                                    <RadioButton.Template>
-                                                                        <ControlTemplate TargetType="RadioButton">
-                                                                            <Grid Background="Transparent">
-                                                                                <Grid.ColumnDefinitions>
-                                                                                    <ColumnDefinition Width="auto" />
-                                                                                    <ColumnDefinition />
-                                                                                </Grid.ColumnDefinitions>
-                                                                                <Border x:Name="bg" Grid.ColumnSpan="2" CornerRadius="2" />
-                                                                                <materialDesign:PackIcon Width="20" Height="20" HorizontalAlignment="Center" VerticalAlignment="Center" Kind="{Binding Icon}" ToolTip="{Binding Title}" />
-                                                                                <TextBlock Grid.Column="1" Text="{Binding Title}" Margin="12 0" VerticalAlignment="Center" >
-                                                                                    <TextBlock.Style>
-                                                                                        <Style TargetType="TextBlock">
-                                                                                            <Setter Property="Visibility" Value="Visible"/>
-                                                                                            <Style.Triggers>
-                                                                                                <DataTrigger Binding="{Binding IsMenuCollapsed, RelativeSource={RelativeSource AncestorType=Window}}" Value="True">
-                                                                                                    <Setter Property="Visibility" Value="Collapsed"/>
-                                                                                                </DataTrigger>
-                                                                                            </Style.Triggers>
-                                                                                        </Style>
-                                                                                    </TextBlock.Style>
-                                                                                </TextBlock>
-                                                                            </Grid>
-                                                                            <ControlTemplate.Triggers>
-                                                                                <Trigger Property="IsChecked" Value="true">
-                                                                                    <Setter TargetName="bg" Property="Background" Value="{DynamicResource MaterialDesignCardBackground}" />
-                                                                                </Trigger>
-                                                                            </ControlTemplate.Triggers>
-                                                                        </ControlTemplate>
-                                                                    </RadioButton.Template>
-                                                                </RadioButton>
-                                                            </ControlTemplate>
-                                                        </Setter.Value>
-                                                    </Setter>
-                                                </DataTrigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </ContentControl.Style>
-                                </ContentControl>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
+                                                            </Setter.Value>
+                                                        </Setter>
+                                                    </DataTrigger>
+                                                    <DataTrigger Binding="{Binding Items}" Value="{x:Null}">
+                                                        <Setter Property="Template">
+                                                            <Setter.Value>
+                                                                <ControlTemplate TargetType="ContentControl">
+                                                                    <RadioButton IsChecked="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}" Command="{Binding RelativeSource={RelativeSource AncestorType=Window, Mode=FindAncestor}, Path=DataContext.NavigateCommand}" CommandParameter="{Binding .}" Height="35" GroupName="Menu">
+                                                                        <RadioButton.Template>
+                                                                            <ControlTemplate TargetType="RadioButton">
+                                                                                <Grid Background="Transparent">
+                                                                                    <Grid.ColumnDefinitions>
+                                                                                        <ColumnDefinition Width="auto" />
+                                                                                        <ColumnDefinition />
+                                                                                    </Grid.ColumnDefinitions>
+                                                                                    <Border x:Name="bg" Grid.ColumnSpan="2" CornerRadius="2" />
+                                                                                    <materialDesign:PackIcon Width="20" Height="20" HorizontalAlignment="Center" VerticalAlignment="Center" Kind="{Binding Icon}" ToolTip="{Binding Title}" />
+                                                                                    <TextBlock Grid.Column="1" Text="{Binding Title}" Margin="12 0" VerticalAlignment="Center" >
+                                                                                        <TextBlock.Style>
+                                                                                            <Style TargetType="TextBlock">
+                                                                                                <Setter Property="Visibility" Value="Visible"/>
+                                                                                                <Style.Triggers>
+                                                                                                    <DataTrigger Binding="{Binding IsMenuCollapsed, RelativeSource={RelativeSource AncestorType=Window}}" Value="True">
+                                                                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                                                                    </DataTrigger>
+                                                                                                </Style.Triggers>
+                                                                                            </Style>
+                                                                                        </TextBlock.Style>
+                                                                                    </TextBlock>
+                                                                                </Grid>
+                                                                                <ControlTemplate.Triggers>
+                                                                                    <Trigger Property="IsChecked" Value="true">
+                                                                                        <Setter TargetName="bg" Property="Background" Value="{DynamicResource MaterialDesignCardBackground}" />
+                                                                                    </Trigger>
+                                                                                </ControlTemplate.Triggers>
+                                                                            </ControlTemplate>
+                                                                        </RadioButton.Template>
+                                                                    </RadioButton>
+                                                                </ControlTemplate>
+                                                            </Setter.Value>
+                                                        </Setter>
+                                                    </DataTrigger>
+                                                </Style.Triggers>
+                                            </Style>
+                                        </ContentControl.Style>
+                                    </ContentControl>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
                 </Grid>
             </materialDesign:Card>
 

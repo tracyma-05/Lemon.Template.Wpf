@@ -1,8 +1,8 @@
-﻿using H.NotifyIcon;
+﻿using AlgoFun.Infrastructures.Shell;
+using H.NotifyIcon;
 using H.NotifyIcon.Core;
 using Lemon.Template.Wpf.Infrastructures.Attributes;
 using Lemon.Template.Wpf.Infrastructures.Exceptions;
-using Lemon.Template.Wpf.Infrastructures.Shell;
 using Lemon.Template.Wpf.Services.Theming;
 using Lemon.Template.Wpf.Views;
 using Microsoft.Extensions.DependencyInjection;

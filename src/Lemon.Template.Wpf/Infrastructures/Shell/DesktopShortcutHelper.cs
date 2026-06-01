@@ -1,13 +1,14 @@
+using Lemon.Template.Wpf;
 using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
 
-namespace Lemon.Template.Wpf.Infrastructures.Shell;
+namespace AlgoFun.Infrastructures.Shell;
 
 internal static class DesktopShortcutHelper
 {
     /// <summary>
-    /// Ensures a shortcut to this application exists on the user's desktop (creates once).
+    /// Recreates the desktop shortcut on each launch so target path and icon stay current.
     /// </summary>
     public static void EnsureDesktopShortcut()
     {
@@ -21,13 +22,13 @@ internal static class DesktopShortcutHelper
         var desktopDir = Environment.GetFolderPath(Environment.SpecialFolder.Desktop);
         var shortcutPath = Path.Combine(desktopDir, shortcutName);
 
-        if (File.Exists(shortcutPath))
-        {
-            return;
-        }
-
         try
         {
+            if (File.Exists(shortcutPath))
+            {
+                File.Delete(shortcutPath);
+            }
+
             CreateShortcutViaWScript(shortcutPath, targetPath, GetShortcutDisplayName());
         }
         catch
@@ -101,6 +102,6 @@ internal static class DesktopShortcutHelper
             return title.Trim();
         }
 
-        return entry.GetName().Name ?? "Lemon.Template.Wpf";
+        return entry.GetName().Name ?? "AlgoFun";
     }
 }
