@@ -184,6 +184,32 @@ To publish the template on **NuGet**, this repo includes **`Lemon.Template.Wpf.T
 
 ## :satellite: Publish template to NuGet
 
+Two paths ship side by side: **CI** (recommended — nuget.org's Trusted Publishing, no stored key) and the **local publisher tool** (API key, unchanged).
+
+### From CI (Trusted Publishing)
+
+Push a `vX.Y.Z` tag — the `publish` job in `.github/workflows/ci.yml` runs after build, test and the template round-trip, downloads the `.nupkg` that job packed, and pushes it. Tag `v1.0.2` must match `Version` in `common.props`; the job fails the check otherwise.
+
+```bash
+git tag v1.0.2 && git push origin v1.0.2
+```
+
+`workflow_dispatch` with **Push the packed template to nuget.org** checked does the same from a branch (no version check).
+
+The job asks nuget.org for a short-lived key over OIDC (`NuGet/login`, needs `id-token: write`). nuget.org binds that policy to **this workflow file** and the **`production`** environment, so renaming `ci.yml` or the environment breaks the exchange — update the policy in *nuget.org → Trusted Publishing* alongside any rename.
+
+Repository settings it reads:
+
+| Setting | Kind | Purpose |
+| --- | --- | --- |
+| `NUGET_USER` | variable | nuget.org account the policy belongs to. Defaults to `tracy.ma`. |
+| `NUGET_USE_TRUSTED_PUBLISHING` | variable | Set to `false` to skip OIDC and use the API key. |
+| `NUGET_API_KEY` | secret | Fallback key, used whenever OIDC yields nothing. |
+
+If neither credential is available the job fails rather than skipping the push silently.
+
+### Locally (API key)
+
 1. Copy `tools/NuGet.TemplatePublisher/secret.json.example` to `tools/NuGet.TemplatePublisher/secret.json` and set `NuGetPublish:ApiKey` (this path is gitignored).
 2. Bump **`Version`** in `common.props` when you ship a new template (the template pack’s **`PackageVersion`** follows `$(Version)`). Optionally override **`NuGetPublish:PackageVersion`** in `appsettings.json` or via env (`NUGET_PUBLISH__*`) for a one-off without editing `common.props`.
 3. From the repository root:

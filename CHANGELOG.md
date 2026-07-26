@@ -36,6 +36,12 @@ All notable changes to this project are documented here. The format follows
   that installs the template from source, scaffolds it with default *and* all-features-disabled options,
   builds both, runs the scaffolded tests, asserts the disabled features left no files, dependencies or
   conditional markers behind, and packs the template package.
+- **Publishing from CI.** A `publish` job pushes the packed template to nuget.org on a `vX.Y.Z` tag (or a
+  manual run with the `publish` input), after the build and round-trip jobs pass and the tag is checked
+  against `Version` in `common.props`. It prefers nuget.org **Trusted Publishing** — a short-lived key
+  obtained over OIDC, bound to `ci.yml` and the `production` environment, so no key is stored — and falls
+  back to the `NUGET_API_KEY` secret when the exchange yields nothing or `NUGET_USE_TRUSTED_PUBLISHING` is
+  `false`. The local `tools/NuGet.TemplatePublisher` API-key flow is unchanged.
 - Startup now removes recurring jobs whose job type can no longer be loaded. Renaming or deleting a job
   class used to leave an orphan in SQLite that Hangfire logged as an error on every launch before disabling
   it. Jobs added at runtime through the dashboard are left alone.

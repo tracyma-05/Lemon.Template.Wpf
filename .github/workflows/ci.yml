@@ -3,14 +3,22 @@ name: CI
 on:
   push:
     branches: [main]
+    # A vX.Y.Z tag runs the whole pipeline and then publishes the package it produced.
+    tags: ['v*']
   pull_request:
     branches: [main]
   workflow_dispatch:
+    inputs:
+      publish:
+        description: 'Push the packed template to nuget.org'
+        type: boolean
+        default: false
 
 env:
   DOTNET_NOLOGO: 'true'
   DOTNET_CLI_TELEMETRY_OPTOUT: 'true'
   DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 'true'
+  NUGET_SOURCE: 'https://api.nuget.org/v3/index.json'
 
 jobs:
   build:
@@ -127,3 +135,81 @@ jobs:
       - name: Uninstall the template
         if: always()
         run: dotnet new uninstall .
+
+  publish:
+    name: Publish to NuGet
+    # Only the package that already passed build, test and the round-trip check is pushed.
+    needs: [build, template]
+    if: >-
+      (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) ||
+      (github.event_name == 'workflow_dispatch' && inputs.publish)
+    # Pushing a .nupkg needs no WPF toolchain, so the cheaper runner is enough.
+    runs-on: ubuntu-latest
+    # nuget.org binds Trusted Publishing to this workflow file *and* this environment name; renaming either
+    # side invalidates the OIDC exchange and the run falls back to the API key.
+    environment: production
+    permissions:
+      contents: read
+      # Lets NuGet/login exchange the workflow's OIDC token for a short-lived API key.
+      id-token: write
+
+    steps:
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Download the template package
+        uses: actions/download-artifact@v4
+        with:
+          name: template-package
+          path: artifacts/package
+
+      - name: Check the tag matches the packed version
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: |
+          shopt -s nullglob
+          files=(artifacts/package/*.nupkg)
+          if [ ${#files[@]} -ne 1 ]; then
+            echo "::error::expected exactly one .nupkg, found ${#files[@]}"
+            exit 1
+          fi
+          # Lemon.Templates.Wpf.1.0.2.nupkg -> 1.0.2
+          version=$(basename "${files[0]}" .nupkg)
+          version=${version#Lemon.Templates.Wpf.}
+          if [ "$version" != "${GITHUB_REF_NAME#v}" ]; then
+            echo "::error::tag ${GITHUB_REF_NAME} does not match packed version ${version} — bump Version in common.props"
+            exit 1
+          fi
+          echo "Publishing Lemon.Templates.Wpf ${version}."
+
+      - name: Request a temporary API key (Trusted Publishing)
+        id: nuget-login
+        # Opt out with the NUGET_USE_TRUSTED_PUBLISHING variable; a failed exchange (policy removed, OIDC
+        # unavailable) must not stop the job either, because the API key below still works.
+        if: vars.NUGET_USE_TRUSTED_PUBLISHING != 'false'
+        continue-on-error: true
+        uses: NuGet/login@v1
+        with:
+          user: ${{ vars.NUGET_USER || 'tracy.ma' }}
+
+      - name: Select the push credentials
+        env:
+          TRUSTED_KEY: ${{ steps.nuget-login.outputs.NUGET_API_KEY }}
+          STATIC_KEY: ${{ secrets.NUGET_API_KEY }}
+        run: |
+          if [ -n "$TRUSTED_KEY" ]; then
+            echo 'Using the short-lived key from Trusted Publishing.'
+            printf 'NUGET_PUSH_KEY=%s\n' "$TRUSTED_KEY" >> "$GITHUB_ENV"
+          elif [ -n "$STATIC_KEY" ]; then
+            echo 'Trusted Publishing unavailable; falling back to the NUGET_API_KEY secret.'
+            printf 'NUGET_PUSH_KEY=%s\n' "$STATIC_KEY" >> "$GITHUB_ENV"
+          else
+            echo '::error::no NuGet credentials: configure Trusted Publishing for this repository/workflow/environment, or set the NUGET_API_KEY secret'
+            exit 1
+          fi
+
+      - name: Push
+        run: >
+          dotnet nuget push artifacts/package/*.nupkg
+          --source "$NUGET_SOURCE" --api-key "$NUGET_PUSH_KEY" --skip-duplicate
