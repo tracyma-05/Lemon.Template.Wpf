@@ -34,7 +34,7 @@
       Referenced directly by the app project purely to lift the transitive floor; drop it once the
       upstream packages ship a patched dependency of their own.
     -->
-    <PackageVersion Include="SQLitePCLRaw.lib.e_sqlite3" Version="2.1.12" />
+    <PackageVersion Include="SQLitePCLRaw.lib.e_sqlite3" Version="3.53.3" />
   </ItemGroup>
 
   <ItemGroup Label="Logging">
