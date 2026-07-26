@@ -9,22 +9,96 @@
         entry with no children). They used to be three hand-copied ControlTemplates in MainWindow.xaml;
         everything they share now lives here, and the variants differ only by Style setters.
 
+        Metrics are deliberately kept in sync with the Expander header in MainWindow.xaml: a 24x24 icon
+        followed by a label with a 12px gap, and a 44px row. A top-level entry with no children is a
+        sibling of the group headers, not a child, so it uses Padding="0" and lines up with them;
+        children add a small left padding so they read as nested.
+
         Expected DataContext: Lemon.Template.Wpf.Models.NavigationItem.
         Expected ancestor: a Window exposing IsMenuCollapsed and DataContext.NavigateCommand.
     -->
 
-    <!-- Label that hides itself when the menu is collapsed to icons. -->
+    <!--
+        Label that hides itself when the menu is collapsed to icons. Visibility is driven from a key frame
+        at the end of the fade instead of a plain setter, otherwise the label would blink out before the
+        column has finished narrowing.
+    -->
     <Style x:Key="NavigationCollapsibleTextStyle" TargetType="TextBlock">
         <Setter Property="Margin" Value="12,0" />
         <Setter Property="VerticalAlignment" Value="Center" />
         <Setter Property="Visibility" Value="Visible" />
         <Style.Triggers>
             <DataTrigger Binding="{Binding IsMenuCollapsed, RelativeSource={RelativeSource AncestorType=Window}}" Value="True">
-                <Setter Property="Visibility" Value="Collapsed" />
+                <DataTrigger.EnterActions>
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <DoubleAnimation Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.10" />
+                            <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="Visibility">
+                                <DiscreteObjectKeyFrame KeyTime="0:0:0.10" Value="{x:Static Visibility.Collapsed}" />
+                            </ObjectAnimationUsingKeyFrames>
+                        </Storyboard>
+                    </BeginStoryboard>
+                </DataTrigger.EnterActions>
+                <DataTrigger.ExitActions>
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <ObjectAnimationUsingKeyFrames Storyboard.TargetProperty="Visibility">
+                                <DiscreteObjectKeyFrame KeyTime="0:0:0" Value="{x:Static Visibility.Visible}" />
+                            </ObjectAnimationUsingKeyFrames>
+                            <DoubleAnimation Storyboard.TargetProperty="Opacity"
+                                             To="1"
+                                             BeginTime="0:0:0.08"
+                                             Duration="0:0:0.16" />
+                        </Storyboard>
+                    </BeginStoryboard>
+                </DataTrigger.ExitActions>
             </DataTrigger>
         </Style.Triggers>
     </Style>
 
+    <!--
+        Reveal for the children of an expanded group. The TranslateTransform is declared inline on the
+        ItemsControl in MainWindow.xaml, not here: a Freezable in a Setter is frozen and shared, and a
+        frozen transform cannot be animated.
+    -->
+    <Style x:Key="NavigationGroupItemsStyle" TargetType="ItemsControl">
+        <Setter Property="Opacity" Value="0" />
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding IsExpanded, RelativeSource={RelativeSource AncestorType=Expander}}" Value="True">
+                <DataTrigger.EnterActions>
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <DoubleAnimation Storyboard.TargetProperty="Opacity" To="1" Duration="0:0:0.22" />
+                            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)"
+                                             To="0"
+                                             Duration="0:0:0.22">
+                                <DoubleAnimation.EasingFunction>
+                                    <CubicEase EasingMode="EaseOut" />
+                                </DoubleAnimation.EasingFunction>
+                            </DoubleAnimation>
+                        </Storyboard>
+                    </BeginStoryboard>
+                </DataTrigger.EnterActions>
+                <DataTrigger.ExitActions>
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <DoubleAnimation Storyboard.TargetProperty="Opacity" To="0" Duration="0:0:0.12" />
+                            <DoubleAnimation Storyboard.TargetProperty="(UIElement.RenderTransform).(TranslateTransform.Y)"
+                                             To="-8"
+                                             Duration="0:0:0.12" />
+                        </Storyboard>
+                    </BeginStoryboard>
+                </DataTrigger.ExitActions>
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <!--
+        Hover and selection are two separate overlays rather than one border at three opacities: they
+        animate independently, so entering or leaving an already-selected row cannot clobber the
+        selection tint. Both use the theme primary brush, so the highlight follows the swatch chosen on
+        the Theme page.
+    -->
     <ControlTemplate x:Key="NavigationMenuItemTemplate" TargetType="RadioButton">
         <Grid Background="Transparent">
             <Grid.ColumnDefinitions>
@@ -32,11 +106,21 @@
                 <ColumnDefinition />
             </Grid.ColumnDefinitions>
 
-            <Border x:Name="SelectionBackground" Grid.ColumnSpan="2" CornerRadius="2" />
+            <Border x:Name="HoverBackground"
+                    Grid.ColumnSpan="2"
+                    CornerRadius="4"
+                    Background="{DynamicResource MaterialDesign.Brush.Primary}"
+                    Opacity="0" />
 
-            <materialDesign:PackIcon Width="20"
-                                     Height="20"
-                                     Margin="10,0"
+            <Border x:Name="SelectionBackground"
+                    Grid.ColumnSpan="2"
+                    CornerRadius="4"
+                    Background="{DynamicResource MaterialDesign.Brush.Primary}"
+                    Opacity="0" />
+
+            <materialDesign:PackIcon Width="24"
+                                     Height="24"
+                                     Margin="{TemplateBinding Padding}"
                                      HorizontalAlignment="Center"
                                      VerticalAlignment="Center"
                                      Kind="{Binding Icon}"
@@ -49,8 +133,53 @@
                        FontSize="{TemplateBinding FontSize}" />
         </Grid>
         <ControlTemplate.Triggers>
+            <Trigger Property="IsMouseOver" Value="True">
+                <Trigger.EnterActions>
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <DoubleAnimation Storyboard.TargetName="HoverBackground"
+                                             Storyboard.TargetProperty="Opacity"
+                                             To="0.10"
+                                             Duration="0:0:0.15" />
+                        </Storyboard>
+                    </BeginStoryboard>
+                </Trigger.EnterActions>
+                <Trigger.ExitActions>
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <DoubleAnimation Storyboard.TargetName="HoverBackground"
+                                             Storyboard.TargetProperty="Opacity"
+                                             To="0"
+                                             Duration="0:0:0.2" />
+                        </Storyboard>
+                    </BeginStoryboard>
+                </Trigger.ExitActions>
+            </Trigger>
             <Trigger Property="IsChecked" Value="True">
-                <Setter TargetName="SelectionBackground" Property="Background" Value="{DynamicResource MaterialDesignCardBackground}" />
+                <Trigger.EnterActions>
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <DoubleAnimation Storyboard.TargetName="SelectionBackground"
+                                             Storyboard.TargetProperty="Opacity"
+                                             To="0.18"
+                                             Duration="0:0:0.2">
+                                <DoubleAnimation.EasingFunction>
+                                    <CubicEase EasingMode="EaseOut" />
+                                </DoubleAnimation.EasingFunction>
+                            </DoubleAnimation>
+                        </Storyboard>
+                    </BeginStoryboard>
+                </Trigger.EnterActions>
+                <Trigger.ExitActions>
+                    <BeginStoryboard>
+                        <Storyboard>
+                            <DoubleAnimation Storyboard.TargetName="SelectionBackground"
+                                             Storyboard.TargetProperty="Opacity"
+                                             To="0"
+                                             Duration="0:0:0.2" />
+                        </Storyboard>
+                    </BeginStoryboard>
+                </Trigger.ExitActions>
             </Trigger>
         </ControlTemplate.Triggers>
     </ControlTemplate>
@@ -60,20 +189,38 @@
         set as local values on each RadioButton: moving them into style setters changes the order in which
         RadioButton applies group membership versus its checked state, and the shell then starts up on the
         wrong page instead of the configured default.
+
+        The selected foreground lives in a Style trigger, not a template trigger: a Style setter (the
+        dimmed child foreground below) outranks a template trigger, so the highlight would never win.
+
+        Selection is carried by the tinted pill and the weight, not by colouring the label with the
+        primary brush: on a dark base the primary sits close to its own tinted background, so a
+        primary-coloured label ends up *less* legible than the unselected ones — and the swatch is
+        user-chosen on the Theme page, so no single accent can be assumed to pass contrast.
     -->
     <Style x:Key="NavigationMenuItemStyle" TargetType="RadioButton">
         <Setter Property="Template" Value="{StaticResource NavigationMenuItemTemplate}" />
-        <Setter Property="Height" Value="35" />
+        <Setter Property="Height" Value="44" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Foreground" Value="{DynamicResource MaterialDesignBody}" />
+        <Style.Triggers>
+            <Trigger Property="IsChecked" Value="True">
+                <Setter Property="Foreground" Value="{DynamicResource MaterialDesignBody}" />
+                <Setter Property="FontWeight" Value="SemiBold" />
+            </Trigger>
+        </Style.Triggers>
     </Style>
 
-    <!-- Child entry inside an expanded group: slightly dimmed, inherits the shell font size. -->
+    <!-- Child entry inside an expanded group: indented, dimmed label, inherits the shell font size. -->
     <Style x:Key="NavigationChildMenuItemStyle"
            TargetType="RadioButton"
            BasedOn="{StaticResource NavigationMenuItemStyle}">
-        <Setter Property="Opacity" Value="0.7" />
+        <Setter Property="Height" Value="38" />
+        <Setter Property="Padding" Value="8,0,0,0" />
+        <Setter Property="Foreground" Value="{DynamicResource MaterialDesignBodyLight}" />
     </Style>
 
-    <!-- Top-level entry with no children: reads as a group header, so it matches the header font size. -->
+    <!-- Top-level entry with no children: a sibling of the group headers, so it matches them exactly. -->
     <Style x:Key="NavigationRootMenuItemStyle"
            TargetType="RadioButton"
            BasedOn="{StaticResource NavigationMenuItemStyle}">

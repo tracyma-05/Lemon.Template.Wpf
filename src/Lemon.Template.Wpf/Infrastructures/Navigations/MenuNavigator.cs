@@ -32,6 +32,8 @@ namespace Lemon.Template.Wpf.Infrastructures.Navigations
         /// <summary>
         /// Walks the whole menu instead of relying on the <c>GroupName="Menu"</c> radio buttons to unselect
         /// each other: entries inside a collapsed expander may have no realized radio button to react.
+        /// The group that owns the target page is expanded as well, otherwise a jump from the Home
+        /// shortcuts would land on a page whose menu entry is still hidden inside a closed expander.
         /// </summary>
         private static void SelectOnly(NavigationItem page)
         {
@@ -39,9 +41,17 @@ namespace Lemon.Template.Wpf.Infrastructures.Navigations
             {
                 root.IsSelected = ReferenceEquals(root, page);
 
+                var ownsPage = false;
                 foreach (var child in root.Items)
                 {
-                    child.IsSelected = ReferenceEquals(child, page);
+                    var isTarget = ReferenceEquals(child, page);
+                    child.IsSelected = isTarget;
+                    ownsPage |= isTarget;
+                }
+
+                if (ownsPage)
+                {
+                    root.IsExpanded = true;
                 }
             }
         }

@@ -51,6 +51,13 @@ namespace Lemon.Template.Wpf.Models
         private bool _isSelected;
 
         /// <summary>
+        /// 分组是否展开。由 <see cref="Infrastructures.Navigations.IMenuNavigator"/> 在跳转到子页面时置为
+        /// <c>true</c>，这样从首页快捷入口进入的页面在菜单中也是可见的。
+        /// </summary>
+        [ObservableProperty]
+        private bool _isExpanded;
+
+        /// <summary>
         /// 页面名称
         /// </summary>
         public string? PageViewName { get; set; }

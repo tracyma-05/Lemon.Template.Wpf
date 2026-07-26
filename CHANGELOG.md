@@ -93,6 +93,21 @@ All notable changes to this project are documented here. The format follows
 
 ### Changed
 
+- **Side menu: alignment, animation and selection highlight.** A top-level page with no children (`Home`)
+  used a smaller icon, a wider left margin and a shorter row than the expander headers next to it, so its
+  label sat indented as though it were a child. Entry metrics are now shared — 24px icon, 12px label gap,
+  44px row — with the indent expressed as `Padding`, so childless top-level pages line up with the group
+  headers and children read as nested. Navigating from the home page's shortcuts now expands the group that
+  owns the target page (`NavigationItem.IsExpanded`, set by `IMenuNavigator`), instead of leaving it
+  selected inside a closed expander. Hover and selection fade in as two independent overlays tinted with
+  the theme primary brush, the children of a group fade and slide in when it expands, and the rail itself
+  animates between its expanded and collapsed widths via a new `GridLengthAnimation` (WPF ships no
+  animation for `GridLength`). The selected entry is marked by the tinted pill plus a semibold label rather
+  than a primary-coloured label: the accent is user-chosen on the Theme page, and on a dark base a
+  primary-coloured label on its own tint reads *less* clearly than the unselected entries.
+- **Menu collapse driven by the toggle's state.** `toggleMenuButton` now handles `Checked`/`Unchecked`
+  instead of `Click`. Its arrow icon follows `IsChecked`, which an automation client can set without ever
+  raising `Click` — leaving the icon pointing one way and the menu sized the other.
 - **Log levels cut back.** Release builds now record **Warning** and above; Debug builds record
   **Information** and above (previously Information / Debug). The `Microsoft` override moved from
   `Information` to `Warning` — at the old value the framework raised the volume in Release above the

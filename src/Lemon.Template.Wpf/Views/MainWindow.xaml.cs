@@ -1,4 +1,5 @@
-﻿using Lemon.Template.Wpf.Infrastructures.Dialogs;
+﻿using Lemon.Template.Wpf.Infrastructures.Animations;
+using Lemon.Template.Wpf.Infrastructures.Dialogs;
 using Lemon.Template.Wpf.Infrastructures.Localization;
 using Lemon.Template.Wpf.Infrastructures.Navigations;
 using Lemon.Template.Wpf.Themes.Controls;
@@ -7,6 +8,7 @@ using System;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using System.Windows.Media.Animation;
 using Volo.Abp.DependencyInjection;
 
 namespace Lemon.Template.Wpf.Views
@@ -57,7 +59,11 @@ namespace Lemon.Template.Wpf.Views
             BtnMax.Click += BtnMax_Click;
             BtnClose.Click += BtnClose_Click;
 
-            toggleMenuButton.Click += BtnDoubleLeft_Click;
+            // Checked/Unchecked rather than Click: the toggle's own icon follows IsChecked, and an
+            // automation client (or a future binding) can set that without ever raising Click, which
+            // would leave the arrow pointing one way and the menu sized the other.
+            toggleMenuButton.Checked += (_, _) => SetMenuCollapsed(true);
+            toggleMenuButton.Unchecked += (_, _) => SetMenuCollapsed(false);
         }
 
         public static readonly DependencyProperty IsMenuCollapsedProperty =
@@ -106,25 +112,51 @@ namespace Lemon.Template.Wpf.Views
             WindowState = (WindowState != WindowState.Maximized) ? WindowState.Maximized : WindowState.Normal;
         }
 
-        private void BtnDoubleLeft_Click(object sender, RoutedEventArgs e)
+        private const double ExpandedMenuWidth = 240;
+        private const double CollapsedMenuWidth = 70;
+        private static readonly Duration MenuAnimationDuration = new(TimeSpan.FromMilliseconds(220));
+
+        private void SetMenuCollapsed(bool collapsing)
         {
-            CollapseMenu();
+            // Set first: the item labels fade themselves out off this property (see Navigation.xaml).
+            IsMenuCollapsed = collapsing;
+
+            AnimateMenuWidth(collapsing ? CollapsedMenuWidth : ExpandedMenuWidth);
+            AnimateHeader(collapsing);
         }
 
-        private void CollapseMenu()
+        private void AnimateMenuWidth(double targetWidth)
         {
-            if (StackHeader.Visibility == Visibility.Visible)
+            var animation = new GridLengthAnimation
             {
-                StackHeader.Visibility = Visibility.Collapsed;
-                GridLeftMenu.Width = new GridLength(70);
-                IsMenuCollapsed = true;
-            }
-            else
+                // Reading Width mid-animation yields the current animated value, so repeated toggles
+                // pick up where the previous one left off instead of jumping back to the full width.
+                From = GridLeftMenu.Width,
+                To = new GridLength(targetWidth),
+                Duration = MenuAnimationDuration,
+                EasingFunction = new CubicEase { EasingMode = EasingMode.EaseInOut },
+            };
+
+            GridLeftMenu.BeginAnimation(ColumnDefinition.WidthProperty, animation);
+        }
+
+        private void AnimateHeader(bool collapsing)
+        {
+            if (!collapsing)
             {
                 StackHeader.Visibility = Visibility.Visible;
-                GridLeftMenu.Width = new GridLength(240);
-                IsMenuCollapsed = false;
             }
+
+            var fade = new DoubleAnimation(collapsing ? 0d : 1d, MenuAnimationDuration)
+            {
+                EasingFunction = new CubicEase { EasingMode = EasingMode.EaseInOut },
+            };
+
+            // Collapse only once faded: hiding it up front would make the title pop out of existence
+            // while the column is still sliding.
+            fade.Completed += (_, _) => StackHeader.Visibility = collapsing ? Visibility.Collapsed : Visibility.Visible;
+
+            StackHeader.BeginAnimation(OpacityProperty, fade);
         }
 
         /// <summary>

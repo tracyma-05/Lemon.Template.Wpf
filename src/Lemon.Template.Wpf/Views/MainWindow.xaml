@@ -59,7 +59,11 @@
                             <ItemsControl.ItemTemplate>
                                 <DataTemplate>
                                     <ContentControl>
-                                        <Expander Padding="0" materialDesign:ExpanderAssist.HorizontalHeaderPadding="0 10" Style="{DynamicResource MaterialDesignExpander}" Background="Transparent">
+                                        <Expander Padding="0"
+                                                  materialDesign:ExpanderAssist.HorizontalHeaderPadding="0 10"
+                                                  Style="{DynamicResource MaterialDesignExpander}"
+                                                  Background="Transparent"
+                                                  IsExpanded="{Binding IsExpanded, Mode=TwoWay}">
                                             <Expander.Header>
                                                 <StackPanel Orientation="Horizontal">
                                                     <materialDesign:PackIcon Width="24" Height="24" HorizontalAlignment="Center" VerticalAlignment="Center" Kind="{Binding Icon}" ToolTip="{Binding DisplayTitle}" />
@@ -69,7 +73,14 @@
                                                 </StackPanel>
                                             </Expander.Header>
                                             <Expander.Content>
-                                                <ItemsControl ItemsSource="{Binding Items}">
+                                                <!--
+                                                    The transform is declared here rather than in NavigationGroupItemsStyle
+                                                    so each group owns an unfrozen instance the reveal storyboard can animate.
+                                                -->
+                                                <ItemsControl ItemsSource="{Binding Items}" Style="{StaticResource NavigationGroupItemsStyle}">
+                                                    <ItemsControl.RenderTransform>
+                                                        <TranslateTransform Y="-8" />
+                                                    </ItemsControl.RenderTransform>
                                                     <ItemsControl.ItemTemplate>
                                                         <DataTemplate>
                                                             <RadioButton Style="{StaticResource NavigationChildMenuItemStyle}"
