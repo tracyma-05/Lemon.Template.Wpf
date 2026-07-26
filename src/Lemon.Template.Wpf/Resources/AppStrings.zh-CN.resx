@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+
+  <data name="Menu_Home" xml:space="preserve">
+    <value>主页</value>
+  </data>
+  <data name="Menu_Settings" xml:space="preserve">
+    <value>设置</value>
+  </data>
+  <data name="Menu_Theme" xml:space="preserve">
+    <value>主题</value>
+  </data>
+  <data name="Menu_Language" xml:space="preserve">
+    <value>语言</value>
+  </data>
+  <data name="Menu_Tools" xml:space="preserve">
+    <value>工具</value>
+  </data>
+  <data name="Menu_Cron" xml:space="preserve">
+    <value>定时任务</value>
+  </data>
+  <data name="Menu_Logs" xml:space="preserve">
+    <value>日志</value>
+  </data>
+  <data name="Menu_Local_Logs" xml:space="preserve">
+    <value>本地日志</value>
+  </data>
+
+  <data name="Shell_ThemeToggle_ToolTip" xml:space="preserve">
+    <value>浅色 / 深色（与「设置 → 主题」页同步）</value>
+  </data>
+  <data name="Shell_MenuToggle_ToolTip" xml:space="preserve">
+    <value>收起或展开导航菜单</value>
+  </data>
+  <data name="Shell_Minimize_ToolTip" xml:space="preserve">
+    <value>最小化</value>
+  </data>
+  <data name="Shell_Maximize_ToolTip" xml:space="preserve">
+    <value>最大化 / 还原</value>
+  </data>
+  <data name="Shell_Close_ToolTip" xml:space="preserve">
+    <value>关闭</value>
+  </data>
+  <data name="Shell_ConfirmExit" xml:space="preserve">
+    <value>确定要退出应用吗？</value>
+  </data>
+
+  <data name="Home_Links" xml:space="preserve">
+    <value>相关链接：</value>
+  </data>
+  <data name="Home_Link_Repository" xml:space="preserve">
+    <value>代码仓库</value>
+  </data>
+  <data name="Home_Link_MaterialDesign" xml:space="preserve">
+    <value>Material Design 工具包</value>
+  </data>
+  <data name="Home_Welcome" xml:space="preserve">
+    <value>欢迎使用</value>
+  </data>
+  <data name="Home_Subtitle" xml:space="preserve">
+    <value>基于 Material Design 的 WPF 外壳：特性驱动的导航、依赖注入、可持久化的主题与语言，以及本地文件日志，开箱即用。</value>
+  </data>
+  <data name="Home_GetStarted" xml:space="preserve">
+    <value>开始使用</value>
+  </data>
+  <data name="Home_Version" xml:space="preserve">
+    <value>版本</value>
+  </data>
+  <data name="Home_QuickStart" xml:space="preserve">
+    <value>快速开始</value>
+  </data>
+  <data name="Home_QuickStart_Description" xml:space="preserve">
+    <value>直接前往模板内置的各个页面。</value>
+  </data>
+  <data name="Home_Shortcut_Theme" xml:space="preserve">
+    <value>浅色/深色基底与主/辅色，设置写入 SQLite。</value>
+  </data>
+  <data name="Home_Shortcut_Language" xml:space="preserve">
+    <value>无需重启即可切换界面语言。</value>
+  </data>
+  <data name="Home_Shortcut_LocalLogs" xml:space="preserve">
+    <value>查看当天 Serilog 滚动日志的末尾内容。</value>
+  </data>
+  <data name="Home_Shortcut_Cron" xml:space="preserve">
+    <value>在内嵌的 Hangfire 仪表盘中管理定时任务。</value>
+  </data>
+  <data name="Home_About" xml:space="preserve">
+    <value>关于本外壳</value>
+  </data>
+  <data name="Home_About_Description" xml:space="preserve">
+    <value>页面通过 [NavigationRegister] 特性自动发现，侧边菜单在运行时构建，新增页面无需改动外壳代码。</value>
+  </data>
+  <data name="Home_Stack" xml:space="preserve">
+    <value>技术栈</value>
+  </data>
+  <data name="Home_About_Hint" xml:space="preserve">
+    <value>新增页面：在 Views/ 下放一个 UserControl，在 ViewModels/ 下放同名 ViewModel，声明路由常量并给视图加上特性即可。详见 README 的「Adding a page」。</value>
+  </data>
+
+  <data name="LocalLog_Date" xml:space="preserve">
+    <value>日期</value>
+  </data>
+  <data name="LocalLog_DateHint" xml:space="preserve">
+    <value>日志日期</value>
+  </data>
+  <data name="LocalLog_Load" xml:space="preserve">
+    <value>加载</value>
+  </data>
+  <data name="LocalLog_ContentHint" xml:space="preserve">
+    <value>本地 Serilog 文件（Logs/log-yyyyMMdd.txt）</value>
+  </data>
+  <data name="LocalLog_NoFileForDate" xml:space="preserve">
+    <value>{1} 下没有 {0} 的日志文件。</value>
+    <comment>{0} = 日期（yyyy-MM-dd），{1} = 日志目录</comment>
+  </data>
+  <data name="LocalLog_Truncated" xml:space="preserve">
+    <value>{0} —— 共 {2} KB，仅显示末尾 {1} KB。</value>
+    <comment>{0} = 文件路径，{1} = 显示的 KB，{2} = 总 KB</comment>
+  </data>
+  <data name="LocalLog_Loaded" xml:space="preserve">
+    <value>{0} —— {1} KB。</value>
+    <comment>{0} = 文件路径，{1} = 大小（KB）</comment>
+  </data>
+  <data name="LocalLog_ReadFailed" xml:space="preserve">
+    <value>无法读取 {0}：{1}</value>
+    <comment>{0} = 文件路径，{1} = 错误信息</comment>
+  </data>
+
+  <data name="Theme_Title" xml:space="preserve">
+    <value>主题与颜色</value>
+  </data>
+  <data name="Theme_Description" xml:space="preserve">
+    <value>浅色/深色切换会立即生效并写入数据库；调整 RGB 后需点「应用并保存」才会写入 SQLite（app_theme 表）。</value>
+  </data>
+  <data name="Theme_Base_Title" xml:space="preserve">
+    <value>基底（浅色 / 深色）</value>
+  </data>
+  <data name="Theme_Base_SyncNote" xml:space="preserve">
+    <value>与标题栏开关同步</value>
+  </data>
+  <data name="Theme_Base_ToolTip" xml:space="preserve">
+    <value>开启为深色主题；与主窗口标题栏图标开关一致</value>
+  </data>
+  <data name="Theme_Primary" xml:space="preserve">
+    <value>主色</value>
+  </data>
+  <data name="Theme_Secondary" xml:space="preserve">
+    <value>辅色</value>
+  </data>
+  <data name="Theme_SwatchHint" xml:space="preserve">
+    <value>预设色板</value>
+  </data>
+  <data name="Theme_Apply" xml:space="preserve">
+    <value>应用并保存</value>
+  </data>
+  <data name="Theme_ReloadFromUi" xml:space="preserve">
+    <value>从当前界面重载</value>
+  </data>
+  <data name="Theme_ResetSwatches" xml:space="preserve">
+    <value>恢复默认主/辅色</value>
+  </data>
+  <data name="Theme_ResetSwatches_ToolTip" xml:space="preserve">
+    <value>DeepPurple + Lime（与 App.xaml BundledTheme 一致），保留当前浅色/深色</value>
+  </data>
+
+  <data name="Cron_Title" xml:space="preserve">
+    <value>定时任务（Hangfire）</value>
+  </data>
+  <data name="Cron_Description" xml:space="preserve">
+    <value>本地 Hangfire 仪表盘：查看与操作定时任务、队列与失败重试。仅允许本机回环访问。</value>
+  </data>
+
+  <data name="Language_Title" xml:space="preserve">
+    <value>语言</value>
+  </data>
+  <data name="Language_Description" xml:space="preserve">
+    <value>界面会立即切换，所选语言写入 SQLite（app_language 表）。</value>
+  </data>
+  <data name="Language_SelectorHint" xml:space="preserve">
+    <value>界面语言</value>
+  </data>
+  <data name="Language_SystemDefault" xml:space="preserve">
+    <value>跟随系统</value>
+  </data>
+</root>

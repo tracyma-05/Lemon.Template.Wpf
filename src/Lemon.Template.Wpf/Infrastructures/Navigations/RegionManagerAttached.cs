@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
+using System.ComponentModel;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -25,11 +26,19 @@ namespace Lemon.Template.Wpf.Infrastructures.Navigations
 
         private static void OnRegionNameChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
         {
-            if (d is Control region && e.NewValue is string regionName)
+            if (d is not Control region || e.NewValue is not string regionName)
             {
-                var regionManager = App.ServiceProvider.GetRequiredService<INavigationService>();
-                regionManager.RegisterRegion(regionName, region);
+                return;
             }
+
+            // XAML 设计器会在没有 ABP 宿主的情况下实例化视图，此时没有可注册的导航服务。
+            if (DesignerProperties.GetIsInDesignMode(d))
+            {
+                return;
+            }
+
+            var regionManager = App.ServiceProvider.GetRequiredService<INavigationService>();
+            regionManager.RegisterRegion(regionName, region);
         }
     }
 }

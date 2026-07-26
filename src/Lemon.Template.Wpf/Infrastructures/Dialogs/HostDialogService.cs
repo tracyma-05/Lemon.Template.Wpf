@@ -18,32 +18,25 @@ namespace Lemon.Template.Wpf.Infrastructures.Dialogs
             _containerExtension = containerExtension;
         }
 
-        public IDialogResult ShowWindow(string name)
+        /// <summary>
+        /// Shows a keyed dialog in a real modal window and returns its result.
+        /// </summary>
+        /// <remarks>
+        /// Delegates to the inherited window-hosting pipeline (<see cref="DialogService.ShowDialog(string, IDialogParameters?, Action{IDialogResult}?)"/>),
+        /// which resolves the keyed content, hosts it in an <see cref="IDialogWindow"/> and wires the
+        /// close/result plumbing. Because that call is modal, the callback has already run by the time it
+        /// returns, so the result is available synchronously.
+        /// </remarks>
+        public IDialogResult ShowWindow(string name, IDialogParameters? parameters = null)
         {
             IDialogResult dialogResult = new DialogResult(ButtonResult.None);
 
-            var content = _containerExtension.GetKeyedServices<UserControl>(name);
+            ShowDialog(name, parameters, result => dialogResult = result);
 
-            if (!(content is Window dialogContent))
-                throw new NullReferenceException("A dialog's content must be a Window");
-
-            if (dialogContent is Window view && view.DataContext is null)
-                ViewModelLocator.AutoWireViewModel(view, _containerExtension);
-
-            if (!(dialogContent.DataContext is IDialogAware viewModel))
-                throw new NullReferenceException("A dialog's ViewModel must implement the IDialogAware interface");
-
-            if (dialogContent is IDialogWindow dialogWindow)
-            {
-                ConfigureDialogWindowEvents(dialogWindow, result => { dialogResult = result; });
-            }
-
-            ViewModelLocator.ViewAndViewModelAction<IDialogAware>(viewModel, d => d.OnDialogOpened(null));
-            dialogContent.ShowDialog();
             return dialogResult;
         }
 
-        public async Task<IDialogResult> ShowDialogAsync(string name, IDialogParameters parameters = null, string IdentifierName = "Root")
+        public async Task<IDialogResult> ShowDialogAsync(string name, IDialogParameters? parameters = null, string IdentifierName = "Root")
         {
             var dialogContent = GetDialogContent(name, IdentifierName);
 
@@ -80,10 +73,10 @@ namespace Lemon.Template.Wpf.Infrastructures.Dialogs
             return dialogContent;
         }
 
-        private DialogOpenedEventHandler GetDialogOpenedEventHandler(IHostDialogAware viewModel,
-            IDialogParameters parameters)
+        private static DialogOpenedEventHandler GetDialogOpenedEventHandler(IHostDialogAware viewModel,
+            IDialogParameters? parameters)
         {
-            if (parameters == null) parameters = new DialogParameters();
+            parameters ??= new DialogParameters();
 
             DialogOpenedEventHandler eventHandler =
                (sender, eventArgs) =>

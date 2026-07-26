@@ -5,14 +5,10 @@ using Volo.Abp.DependencyInjection;
 
 namespace Lemon.Template.Wpf.ViewModels.Dialogs
 {
-    [ObservableObject]
     public partial class MessageBoxViewModel : HostDialogViewModel, ITransientDependency
     {
         [ObservableProperty]
-        private string _message;
-
-        [ObservableProperty]
-        private string _title;
+        private string _message = string.Empty;
 
         public MessageBoxViewModel(IHostDialogService dialogService)
             : base(dialogService)

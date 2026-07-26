@@ -1,39 +1,63 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
-    <Import Project="..\..\common.props" />
+    <!-- Shared properties come from Directory.Build.props; package versions from Directory.Packages.props. -->
 
     <PropertyGroup>
         <OutputType>WinExe</OutputType>
-        <TargetFramework>net11.0-windows</TargetFramework>
-        <Nullable>enable</Nullable>
-        <ImplicitUsings>enable</ImplicitUsings>
+        <TargetFramework>net10.0-windows</TargetFramework>
         <UseWPF>true</UseWPF>
         <ApplicationIcon>Assets\Images\logo.ico</ApplicationIcon>
     </PropertyGroup>
 
+    <!--
+        Feature switches. Each constant matches a `dotnet new` template symbol, so the enabled set here
+        always mirrors the features this project actually contains.
+    -->
+    <PropertyGroup>
+        <!--#if (EnableHangfire) -->
+        <DefineConstants>$(DefineConstants);EnableHangfire</DefineConstants>
+        <!--#endif -->
+        <!--#if (EnableTrayIcon) -->
+        <DefineConstants>$(DefineConstants);EnableTrayIcon</DefineConstants>
+        <!--#endif -->
+        <!--#if (EnableDesktopShortcut) -->
+        <DefineConstants>$(DefineConstants);EnableDesktopShortcut</DefineConstants>
+        <!--#endif -->
+    </PropertyGroup>
+
+    <!--#if (EnableHangfire) -->
     <ItemGroup>
         <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    </ItemGroup>
+    <!--#endif -->
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="Lemon.Template.Wpf.Tests" />
     </ItemGroup>
 
 	
     <ItemGroup>
-        <PackageReference Include="CommunityToolkit.Mvvm" Version="8.4.2" />
-        <PackageReference Include="H.NotifyIcon.Wpf" Version="2.4.1" />
-        <PackageReference Include="Hangfire.AspNetCore" Version="1.8.22" />
-        <PackageReference Include="Hangfire.Storage.SQLite" Version="0.4.2" />
-        <PackageReference Include="MaterialDesignColors" Version="5.3.1" />
-        <PackageReference Include="MaterialDesignThemes" Version="5.3.1" />
-        <PackageReference Include="Microsoft.Data.Sqlite" Version="11.0.0-preview.3.26207.106" />
-        <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.3965-prerelease" />
-        <PackageReference Include="Volo.Abp.Autofac" Version="10.3.0" />
-        <PackageReference Include="Volo.Abp.BackgroundJobs.HangFire" Version="10.3.0" />
+        <PackageReference Include="CommunityToolkit.Mvvm" />
+        <PackageReference Include="MaterialDesignColors" />
+        <PackageReference Include="MaterialDesignThemes" />
+        <PackageReference Include="Microsoft.Data.Sqlite" />
+        <PackageReference Include="Volo.Abp.Autofac" />
+        <!--#if (EnableTrayIcon) -->
+        <PackageReference Include="H.NotifyIcon.Wpf" />
+        <!--#endif -->
+        <!--#if (EnableHangfire) -->
+        <PackageReference Include="Hangfire.AspNetCore" />
+        <PackageReference Include="Hangfire.Storage.SQLite" />
+        <PackageReference Include="Microsoft.Web.WebView2" />
+        <PackageReference Include="Volo.Abp.BackgroundJobs.HangFire" />
+        <!--#endif -->
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Serilog.Extensions.Hosting" Version="10.0.0" />
-        <PackageReference Include="Serilog.Extensions.Logging" Version="10.0.0" />
-        <PackageReference Include="Serilog.Sinks.Async" Version="2.1.0" />
-        <PackageReference Include="Serilog.Sinks.File" Version="8.0.0-nblumhardt-02322" />
+        <PackageReference Include="Serilog.Extensions.Hosting" />
+        <PackageReference Include="Serilog.Extensions.Logging" />
+        <PackageReference Include="Serilog.Sinks.Async" />
+        <PackageReference Include="Serilog.Sinks.File" />
     </ItemGroup>
 
     <ItemGroup>

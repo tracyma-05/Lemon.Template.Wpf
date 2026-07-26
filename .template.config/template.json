@@ -1,26 +1,108 @@
 {
+    "$schema": "http://json.schemastore.org/template",
     "author": "Tracy Ma",
     "classifications": [ "WPF", "Desktop", "Material Design" ],
     "name": "Material Design WPF starter",
+    "description": "A WPF desktop starter with Material Design, ABP/Autofac dependency injection, navigation, Serilog file logging, SQLite-backed settings, localization, and an optional in-process Hangfire dashboard.",
     "identity": "Lemon.Template.Wpf",
     "shortName": "lemon-wpf",
+    "defaultName": "WpfApp",
     "tags": {
         "language": "C#",
         "type": "project"
     },
     "sourceName": "Lemon.Template.Wpf",
     "preferNameDirectory": true,
+    "symbols": {
+        "EnableHangfire": {
+            "type": "parameter",
+            "datatype": "bool",
+            "defaultValue": "true",
+            "displayName": "Hangfire background jobs",
+            "description": "Include the Hangfire job server and the embedded dashboard page. Turning this off also drops the ASP.NET Core and WebView2 dependencies."
+        },
+        "EnableTrayIcon": {
+            "type": "parameter",
+            "datatype": "bool",
+            "defaultValue": "true",
+            "displayName": "System tray icon",
+            "description": "Show a tray icon with an Exit command, and restore the window on left click."
+        },
+        "EnableDesktopShortcut": {
+            "type": "parameter",
+            "datatype": "bool",
+            "defaultValue": "false",
+            "displayName": "Desktop shortcut",
+            "description": "Recreate a desktop shortcut to the application on every launch."
+        },
+        "IncludeTests": {
+            "type": "parameter",
+            "datatype": "bool",
+            "defaultValue": "true",
+            "displayName": "Unit test project",
+            "description": "Include the xUnit test project covering navigation registration, localization, theming and path resolution."
+        },
+        "skipRestore": {
+            "type": "parameter",
+            "datatype": "bool",
+            "defaultValue": "false",
+            "displayName": "Skip restore",
+            "description": "Do not run an implicit dotnet restore after the project is created."
+        }
+    },
     "sources": [
         {
             "exclude": [
                 "**/[Bb]in/**",
                 "**/[Oo]bj/**",
+                "**/.vs/**",
+                "**/.git/**",
+                "artifacts/**",
+                "**/[Ll]ogs/**",
                 ".template.config/**/*",
                 "**/*.filelist",
                 "**/*.user",
                 "**/*.lock.json",
-                ".templateignore"
+                "**/*.nupkg",
+                "**/*.db",
+                "**/*.db-shm",
+                "**/*.db-wal",
+                "**/secret.json",
+                ".templateignore",
+                "[Nn]u[Gg]et.[Cc]onfig",
+                "global.json"
+            ],
+            "modifiers": [
+                {
+                    "condition": "(!EnableHangfire)",
+                    "exclude": [
+                        "src/Lemon.Template.Wpf/Services/Hangfire/**",
+                        "src/Lemon.Template.Wpf/Views/Tools/**",
+                        "src/Lemon.Template.Wpf/ViewModels/Tools/**"
+                    ]
+                },
+                {
+                    "condition": "(!IncludeTests)",
+                    "exclude": [
+                        "tests/**"
+                    ]
+                }
             ]
+        }
+    ],
+    "primaryOutputs": [
+        { "path": "src/Lemon.Template.Wpf/Lemon.Template.Wpf.csproj" }
+    ],
+    "postActions": [
+        {
+            "id": "restore",
+            "condition": "(!skipRestore)",
+            "description": "Restore NuGet packages required by this project.",
+            "manualInstructions": [
+                { "text": "Run 'dotnet restore'" }
+            ],
+            "actionId": "210D431B-A78B-4D2F-B762-4ED3E3EA9025",
+            "continueOnError": true
         }
     ]
 }

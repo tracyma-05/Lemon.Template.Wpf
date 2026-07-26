@@ -1,0 +1,250 @@
+<?xml version="1.0" encoding="utf-8"?>
+<root>
+  <xsd:schema id="root" xmlns="" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata">
+    <xsd:import namespace="http://www.w3.org/XML/1998/namespace" />
+    <xsd:element name="root" msdata:IsDataSet="true">
+      <xsd:complexType>
+        <xsd:choice maxOccurs="unbounded">
+          <xsd:element name="metadata">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" />
+              </xsd:sequence>
+              <xsd:attribute name="name" use="required" type="xsd:string" />
+              <xsd:attribute name="type" type="xsd:string" />
+              <xsd:attribute name="mimetype" type="xsd:string" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="assembly">
+            <xsd:complexType>
+              <xsd:attribute name="alias" type="xsd:string" />
+              <xsd:attribute name="name" type="xsd:string" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="data">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+                <xsd:element name="comment" type="xsd:string" minOccurs="0" msdata:Ordinal="2" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" msdata:Ordinal="1" />
+              <xsd:attribute name="type" type="xsd:string" msdata:Ordinal="3" />
+              <xsd:attribute name="mimetype" type="xsd:string" msdata:Ordinal="4" />
+              <xsd:attribute ref="xml:space" />
+            </xsd:complexType>
+          </xsd:element>
+          <xsd:element name="resheader">
+            <xsd:complexType>
+              <xsd:sequence>
+                <xsd:element name="value" type="xsd:string" minOccurs="0" msdata:Ordinal="1" />
+              </xsd:sequence>
+              <xsd:attribute name="name" type="xsd:string" use="required" />
+            </xsd:complexType>
+          </xsd:element>
+        </xsd:choice>
+      </xsd:complexType>
+    </xsd:element>
+  </xsd:schema>
+  <resheader name="resmimetype">
+    <value>text/microsoft-resx</value>
+  </resheader>
+  <resheader name="version">
+    <value>2.0</value>
+  </resheader>
+  <resheader name="reader">
+    <value>System.Resources.ResXResourceReader, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+  <resheader name="writer">
+    <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </resheader>
+
+  <!-- Menu entries. Key convention: Menu_ + the route name with non-alphanumerics replaced by '_'. -->
+  <data name="Menu_Home" xml:space="preserve">
+    <value>Home</value>
+  </data>
+  <data name="Menu_Settings" xml:space="preserve">
+    <value>Settings</value>
+  </data>
+  <data name="Menu_Theme" xml:space="preserve">
+    <value>Theme</value>
+  </data>
+  <data name="Menu_Language" xml:space="preserve">
+    <value>Language</value>
+  </data>
+  <data name="Menu_Tools" xml:space="preserve">
+    <value>Tools</value>
+  </data>
+  <data name="Menu_Cron" xml:space="preserve">
+    <value>Cron</value>
+  </data>
+  <data name="Menu_Logs" xml:space="preserve">
+    <value>Logs</value>
+  </data>
+  <data name="Menu_Local_Logs" xml:space="preserve">
+    <value>Local logs</value>
+  </data>
+
+  <!-- Shell chrome -->
+  <data name="Shell_ThemeToggle_ToolTip" xml:space="preserve">
+    <value>Light / dark (kept in sync with Settings → Theme)</value>
+  </data>
+  <data name="Shell_MenuToggle_ToolTip" xml:space="preserve">
+    <value>Collapse or expand the navigation menu</value>
+  </data>
+  <data name="Shell_Minimize_ToolTip" xml:space="preserve">
+    <value>Minimize</value>
+  </data>
+  <data name="Shell_Maximize_ToolTip" xml:space="preserve">
+    <value>Maximize or restore</value>
+  </data>
+  <data name="Shell_Close_ToolTip" xml:space="preserve">
+    <value>Close</value>
+  </data>
+  <data name="Shell_ConfirmExit" xml:space="preserve">
+    <value>Do you want to exit the application?</value>
+  </data>
+
+  <!-- Home -->
+  <data name="Home_Links" xml:space="preserve">
+    <value>Information links:</value>
+  </data>
+  <data name="Home_Link_Repository" xml:space="preserve">
+    <value>Repository</value>
+  </data>
+  <data name="Home_Link_MaterialDesign" xml:space="preserve">
+    <value>Material Design toolkit</value>
+  </data>
+  <data name="Home_Welcome" xml:space="preserve">
+    <value>Welcome to</value>
+  </data>
+  <data name="Home_Subtitle" xml:space="preserve">
+    <value>A Material Design WPF shell with attribute-driven navigation, dependency injection, persisted theme and language, and local file logging — ready to build on.</value>
+  </data>
+  <data name="Home_GetStarted" xml:space="preserve">
+    <value>Get started</value>
+  </data>
+  <data name="Home_Version" xml:space="preserve">
+    <value>Version</value>
+  </data>
+  <data name="Home_QuickStart" xml:space="preserve">
+    <value>Quick start</value>
+  </data>
+  <data name="Home_QuickStart_Description" xml:space="preserve">
+    <value>Jump straight to the pages this shell ships with.</value>
+  </data>
+  <data name="Home_Shortcut_Theme" xml:space="preserve">
+    <value>Light/dark base and primary/secondary colours, persisted to SQLite.</value>
+  </data>
+  <data name="Home_Shortcut_Language" xml:space="preserve">
+    <value>Switch the interface language without restarting.</value>
+  </data>
+  <data name="Home_Shortcut_LocalLogs" xml:space="preserve">
+    <value>Read the tail of today's Serilog rolling file.</value>
+  </data>
+  <data name="Home_Shortcut_Cron" xml:space="preserve">
+    <value>Operate scheduled jobs in the embedded Hangfire dashboard.</value>
+  </data>
+  <data name="Home_About" xml:space="preserve">
+    <value>About this shell</value>
+  </data>
+  <data name="Home_About_Description" xml:space="preserve">
+    <value>Pages are discovered from [NavigationRegister] attributes and the side menu is built at runtime, so adding a page needs no change to the shell.</value>
+  </data>
+  <data name="Home_Stack" xml:space="preserve">
+    <value>Built with</value>
+  </data>
+  <data name="Home_About_Hint" xml:space="preserve">
+    <value>To add your own page: drop a UserControl under Views/, a matching ViewModel under ViewModels/, declare a route constant, and annotate the view. See "Adding a page" in the README.</value>
+  </data>
+
+  <!-- Logs -> Local logs -->
+  <data name="LocalLog_Date" xml:space="preserve">
+    <value>Date</value>
+  </data>
+  <data name="LocalLog_DateHint" xml:space="preserve">
+    <value>Log date</value>
+  </data>
+  <data name="LocalLog_Load" xml:space="preserve">
+    <value>Load</value>
+  </data>
+  <data name="LocalLog_ContentHint" xml:space="preserve">
+    <value>Local Serilog file (Logs/log-yyyyMMdd.txt)</value>
+  </data>
+  <data name="LocalLog_NoFileForDate" xml:space="preserve">
+    <value>No log file for {0} in {1}.</value>
+    <comment>{0} = date (yyyy-MM-dd), {1} = logs directory</comment>
+  </data>
+  <data name="LocalLog_Truncated" xml:space="preserve">
+    <value>{0} — showing the last {1} KB of {2} KB.</value>
+    <comment>{0} = file path, {1} = shown KB, {2} = total KB</comment>
+  </data>
+  <data name="LocalLog_Loaded" xml:space="preserve">
+    <value>{0} — {1} KB.</value>
+    <comment>{0} = file path, {1} = size in KB</comment>
+  </data>
+  <data name="LocalLog_ReadFailed" xml:space="preserve">
+    <value>Could not read {0}: {1}</value>
+    <comment>{0} = file path, {1} = error message</comment>
+  </data>
+
+  <!-- Settings -> Theme -->
+  <data name="Theme_Title" xml:space="preserve">
+    <value>Theme and colours</value>
+  </data>
+  <data name="Theme_Description" xml:space="preserve">
+    <value>Switching light/dark applies immediately and is written to the database. RGB changes are only persisted to SQLite (app_theme table) after you choose Apply and save.</value>
+  </data>
+  <data name="Theme_Base_Title" xml:space="preserve">
+    <value>Base (light / dark)</value>
+  </data>
+  <data name="Theme_Base_SyncNote" xml:space="preserve">
+    <value>Synchronised with the title bar toggle</value>
+  </data>
+  <data name="Theme_Base_ToolTip" xml:space="preserve">
+    <value>On means dark theme; matches the title bar icon toggle</value>
+  </data>
+  <data name="Theme_Primary" xml:space="preserve">
+    <value>Primary</value>
+  </data>
+  <data name="Theme_Secondary" xml:space="preserve">
+    <value>Secondary</value>
+  </data>
+  <data name="Theme_SwatchHint" xml:space="preserve">
+    <value>Preset swatch</value>
+  </data>
+  <data name="Theme_Apply" xml:space="preserve">
+    <value>Apply and save</value>
+  </data>
+  <data name="Theme_ReloadFromUi" xml:space="preserve">
+    <value>Reload from current UI</value>
+  </data>
+  <data name="Theme_ResetSwatches" xml:space="preserve">
+    <value>Reset primary/secondary</value>
+  </data>
+  <data name="Theme_ResetSwatches_ToolTip" xml:space="preserve">
+    <value>DeepPurple + Lime (matching App.xaml BundledTheme); keeps the current light/dark setting</value>
+  </data>
+
+  <!-- Tools -> Cron -->
+  <data name="Cron_Title" xml:space="preserve">
+    <value>Cron (Hangfire)</value>
+  </data>
+  <data name="Cron_Description" xml:space="preserve">
+    <value>Local Hangfire dashboard: inspect and operate scheduled jobs, queues and failed retries. Reachable from this machine only (loopback).</value>
+  </data>
+
+  <!-- Settings -> Language -->
+  <data name="Language_Title" xml:space="preserve">
+    <value>Language</value>
+  </data>
+  <data name="Language_Description" xml:space="preserve">
+    <value>The interface updates immediately and your choice is stored in SQLite (app_language table).</value>
+  </data>
+  <data name="Language_SelectorHint" xml:space="preserve">
+    <value>Interface language</value>
+  </data>
+  <data name="Language_SystemDefault" xml:space="preserve">
+    <value>System default</value>
+  </data>
+</root>

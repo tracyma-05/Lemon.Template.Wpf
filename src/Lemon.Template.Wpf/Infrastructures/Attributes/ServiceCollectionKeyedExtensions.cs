@@ -2,6 +2,7 @@
 using Lemon.Template.Wpf.Infrastructures.Navigations;
 using Lemon.Template.Wpf.Models;
 using Microsoft.Extensions.DependencyInjection;
+using Serilog;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -61,10 +62,8 @@ namespace Lemon.Template.Wpf.Infrastructures.Attributes
             {
                 foreach (var attr in item.Attributes)
                 {
-                    if (string.IsNullOrEmpty(attr.RegisterGroup)) throw new ArgumentNullException(nameof(attr.RegisterGroup), "RegisterGroup cannot be null or empty.");
-                    var registerItem = attr.RegisterGroup.Split('/');
-                    if (registerItem.Length != 2) throw new ArgumentException("RegisterGroup format is incorrect. It should be in the format 'Group/Name'.", nameof(attr.RegisterGroup));
-                    var key = $"{registerItem[1]}.{attr.Region}";
+                    var (_, pageName, _) = ParseRegisterGroup(attr.RegisterGroup);
+                    var key = $"{pageName}.{attr.Region}";
 
                     switch (attr.Lifetime)
                     {
@@ -108,18 +107,10 @@ namespace Lemon.Template.Wpf.Infrastructures.Attributes
 
             foreach (var (implementation, attr, _) in sortedRegistrations)
             {
-                if (string.IsNullOrWhiteSpace(attr.RegisterGroup))
-                    throw new ArgumentNullException(nameof(attr.RegisterGroup), "RegisterGroup cannot be null or empty.");
+                var (groupKey, pageName, isTopLevelPage) = ParseRegisterGroup(attr.RegisterGroup);
 
-                var registerItem = attr.RegisterGroup.Split('/');
-                if (registerItem.Length != 2)
-                    throw new ArgumentException(
-                        $"RegisterGroup format is incorrect ('{attr.RegisterGroup}'). Expected format: 'Group/Name'.",
-                        nameof(attr.RegisterGroup));
+                navigationService.RegisterRoute(pageName, attr.ServiceType, attr.Region);
 
-                navigationService.RegisterRoute(registerItem[1], attr.ServiceType, attr.Region);
-
-                var groupKey = registerItem[0];
                 var routeKey = attr.RegisterGroup;
                 var icons = attr.Icons?.Split('/') ?? Array.Empty<string>();
 
@@ -142,10 +133,27 @@ namespace Lemon.Template.Wpf.Infrastructures.Attributes
                     group.DisplayOrder = Math.Min(group.DisplayOrder, attr.DisplayOrder);
                 }
 
+                if (isTopLevelPage)
+                {
+                    // The group *is* the page: leaving Items empty is what makes the shell render it with
+                    // NavigationChildlessItemTemplate instead of an expander.
+                    if (group.Items.Count > 0)
+                    {
+                        Log.Warning(
+                            "'{RegisterGroup}' registers a top-level page, but '{Group}' already has child pages; " +
+                            "it will render as an expander and the page itself will be unreachable from the menu.",
+                            attr.RegisterGroup,
+                            groupKey);
+                    }
+
+                    registerdRoutes[routeKey] = group;
+                    continue;
+                }
+
                 // 确保子菜单存在（会替换更新）
                 var subMenu = EnsureSubMenu(
                     group,
-                    registerItem[1],
+                    pageName,
                     icons.LastOrDefault() ?? string.Empty,
                     attr.DisplayOrder);
 
@@ -154,6 +162,27 @@ namespace Lemon.Template.Wpf.Infrastructures.Attributes
             }
 
             ReorderNavigationRoots();
+        }
+
+        /// <summary>
+        /// 解析注册键：<c>Group/Name</c> 表示分组下的子页面；单段 <c>Name</c> 表示没有子项的顶级页面
+        /// （此时分组本身就是页面，如 <see cref="Constants.Home"/>）。
+        /// </summary>
+        private static (string Group, string PageName, bool IsTopLevelPage) ParseRegisterGroup(string? registerGroup)
+        {
+            if (string.IsNullOrWhiteSpace(registerGroup))
+                throw new ArgumentException("RegisterGroup cannot be null or empty.", nameof(registerGroup));
+
+            var parts = registerGroup.Split('/');
+            return parts.Length switch
+            {
+                1 => (parts[0], parts[0], true),
+                2 => (parts[0], parts[1], false),
+                _ => throw new ArgumentException(
+                    $"RegisterGroup format is incorrect ('{registerGroup}'). Expected 'Group/Name', " +
+                    "or a single 'Name' for a top-level page with no children.",
+                    nameof(registerGroup)),
+            };
         }
 
         /// <summary>顶级菜单按组内最小 <see cref="NavigationItem.DisplayOrder"/> 排序。</summary>

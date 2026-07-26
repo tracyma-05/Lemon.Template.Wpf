@@ -1,0 +1,92 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+                    xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes">
+
+    <!--
+        Side-navigation menu resources.
+
+        The shell renders three kinds of menu entry (group header, child of an expander, and a top-level
+        entry with no children). They used to be three hand-copied ControlTemplates in MainWindow.xaml;
+        everything they share now lives here, and the variants differ only by Style setters.
+
+        Expected DataContext: Lemon.Template.Wpf.Models.NavigationItem.
+        Expected ancestor: a Window exposing IsMenuCollapsed and DataContext.NavigateCommand.
+    -->
+
+    <!-- Label that hides itself when the menu is collapsed to icons. -->
+    <Style x:Key="NavigationCollapsibleTextStyle" TargetType="TextBlock">
+        <Setter Property="Margin" Value="12,0" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="Visibility" Value="Visible" />
+        <Style.Triggers>
+            <DataTrigger Binding="{Binding IsMenuCollapsed, RelativeSource={RelativeSource AncestorType=Window}}" Value="True">
+                <Setter Property="Visibility" Value="Collapsed" />
+            </DataTrigger>
+        </Style.Triggers>
+    </Style>
+
+    <ControlTemplate x:Key="NavigationMenuItemTemplate" TargetType="RadioButton">
+        <Grid Background="Transparent">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition />
+            </Grid.ColumnDefinitions>
+
+            <Border x:Name="SelectionBackground" Grid.ColumnSpan="2" CornerRadius="2" />
+
+            <materialDesign:PackIcon Width="20"
+                                     Height="20"
+                                     Margin="10,0"
+                                     HorizontalAlignment="Center"
+                                     VerticalAlignment="Center"
+                                     Kind="{Binding Icon}"
+                                     ToolTip="{Binding DisplayTitle}" />
+
+            <TextBlock Grid.Column="1"
+                       Style="{StaticResource NavigationCollapsibleTextStyle}"
+                       Text="{Binding DisplayTitle}"
+                       TextTrimming="CharacterEllipsis"
+                       FontSize="{TemplateBinding FontSize}" />
+        </Grid>
+        <ControlTemplate.Triggers>
+            <Trigger Property="IsChecked" Value="True">
+                <Setter TargetName="SelectionBackground" Property="Background" Value="{DynamicResource MaterialDesignCardBackground}" />
+            </Trigger>
+        </ControlTemplate.Triggers>
+    </ControlTemplate>
+
+    <!--
+        Appearance only. IsChecked / Command / CommandParameter / GroupName are deliberately left to be
+        set as local values on each RadioButton: moving them into style setters changes the order in which
+        RadioButton applies group membership versus its checked state, and the shell then starts up on the
+        wrong page instead of the configured default.
+    -->
+    <Style x:Key="NavigationMenuItemStyle" TargetType="RadioButton">
+        <Setter Property="Template" Value="{StaticResource NavigationMenuItemTemplate}" />
+        <Setter Property="Height" Value="35" />
+    </Style>
+
+    <!-- Child entry inside an expanded group: slightly dimmed, inherits the shell font size. -->
+    <Style x:Key="NavigationChildMenuItemStyle"
+           TargetType="RadioButton"
+           BasedOn="{StaticResource NavigationMenuItemStyle}">
+        <Setter Property="Opacity" Value="0.7" />
+    </Style>
+
+    <!-- Top-level entry with no children: reads as a group header, so it matches the header font size. -->
+    <Style x:Key="NavigationRootMenuItemStyle"
+           TargetType="RadioButton"
+           BasedOn="{StaticResource NavigationMenuItemStyle}">
+        <Setter Property="FontSize" Value="16" />
+    </Style>
+
+    <!-- Used for a NavigationItem with no children, in place of the Expander. -->
+    <ControlTemplate x:Key="NavigationChildlessItemTemplate" TargetType="ContentControl">
+        <RadioButton Style="{StaticResource NavigationRootMenuItemStyle}"
+                     GroupName="Menu"
+                     IsChecked="{Binding IsSelected, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
+                     Command="{Binding DataContext.NavigateCommand, RelativeSource={RelativeSource AncestorType=Window}}"
+                     CommandParameter="{Binding}" />
+    </ControlTemplate>
+
+</ResourceDictionary>

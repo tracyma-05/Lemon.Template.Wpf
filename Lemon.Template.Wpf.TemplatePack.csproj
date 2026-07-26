@@ -1,8 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <Import Project="common.props" />
+  <!-- Version / Authors / Description arrive via Directory.Build.props -> common.props. -->
   <!-- NuGet template pack: installs as `dotnet new install <PackageId>` -->
   <PropertyGroup>
-    <TargetFramework>net11.0</TargetFramework>
+    <TargetFramework>net10.0</TargetFramework>
     <IncludeBuildOutput>false</IncludeBuildOutput>
     <IncludeContentInPack>true</IncludeContentInPack>
     <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
@@ -34,11 +34,19 @@
   <ItemGroup>
     <Content Include=".template.config\**\*" PackagePath="content\Lemon.Template.Wpf\.template.config\%(RecursiveDir)%(Filename)%(Extension)" />
     <Content Include=".templateignore" PackagePath="content\Lemon.Template.Wpf\" />
+    <Content Include=".editorconfig" PackagePath="content\Lemon.Template.Wpf\" />
     <Content Include="common.props" PackagePath="content\Lemon.Template.Wpf\" />
+    <!-- The scaffolded app relies on both: PackageReference entries carry no Version of their own. -->
+    <Content Include="Directory.Build.props" PackagePath="content\Lemon.Template.Wpf\" />
+    <Content Include="Directory.Packages.props" PackagePath="content\Lemon.Template.Wpf\" />
     <!-- Consumer-facing sln only (avoids tools/template-pack/.template.config nodes from the dev solution). -->
     <Content Include="packaging\Lemon.Template.Wpf.sln" PackagePath="content\Lemon.Template.Wpf\Lemon.Template.Wpf.sln" />
     <Content Include="LICENSE.txt" PackagePath="content\Lemon.Template.Wpf\" />
     <Content Include="README.md" PackagePath="content\Lemon.Template.Wpf\" />
+    <Content Include="CONTRIBUTING.md" PackagePath="content\Lemon.Template.Wpf\" />
+    <Content Include="CHANGELOG.md" PackagePath="content\Lemon.Template.Wpf\" />
     <Content Include="src\**\*" Exclude="src\**\bin\**;src\**\obj\**" PackagePath="content\Lemon.Template.Wpf\src\%(RecursiveDir)%(Filename)%(Extension)" />
+    <!-- Shipped unless the consumer sets the IncludeTests option to false, which excludes tests/ at instantiation. -->
+    <Content Include="tests\**\*" Exclude="tests\**\bin\**;tests\**\obj\**" PackagePath="content\Lemon.Template.Wpf\tests\%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
 </Project>

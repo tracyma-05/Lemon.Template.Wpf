@@ -8,7 +8,7 @@ namespace Lemon.Template.Wpf.Models
     public partial class NavigationViewModel : ObservableObject, INavigationAware
     {
         [ObservableProperty]
-        private string _title;
+        private string _title = string.Empty;
 
         public IHostDialogService HostDialogService { get; private set; }
 

@@ -1,4 +1,11 @@
-﻿using System;
+﻿// Ported from Prism's parameter bag. Its contract deliberately hands back `default` for a missing or
+// type-mismatched key, which nullable reference analysis cannot express through the generic signatures
+// without either changing that contract or littering the file with `!`. Quarantined here on purpose, and
+// visible in the file rather than hidden in a NoWarn list.
+// TODO: revisit alongside a first-party rewrite of the dialog parameter API.
+#nullable disable
+
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;

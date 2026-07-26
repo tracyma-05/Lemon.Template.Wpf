@@ -1,9 +1,8 @@
-using Lemon.Template.Wpf;
 using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
 
-namespace AlgoFun.Infrastructures.Shell;
+namespace Lemon.Template.Wpf.Infrastructures.Shell;
 
 internal static class DesktopShortcutHelper
 {
@@ -102,6 +101,6 @@ internal static class DesktopShortcutHelper
             return title.Trim();
         }
 
-        return entry.GetName().Name ?? "AlgoFun";
+        return entry.GetName().Name ?? "Application";
     }
 }

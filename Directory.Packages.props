@@ -1,0 +1,65 @@
+<Project>
+
+  <!--
+    Central Package Management: every PackageReference in this repository omits Version and resolves it
+    from the single PackageVersion entry below. Bump a dependency in one place, not once per csproj.
+    https://learn.microsoft.com/nuget/consume-packages/central-package-management
+
+    Policy: released versions only. Pre-release pins (especially CI-feed builds such as `-ci1429`) stop
+    resolving once the producing feed rotates its builds, which breaks `dotnet new` for everyone
+    downstream. If you need to trial a pre-release, do it on a branch and note it in CHANGELOG.md.
+  -->
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+
+  <ItemGroup Label="WPF application">
+    <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.2" />
+    <PackageVersion Include="H.NotifyIcon.Wpf" Version="2.4.1" />
+    <PackageVersion Include="Hangfire.AspNetCore" Version="1.8.24" />
+    <PackageVersion Include="Hangfire.Storage.SQLite" Version="0.4.3" />
+    <PackageVersion Include="MaterialDesignColors" Version="5.3.2" />
+    <PackageVersion Include="MaterialDesignThemes" Version="5.3.2" />
+    <PackageVersion Include="Microsoft.Data.Sqlite" Version="10.0.10" />
+    <PackageVersion Include="Microsoft.Web.WebView2" Version="1.0.4078.44" />
+    <PackageVersion Include="Volo.Abp.Autofac" Version="10.5.0" />
+    <PackageVersion Include="Volo.Abp.BackgroundJobs.HangFire" Version="10.5.0" />
+  </ItemGroup>
+
+  <ItemGroup Label="Security remediation">
+    <!--
+      Microsoft.Data.Sqlite and Hangfire.Storage.SQLite both resolve the native SQLite bundle at 2.1.11,
+      which carries GHSA-2m69-gcr7-jv3q (high). 2.1.12 is the patched build in the same major.minor, so it
+      stays binary-compatible with the SQLitePCLRaw 2.1.x core those packages are built against.
+      Referenced directly by the app project purely to lift the transitive floor; drop it once the
+      upstream packages ship a patched dependency of their own.
+    -->
+    <PackageVersion Include="SQLitePCLRaw.lib.e_sqlite3" Version="2.1.12" />
+  </ItemGroup>
+
+  <ItemGroup Label="Logging">
+    <PackageVersion Include="Serilog.Extensions.Hosting" Version="10.0.0" />
+    <PackageVersion Include="Serilog.Extensions.Logging" Version="10.0.0" />
+    <PackageVersion Include="Serilog.Sinks.Async" Version="2.1.0" />
+    <PackageVersion Include="Serilog.Sinks.File" Version="7.0.0" />
+  </ItemGroup>
+
+  <ItemGroup Label="Tests">
+    <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.10" />
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.8.1" />
+    <PackageVersion Include="xunit" Version="2.9.3" />
+    <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />
+  </ItemGroup>
+
+  <ItemGroup Label="Template publisher tool (repository only, not part of the scaffolded app)">
+    <PackageVersion Include="Microsoft.Extensions.Configuration" Version="10.0.10" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.10" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.CommandLine" Version="10.0.10" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="10.0.10" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="10.0.10" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration.UserSecrets" Version="10.0.10" />
+    <PackageVersion Include="NuGet.Packaging" Version="7.6.0" />
+    <PackageVersion Include="NuGet.Protocol" Version="7.6.0" />
+  </ItemGroup>
+
+</Project>

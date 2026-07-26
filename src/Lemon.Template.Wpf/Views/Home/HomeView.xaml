@@ -1,0 +1,213 @@
+<UserControl x:Class="Lemon.Template.Wpf.Views.Home.HomeView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:loc="clr-namespace:Lemon.Template.Wpf.Infrastructures.Localization"
+             xmlns:model="clr-namespace:Lemon.Template.Wpf.Models"
+             mc:Ignorable="d"
+             d:DesignHeight="720"
+             d:DesignWidth="960">
+    <UserControl.Resources>
+
+        <!--
+            Link and shortcut templates reach the page's commands through the UserControl ancestor: inside an
+            ItemsControl the DataContext is the item, not the view model.
+        -->
+        <DataTemplate x:Key="HomeLinkTemplate" DataType="{x:Type model:HomeLink}">
+            <Button Margin="0,0,4,0"
+                    Padding="8,4"
+                    Foreground="{DynamicResource MaterialDesign.Brush.Primary}"
+                    Style="{StaticResource MaterialDesignFlatButton}"
+                    Command="{Binding DataContext.OpenUrlCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                    CommandParameter="{Binding Url}"
+                    ToolTip="{Binding Url}"
+                    AutomationProperties.HelpText="{Binding Url}">
+                <StackPanel Orientation="Horizontal">
+                    <materialDesign:PackIcon Width="18"
+                                             Height="18"
+                                             VerticalAlignment="Center"
+                                             Kind="{Binding Icon}" />
+                    <TextBlock Margin="6,0,0,0" VerticalAlignment="Center" Text="{Binding Title}" />
+                </StackPanel>
+            </Button>
+        </DataTemplate>
+
+        <DataTemplate x:Key="HomeShortcutTemplate" DataType="{x:Type model:HomeShortcut}">
+            <!--
+                Height="Auto" is required: MaterialDesignFlatButton pins a single-line height, which makes a
+                two-line tile overflow and overlap the next one.
+            -->
+            <Button Height="Auto"
+                    MinHeight="56"
+                    Margin="0,0,0,4"
+                    Padding="8"
+                    HorizontalContentAlignment="Stretch"
+                    Style="{StaticResource MaterialDesignFlatButton}"
+                    Command="{Binding DataContext.OpenShortcutCommand, RelativeSource={RelativeSource AncestorType=UserControl}}"
+                    CommandParameter="{Binding}"
+                    ToolTip="{Binding Description}">
+                <Grid ColumnDefinitions="Auto,*,Auto">
+                    <Border Grid.Column="0"
+                            Width="36"
+                            Height="36"
+                            CornerRadius="18"
+                            Background="{DynamicResource MaterialDesign.Brush.Primary}">
+                        <materialDesign:PackIcon Width="20"
+                                                 Height="20"
+                                                 HorizontalAlignment="Center"
+                                                 VerticalAlignment="Center"
+                                                 Foreground="{DynamicResource MaterialDesign.Brush.Primary.Foreground}"
+                                                 Kind="{Binding Icon}" />
+                    </Border>
+                    <StackPanel Grid.Column="1" Margin="12,0" VerticalAlignment="Center">
+                        <TextBlock FontWeight="SemiBold"
+                                   Foreground="{DynamicResource MaterialDesignBody}"
+                                   Text="{Binding Title}" />
+                        <TextBlock Margin="0,2,0,0"
+                                   Foreground="{DynamicResource MaterialDesignBodyLight}"
+                                   Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                                   Text="{Binding Description}"
+                                   TextTrimming="CharacterEllipsis"
+                                   TextWrapping="Wrap" />
+                    </StackPanel>
+                    <materialDesign:PackIcon Grid.Column="2"
+                                             VerticalAlignment="Center"
+                                             Foreground="{DynamicResource MaterialDesignBodyLight}"
+                                             Kind="ChevronRight" />
+                </Grid>
+            </Button>
+        </DataTemplate>
+
+        <!-- Technology chip. Card background on top of paper, so it reads in both light and dark. -->
+        <DataTemplate x:Key="HomeTechChipTemplate">
+            <Border Margin="0,0,8,8"
+                    Padding="10,4"
+                    CornerRadius="12"
+                    Background="{DynamicResource MaterialDesignCardBackground}"
+                    BorderBrush="{DynamicResource MaterialDesignDivider}"
+                    BorderThickness="1">
+                <TextBlock Foreground="{DynamicResource MaterialDesignBodyLight}"
+                           Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                           Text="{Binding}" />
+            </Border>
+        </DataTemplate>
+
+    </UserControl.Resources>
+
+    <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="24" MaxWidth="1120">
+
+            <!--  Information links  -->
+            <StackPanel Orientation="Horizontal">
+                <materialDesign:PackIcon Width="18"
+                                         Height="18"
+                                         VerticalAlignment="Center"
+                                         Foreground="{DynamicResource MaterialDesignBodyLight}"
+                                         Kind="InformationOutline" />
+                <TextBlock Margin="8,0,12,0"
+                           VerticalAlignment="Center"
+                           Foreground="{DynamicResource MaterialDesignBodyLight}"
+                           Style="{StaticResource MaterialDesignBody2TextBlock}"
+                           Text="{loc:Localize Home_Links}" />
+                <ItemsControl ItemTemplate="{StaticResource HomeLinkTemplate}" ItemsSource="{Binding Links}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel Orientation="Horizontal" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                </ItemsControl>
+            </StackPanel>
+            <Separator Margin="0,8,0,0" Background="{DynamicResource MaterialDesignDivider}" />
+
+            <!--  Hero  -->
+            <Grid Margin="0,40,0,40" HorizontalAlignment="Center" ColumnDefinitions="Auto,*">
+                <Border Grid.Column="0"
+                        Width="96"
+                        Height="96"
+                        Padding="14"
+                        VerticalAlignment="Center"
+                        CornerRadius="12"
+                        Background="{DynamicResource MaterialDesign.Brush.Primary}">
+                    <Image Source="/Assets/Images/logo.png" Stretch="Uniform" />
+                </Border>
+                <StackPanel Grid.Column="1" Margin="24,0,0,0" VerticalAlignment="Center">
+                    <TextBlock Foreground="{DynamicResource MaterialDesignBodyLight}"
+                               Style="{StaticResource MaterialDesignHeadline6TextBlock}"
+                               Text="{loc:Localize Home_Welcome}" />
+                    <TextBlock MaxWidth="620"
+                               Style="{StaticResource MaterialDesignHeadline4TextBlock}"
+                               Text="{Binding ApplicationTitle}"
+                               TextWrapping="Wrap" />
+                    <TextBlock Margin="0,10,0,0"
+                               MaxWidth="620"
+                               Foreground="{DynamicResource MaterialDesignBodyLight}"
+                               Style="{StaticResource MaterialDesignBody1TextBlock}"
+                               Text="{loc:Localize Home_Subtitle}"
+                               TextWrapping="Wrap" />
+                    <StackPanel Margin="0,20,0,0" Orientation="Horizontal">
+                        <Button Command="{Binding GetStartedCommand}" Style="{StaticResource MaterialDesignRaisedButton}">
+                            <StackPanel Orientation="Horizontal">
+                                <materialDesign:PackIcon Width="18"
+                                                         Height="18"
+                                                         VerticalAlignment="Center"
+                                                         Kind="RocketLaunchOutline" />
+                                <TextBlock Margin="8,0,0,0" VerticalAlignment="Center" Text="{loc:Localize Home_GetStarted}" />
+                            </StackPanel>
+                        </Button>
+                        <TextBlock Margin="16,0,0,0"
+                                   VerticalAlignment="Center"
+                                   Foreground="{DynamicResource MaterialDesignBodyLight}"
+                                   Style="{StaticResource MaterialDesignCaptionTextBlock}">
+                            <Run Text="{loc:Localize Home_Version}" />
+                            <Run Text="{Binding ApplicationVersion, Mode=OneWay}" />
+                        </TextBlock>
+                    </StackPanel>
+                </StackPanel>
+            </Grid>
+
+            <!--  Quick start + About  -->
+            <Grid ColumnDefinitions="*,*">
+                <materialDesign:Card Grid.Column="0" Padding="20">
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource MaterialDesignHeadline6TextBlock}" Text="{loc:Localize Home_QuickStart}" />
+                        <TextBlock Margin="0,6,0,14"
+                                   Foreground="{DynamicResource MaterialDesignBodyLight}"
+                                   Style="{StaticResource MaterialDesignBody2TextBlock}"
+                                   Text="{loc:Localize Home_QuickStart_Description}"
+                                   TextWrapping="Wrap" />
+                        <ItemsControl ItemTemplate="{StaticResource HomeShortcutTemplate}" ItemsSource="{Binding Shortcuts}" />
+                    </StackPanel>
+                </materialDesign:Card>
+
+                <materialDesign:Card Grid.Column="1" Margin="24,0,0,0" Padding="20">
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource MaterialDesignHeadline6TextBlock}" Text="{loc:Localize Home_About}" />
+                        <TextBlock Margin="0,6,0,0"
+                                   Foreground="{DynamicResource MaterialDesignBodyLight}"
+                                   Style="{StaticResource MaterialDesignBody2TextBlock}"
+                                   Text="{loc:Localize Home_About_Description}"
+                                   TextWrapping="Wrap" />
+
+                        <TextBlock Margin="0,18,0,8" Style="{StaticResource MaterialDesignSubtitle2TextBlock}" Text="{loc:Localize Home_Stack}" />
+                        <ItemsControl ItemTemplate="{StaticResource HomeTechChipTemplate}" ItemsSource="{Binding TechStack}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel Orientation="Horizontal" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                        </ItemsControl>
+
+                        <Separator Margin="0,8,0,12" Background="{DynamicResource MaterialDesignDivider}" />
+                        <TextBlock Foreground="{DynamicResource MaterialDesignBodyLight}"
+                                   Style="{StaticResource MaterialDesignCaptionTextBlock}"
+                                   Text="{loc:Localize Home_About_Hint}"
+                                   TextWrapping="Wrap" />
+                    </StackPanel>
+                </materialDesign:Card>
+            </Grid>
+
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

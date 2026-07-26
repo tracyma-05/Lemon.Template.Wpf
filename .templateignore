@@ -4,3 +4,14 @@
 *.user
 **/Logs/
 **/PublishProfiles/*.pubxml.user
+artifacts/
+*.nupkg
+*.db
+*.db-shm
+*.db-wal
+secret.json
+
+# Repository-only toolchain/feed pinning. A scaffolded project must inherit the SDK and the NuGet feeds
+# its own environment configures, not the ones this repository builds against.
+[Nn]u[Gg]et.[Cc]onfig
+global.json

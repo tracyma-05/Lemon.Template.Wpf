@@ -6,10 +6,11 @@ namespace Lemon.Template.Wpf.Infrastructures.Dialogs
     {
         Task<IDialogResult> ShowDialogAsync(
             string name,
-            IDialogParameters parameters = null,
+            IDialogParameters? parameters = null,
             string IdentifierName = "Root");
 
-        IDialogResult ShowWindow(string name);
+        /// <summary>Shows a keyed dialog in a modal window and returns its result.</summary>
+        IDialogResult ShowWindow(string name, IDialogParameters? parameters = null);
 
         void Close(string IdentifierName, DialogResult dialogResult);
     }

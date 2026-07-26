@@ -1,4 +1,4 @@
-﻿using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Lemon.Template.Wpf.Commons;
 using Lemon.Template.Wpf.Infrastructures.Navigations;
@@ -9,28 +9,29 @@ using Volo.Abp.DependencyInjection;
 
 namespace Lemon.Template.Wpf.ViewModels
 {
-    [ObservableObject]
-    public partial class MainWindowViewModel : ISingletonDependency
+    public partial class MainWindowViewModel : ObservableObject, ISingletonDependency
     {
         private readonly INavigationService _navigationService;
+        private readonly IMenuNavigator _menuNavigator;
         private readonly IAppThemeService _appThemeService;
         private bool _muteIsDarkThemeCallback;
 
-        public MainWindowViewModel(INavigationService navigationService, IAppThemeService appThemeService)
+        public MainWindowViewModel(
+            INavigationService navigationService,
+            IMenuNavigator menuNavigator,
+            IAppThemeService appThemeService)
         {
             _navigationService = navigationService;
+            _menuNavigator = menuNavigator;
             _appThemeService = appThemeService;
             _appThemeService.DarkThemeChanged += OnAppDarkThemeChanged;
 
             NavigationItems = Constants.NavigationItems;
 
             IsDarkTheme = _appThemeService.IsDarkTheme();
-            var defaultMenu = Constants.NavigationItems
-                .FirstOrDefault(x => x.Title == "Settings")?
-                .Items.FirstOrDefault(x => x.Title == "Theme");
-            defaultMenu?.IsSelected = true;
-            if (!string.IsNullOrEmpty(defaultMenu?.Title))
-                navigationService.Navigate(defaultMenu.Title);
+
+            // Start-up page. A missing entry only logs, so the shell still opens.
+            _menuNavigator.NavigateTo(Constants.Home);
         }
 
         [ObservableProperty]

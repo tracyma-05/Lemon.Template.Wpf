@@ -9,12 +9,12 @@ namespace Lemon.Template.Wpf.Infrastructures.Dialogs
         //
         // Summary:
         //     Dialog content.
-        object Content { get; set; }
+        object? Content { get; set; }
 
         //
         // Summary:
         //     The window's owner.
-        Window Owner { get; set; }
+        Window? Owner { get; set; }
 
         //
         // Summary:
@@ -22,17 +22,17 @@ namespace Lemon.Template.Wpf.Infrastructures.Dialogs
         //
         // Remarks:
         //     The data context must implement Prism.Services.Dialogs.IDialogAware.
-        object DataContext { get; set; }
+        object? DataContext { get; set; }
 
         //
         // Summary:
-        //     The result of the dialog.
-        IDialogResult Result { get; set; }
+        //     The result of the dialog. Null until the dialog closes.
+        IDialogResult? Result { get; set; }
 
         //
         // Summary:
         //     The window style.
-        Style Style { get; set; }
+        Style? Style { get; set; }
 
         //
         // Summary:

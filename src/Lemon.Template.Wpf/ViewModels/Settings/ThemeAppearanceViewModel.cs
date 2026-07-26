@@ -8,8 +8,7 @@ using Volo.Abp.DependencyInjection;
 
 namespace Lemon.Template.Wpf.ViewModels.Settings;
 
-[ObservableObject]
-public partial class ThemeAppearanceViewModel : ISingletonDependency, INavigationAware
+public partial class ThemeAppearanceViewModel : ObservableObject, ISingletonDependency, INavigationAware
 {
     private readonly IAppThemeService _appThemeService;
     private bool _suppressSwatchHandlers;

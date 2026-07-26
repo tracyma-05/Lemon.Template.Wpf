@@ -3,6 +3,7 @@ using Lemon.Template.Wpf.Themes.Controls;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Windows.Controls;
 using Volo.Abp.DependencyInjection;
 
@@ -46,6 +47,49 @@ namespace Lemon.Template.Wpf.Infrastructures.Navigations
             _routes[routeName] = (viewType, regionName);
         }
 
+        public void RemoveView(UserControl view)
+        {
+            ArgumentNullException.ThrowIfNull(view);
+
+            var tabKeys = _tabItems
+                .Where(entry => ReferenceEquals(entry.Value.Content, view))
+                .Select(entry => entry.Key)
+                .ToList();
+
+            foreach (var key in tabKeys)
+            {
+                var tabItem = _tabItems[key];
+                _tabItems.Remove(key);
+
+                foreach (var tabControl in _regions.Values.OfType<Themes.Controls.TabControl>())
+                {
+                    if (tabControl.Items.Contains(tabItem))
+                        tabControl.Items.Remove(tabItem);
+                }
+
+                tabItem.Content = null;
+            }
+
+            var regionNames = _currentViews
+                .Where(entry => ReferenceEquals(entry.Value, view))
+                .Select(entry => entry.Key)
+                .ToList();
+
+            foreach (var regionName in regionNames)
+            {
+                _currentViews.Remove(regionName);
+
+                if (_regions.TryGetValue(regionName, out var region) &&
+                    region is ContentControl contentControl &&
+                    ReferenceEquals(contentControl.Content, view))
+                {
+                    contentControl.Content = null;
+                }
+            }
+
+            ViewModelLocator.ReleaseViewModel(view);
+        }
+
         private void NavigateInternal(string routeName, string regionName, NavigationParameters? parameters)
         {
             if (!_regions.TryGetValue(regionName, out var region))
@@ -67,6 +111,13 @@ namespace Lemon.Template.Wpf.Infrastructures.Navigations
             {
                 case ContentControl contentControl:
                     contentControl.Content = view;
+
+                    // A ContentControl region keeps only one view, so the replaced one is gone for good:
+                    // release its ViewModel scope here or it leaks. Tab regions cache views and must not.
+                    if (previousView != null && !ReferenceEquals(previousView, view))
+                    {
+                        ViewModelLocator.ReleaseViewModel(previousView);
+                    }
                     break;
 
                 case Themes.Controls.TabControl tabControl:

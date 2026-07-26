@@ -1,0 +1,129 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+env:
+  DOTNET_NOLOGO: 'true'
+  DOTNET_CLI_TELEMETRY_OPTOUT: 'true'
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: 'true'
+
+jobs:
+  build:
+    name: Build and test
+    # WPF needs Windows; net*-windows will not build on ubuntu runners.
+    runs-on: windows-latest
+
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          # The application targets net10.0-windows, so the released .NET 10 SDK is enough.
+          dotnet-version: '10.0.x'
+
+      - name: Restore
+        run: dotnet restore Lemon.Template.Wpf.sln
+
+      - name: Build
+        # TreatWarningsAsErrors is on, so a new warning fails here by design.
+        run: dotnet build Lemon.Template.Wpf.sln -c Release --no-restore
+
+      - name: Test
+        run: >
+          dotnet test Lemon.Template.Wpf.sln -c Release --no-build
+          --logger "trx;LogFileName=test-results.trx"
+          --results-directory artifacts/test-results
+
+      - name: Upload test results
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results
+          path: artifacts/test-results
+          if-no-files-found: warn
+
+  template:
+    name: Template round-trip
+    # Building the repository is not enough: the template engine strips the conditional blocks that the
+    # repository itself compiles with enabled, so the scaffolded output has to be built separately.
+    runs-on: windows-latest
+
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Install the template from source
+        run: dotnet new install .
+
+      - name: Scaffold with default options
+        run: dotnet new lemon-wpf -n Acme.FullApp -o "${{ runner.temp }}/Full"
+
+      - name: Build the default scaffold
+        run: dotnet build "${{ runner.temp }}/Full/src/Acme.FullApp/Acme.FullApp.csproj" -c Release
+
+      - name: Test the default scaffold
+        run: dotnet test "${{ runner.temp }}/Full/tests/Acme.FullApp.Tests/Acme.FullApp.Tests.csproj" -c Release
+
+      - name: Scaffold with every optional feature disabled
+        run: >
+          dotnet new lemon-wpf -n Acme.MinApp -o "${{ runner.temp }}/Min"
+          --EnableHangfire false --EnableTrayIcon false --IncludeTests false
+
+      - name: Build the minimal scaffold
+        run: dotnet build "${{ runner.temp }}/Min/src/Acme.MinApp/Acme.MinApp.csproj" -c Release
+
+      - name: Assert disabled features left nothing behind
+        shell: pwsh
+        run: |
+          $min = "${{ runner.temp }}/Min"
+          $failures = @()
+
+          foreach ($path in @(
+              "$min/src/Acme.MinApp/Services/Hangfire",
+              "$min/src/Acme.MinApp/Views/Tools",
+              "$min/src/Acme.MinApp/ViewModels/Tools",
+              "$min/tests")) {
+            if (Test-Path $path) { $failures += "should not exist: $path" }
+          }
+
+          # Unprocessed conditional markers mean a directive was malformed and shipped verbatim.
+          $leftovers = Get-ChildItem "$min" -Recurse -File -Include *.cs,*.csproj,*.xaml `
+            | Where-Object { $_.FullName -notmatch '\\(bin|obj)\\' } `
+            | Select-String -Pattern '#if \(Enable', '#endif' -List
+          foreach ($hit in $leftovers) { $failures += "leftover template directive in $($hit.Path)" }
+
+          # Features that were switched off must not be referenced any more.
+          $stray = Select-String -Path "$min/src/Acme.MinApp/Acme.MinApp.csproj" `
+            -Pattern 'Hangfire', 'NotifyIcon', 'WebView2', 'Microsoft.AspNetCore.App'
+          foreach ($hit in $stray) { $failures += "disabled dependency still referenced: $($hit.Line.Trim())" }
+
+          if ($failures.Count -gt 0) {
+            $failures | ForEach-Object { Write-Error $_ }
+            exit 1
+          }
+          Write-Host 'Minimal scaffold is clean.'
+
+      - name: Pack the template
+        run: dotnet pack Lemon.Template.Wpf.TemplatePack.csproj -c Release -o artifacts/package
+
+      - name: Upload template package
+        uses: actions/upload-artifact@v4
+        with:
+          name: template-package
+          path: artifacts/package/*.nupkg
+
+      - name: Uninstall the template
+        if: always()
+        run: dotnet new uninstall .

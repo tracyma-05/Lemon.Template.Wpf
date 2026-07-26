@@ -26,7 +26,7 @@ namespace Lemon.Template.Wpf.Infrastructures.Dialogs
         /// <param name="name">The name of the dialog to show.</param>
         /// <param name="parameters">The parameters to pass to the dialog.</param>
         /// <param name="callback">The action to perform when the dialog is closed.</param>
-        public void Show(string name, IDialogParameters parameters, Action<IDialogResult> callback)
+        public void Show(string name, IDialogParameters? parameters, Action<IDialogResult>? callback)
         {
             ShowDialogInternal(name, parameters, callback, false);
         }
@@ -38,7 +38,7 @@ namespace Lemon.Template.Wpf.Infrastructures.Dialogs
         /// <param name="parameters">The parameters to pass to the dialog.</param>
         /// <param name="callback">The action to perform when the dialog is closed.</param>
         /// <param name="windowName">The name of the hosting window registered with the IContainerRegistry.</param>
-        public void Show(string name, IDialogParameters parameters, Action<IDialogResult> callback, string windowName)
+        public void Show(string name, IDialogParameters? parameters, Action<IDialogResult>? callback, string? windowName)
         {
             ShowDialogInternal(name, parameters, callback, false, windowName);
         }
@@ -49,7 +49,7 @@ namespace Lemon.Template.Wpf.Infrastructures.Dialogs
         /// <param name="name">The name of the dialog to show.</param>
         /// <param name="parameters">The parameters to pass to the dialog.</param>
         /// <param name="callback">The action to perform when the dialog is closed.</param>
-        public void ShowDialog(string name, IDialogParameters parameters, Action<IDialogResult> callback)
+        public void ShowDialog(string name, IDialogParameters? parameters, Action<IDialogResult>? callback)
         {
             ShowDialogInternal(name, parameters, callback, true);
         }
@@ -61,15 +61,14 @@ namespace Lemon.Template.Wpf.Infrastructures.Dialogs
         /// <param name="parameters">The parameters to pass to the dialog.</param>
         /// <param name="callback">The action to perform when the dialog is closed.</param>
         /// <param name="windowName">The name of the hosting window registered with the IContainerRegistry.</param>
-        public void ShowDialog(string name, IDialogParameters parameters, Action<IDialogResult> callback, string windowName)
+        public void ShowDialog(string name, IDialogParameters? parameters, Action<IDialogResult>? callback, string? windowName)
         {
             ShowDialogInternal(name, parameters, callback, true, windowName);
         }
 
-        void ShowDialogInternal(string name, IDialogParameters parameters, Action<IDialogResult> callback, bool isModal, string windowName = null)
+        void ShowDialogInternal(string name, IDialogParameters? parameters, Action<IDialogResult>? callback, bool isModal, string? windowName = null)
         {
-            if (parameters == null)
-                parameters = new DialogParameters();
+            parameters ??= new DialogParameters();
 
             IDialogWindow dialogWindow = CreateDialogWindow(windowName);
             ConfigureDialogWindowEvents(dialogWindow, callback);
@@ -96,7 +95,7 @@ namespace Lemon.Template.Wpf.Infrastructures.Dialogs
         /// </summary>
         /// <param name="name">The name of the hosting window registered with the IContainerRegistry.</param>
         /// <returns>The created <see cref="IDialogWindow"/>.</returns>
-        protected virtual IDialogWindow CreateDialogWindow(string name)
+        protected virtual IDialogWindow CreateDialogWindow(string? name)
         {
             if (string.IsNullOrWhiteSpace(name))
                 return _containerExtension.GetRequiredService<IDialogWindow>();
@@ -131,43 +130,41 @@ namespace Lemon.Template.Wpf.Infrastructures.Dialogs
         /// </summary>
         /// <param name="dialogWindow">The hosting window.</param>
         /// <param name="callback">The action to perform when the dialog is closed.</param>
-        protected virtual void ConfigureDialogWindowEvents(IDialogWindow dialogWindow, Action<IDialogResult> callback)
+        protected virtual void ConfigureDialogWindowEvents(IDialogWindow dialogWindow, Action<IDialogResult>? callback)
         {
-            Action<IDialogResult> requestCloseHandler = null;
-            requestCloseHandler = (o) =>
+            void RequestCloseHandler(IDialogResult result)
             {
-                dialogWindow.Result = o;
+                dialogWindow.Result = result;
                 dialogWindow.Close();
-            };
+            }
 
-            RoutedEventHandler loadedHandler = null;
-            loadedHandler = (o, e) =>
-            {
-                dialogWindow.Loaded -= loadedHandler;
-                dialogWindow.GetDialogViewModel().RequestClose += requestCloseHandler;
-            };
-            dialogWindow.Loaded += loadedHandler;
-
-            CancelEventHandler closingHandler = null;
-            closingHandler = (o, e) =>
+            void ClosingHandler(object? sender, CancelEventArgs e)
             {
                 if (!dialogWindow.GetDialogViewModel().CanCloseDialog())
                     e.Cancel = true;
-            };
-            dialogWindow.Closing += closingHandler;
+            }
 
-            EventHandler closedHandler = null;
+            // Declared before assignment so each handler can unsubscribe itself.
+            RoutedEventHandler? loadedHandler = null;
+            loadedHandler = (o, e) =>
+            {
+                dialogWindow.Loaded -= loadedHandler;
+                dialogWindow.GetDialogViewModel().RequestClose += RequestCloseHandler;
+            };
+            dialogWindow.Loaded += loadedHandler;
+
+            dialogWindow.Closing += ClosingHandler;
+
+            EventHandler? closedHandler = null;
             closedHandler = (o, e) =>
             {
                 dialogWindow.Closed -= closedHandler;
-                dialogWindow.Closing -= closingHandler;
-                dialogWindow.GetDialogViewModel().RequestClose -= requestCloseHandler;
+                dialogWindow.Closing -= ClosingHandler;
+                dialogWindow.GetDialogViewModel().RequestClose -= RequestCloseHandler;
 
                 dialogWindow.GetDialogViewModel().OnDialogClosed();
 
-                if (dialogWindow.Result == null)
-                    dialogWindow.Result = new DialogResult();
-
+                dialogWindow.Result ??= new DialogResult();
                 callback?.Invoke(dialogWindow.Result);
 
                 dialogWindow.DataContext = null;
@@ -192,7 +189,11 @@ namespace Lemon.Template.Wpf.Infrastructures.Dialogs
             window.DataContext = viewModel; //we want the host window and the dialog to share the same data context
 
             if (window.Owner == null)
-                window.Owner = Application.Current?.Windows.OfType<Window>().FirstOrDefault(x => x.IsActive);
+            {
+                var activeWindow = Application.Current?.Windows.OfType<Window>().FirstOrDefault(x => x.IsActive);
+                if (activeWindow != null)
+                    window.Owner = activeWindow;
+            }
         }
     }
 }

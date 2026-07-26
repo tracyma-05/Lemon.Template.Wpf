@@ -1,4 +1,7 @@
-﻿using System;
+﻿// See ParametersBase.cs: same ported Prism contract, same deliberate opt-out.
+#nullable disable
+
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;

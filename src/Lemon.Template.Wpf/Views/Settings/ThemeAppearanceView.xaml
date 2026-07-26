@@ -4,24 +4,25 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:loc="clr-namespace:Lemon.Template.Wpf.Infrastructures.Localization"
              mc:Ignorable="d"
              d:DesignHeight="720"
              d:DesignWidth="960">
     <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
         <StackPanel Margin="24" MaxWidth="720">
-            <TextBlock Text="主题与颜色"
+            <TextBlock Text="{loc:Localize Theme_Title}"
                        Style="{StaticResource MaterialDesignHeadline5TextBlock}"
                        Margin="0,0,0,8" />
             <TextBlock TextWrapping="Wrap"
                        Foreground="{DynamicResource MaterialDesignBodyLight}"
                        Style="{StaticResource MaterialDesignBody2TextBlock}"
-                       Text="浅色/深色切换会立即生效并写入数据库，调整 RGB 后需点「应用并保存」才会写入 SQLite（app_theme 表）。" />
+                       Text="{loc:Localize Theme_Description}" />
 
             <materialDesign:Card Margin="0,16,0,0" Padding="16">
                 <StackPanel>
-                    <TextBlock Text="基底（浅色 / 深色）" Style="{StaticResource MaterialDesignSubtitle1TextBlock}" Margin="0,0,0,8" />
+                    <TextBlock Text="{loc:Localize Theme_Base_Title}" Style="{StaticResource MaterialDesignSubtitle1TextBlock}" Margin="0,0,0,8" />
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="与标题栏开关同步" VerticalAlignment="Center" Margin="0,0,12,0"
+                        <TextBlock Text="{loc:Localize Theme_Base_SyncNote}" VerticalAlignment="Center" Margin="0,0,12,0"
                                    Style="{StaticResource MaterialDesignBody2TextBlock}"
                                    Foreground="{DynamicResource MaterialDesignBodyLight}" />
                         <ToggleButton IsChecked="{Binding IsDark, Mode=TwoWay}"
@@ -30,7 +31,7 @@
                                       Padding="8,4"
                                       VerticalAlignment="Center"
                                       Style="{StaticResource MaterialDesignFlatButton}"
-                                      ToolTip="开启为深色主题；与主窗口标题栏图标开关一致">
+                                      ToolTip="{loc:Localize Theme_Base_ToolTip}">
                             <Grid Width="22" Height="22">
                                 <materialDesign:PackIcon Width="22" Height="22" HorizontalAlignment="Center" VerticalAlignment="Center" Kind="WeatherNight">
                                     <materialDesign:PackIcon.Style>
@@ -64,10 +65,10 @@
 
             <materialDesign:Card Margin="0,16,0,0" Padding="16">
                 <StackPanel>
-                    <TextBlock Text="主色 Primary" Style="{StaticResource MaterialDesignSubtitle1TextBlock}" Margin="0,0,0,8" />
+                    <TextBlock Text="{loc:Localize Theme_Primary}" Style="{StaticResource MaterialDesignSubtitle1TextBlock}" Margin="0,0,0,8" />
                     <ComboBox ItemsSource="{Binding PrimarySwatches}"
                               SelectedItem="{Binding SelectedPrimarySwatch, Mode=TwoWay}"
-                              materialDesign:HintAssist.Hint="预设色板"
+                              materialDesign:HintAssist.Hint="{loc:Localize Theme_SwatchHint}"
                               Style="{StaticResource MaterialDesignOutlinedComboBox}"
                               Margin="0,0,0,12" />
                     <UniformGrid Columns="3" Margin="0,0,0,8">
@@ -89,10 +90,10 @@
 
             <materialDesign:Card Margin="0,16,0,0" Padding="16">
                 <StackPanel>
-                    <TextBlock Text="辅色 Secondary" Style="{StaticResource MaterialDesignSubtitle1TextBlock}" Margin="0,0,0,8" />
+                    <TextBlock Text="{loc:Localize Theme_Secondary}" Style="{StaticResource MaterialDesignSubtitle1TextBlock}" Margin="0,0,0,8" />
                     <ComboBox ItemsSource="{Binding SecondarySwatches}"
                               SelectedItem="{Binding SelectedSecondarySwatch, Mode=TwoWay}"
-                              materialDesign:HintAssist.Hint="预设色板"
+                              materialDesign:HintAssist.Hint="{loc:Localize Theme_SwatchHint}"
                               Style="{StaticResource MaterialDesignOutlinedComboBox}"
                               Margin="0,0,0,12" />
                     <UniformGrid Columns="3" Margin="0,0,0,8">
@@ -113,18 +114,18 @@
             </materialDesign:Card>
 
             <StackPanel Orientation="Horizontal" Margin="0,24,0,0">
-                <Button Content="应用并保存"
+                <Button Content="{loc:Localize Theme_Apply}"
                         Style="{StaticResource MaterialDesignRaisedButton}"
                         Command="{Binding ApplyThemeCommand}"
                         Margin="0,0,8,0" />
-                <Button Content="从当前界面重载"
+                <Button Content="{loc:Localize Theme_ReloadFromUi}"
                         Style="{StaticResource MaterialDesignOutlinedButton}"
                         Command="{Binding ReloadFromUiCommand}"
                         Margin="0,0,8,0" />
-                <Button Content="恢复默认主/辅色"
+                <Button Content="{loc:Localize Theme_ResetSwatches}"
                         Style="{StaticResource MaterialDesignOutlinedButton}"
                         Command="{Binding ResetDefaultSwatchesCommand}"
-                        ToolTip="DeepPurple + Lime（与 App.xaml BundledTheme 一致），保留当前浅色/深色" />
+                        ToolTip="{loc:Localize Theme_ResetSwatches_ToolTip}" />
             </StackPanel>
         </StackPanel>
     </ScrollViewer>

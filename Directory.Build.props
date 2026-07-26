@@ -1,0 +1,36 @@
+<Project>
+
+  <!--
+    Auto-imported by every project under this folder. Package metadata and the shipped version stay in
+    common.props (the publish flow and README point at that file); build-wide conventions live here.
+  -->
+  <Import Project="$(MSBuildThisFileDirectory)common.props" />
+
+  <PropertyGroup>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <InvariantGlobalization>false</InvariantGlobalization>
+  </PropertyGroup>
+
+  <PropertyGroup Label="Analysis">
+    <EnableNETAnalyzers>true</EnableNETAnalyzers>
+    <AnalysisLevel>latest</AnalysisLevel>
+    <EnforceCodeStyleInBuild>true</EnforceCodeStyleInBuild>
+
+    <!-- A warning that nobody has to fix is a warning everybody learns to ignore. -->
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+
+    <!--
+      NuGet audit findings (NU1901-1904) stay warnings on purpose: a newly published advisory would
+      otherwise turn a green build red with no source change, which is not actionable mid-CI.
+
+      NU1507 (central package management + more than one feed) also stays a warning. This repository pins
+      a single feed in its own NuGet.config, so it does not fire here — but that file is excluded from the
+      template output on purpose: hard-coding a source list into a scaffolded project would break anyone
+      restoring through a mirror or an internal feed. There, the fix is package source mapping in the
+      consuming environment's own NuGet.config, which is not something this template can decide.
+    -->
+    <WarningsNotAsErrors>NU1507;NU1901;NU1902;NU1903;NU1904</WarningsNotAsErrors>
+  </PropertyGroup>
+
+</Project>

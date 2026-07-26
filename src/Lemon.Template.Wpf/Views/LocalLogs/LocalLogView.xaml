@@ -4,10 +4,12 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:loc="clr-namespace:Lemon.Template.Wpf.Infrastructures.Localization"
              mc:Ignorable="d"
              d:DesignHeight="600" d:DesignWidth="900">
     <Grid Margin="10">
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
@@ -19,22 +21,40 @@
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <TextBlock Grid.Column="0"
-                      Text="Date"
+                      Text="{loc:Localize LocalLog_Date}"
                       VerticalAlignment="Center"
                       Margin="0,0,12,0" />
                 <DatePicker Grid.Column="1"
                        SelectedDate="{Binding SelectedDate, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"
-                       materialDesign:HintAssist.Hint="Log date" />
+                       materialDesign:HintAssist.Hint="{loc:Localize LocalLog_DateHint}" />
                 <Button Grid.Column="2"
                         Margin="20,0,0,0"
                         MinWidth="100"
                         Style="{StaticResource MaterialDesignRaisedButton}"
-                        Content="Load"
+                        Content="{loc:Localize LocalLog_Load}"
                         Command="{Binding LoadCommand}" />
             </Grid>
         </materialDesign:Card>
 
-        <materialDesign:Card Grid.Row="1" Margin="10" Padding="0">
+        <TextBlock Grid.Row="1"
+                   Margin="22,0,22,8"
+                   Text="{Binding StatusMessage}"
+                   Opacity="0.7"
+                   TextWrapping="Wrap"
+                   TextTrimming="CharacterEllipsis">
+            <TextBlock.Style>
+                <Style TargetType="TextBlock">
+                    <Setter Property="Visibility" Value="Visible" />
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding StatusMessage}" Value="">
+                            <Setter Property="Visibility" Value="Collapsed" />
+                        </DataTrigger>
+                    </Style.Triggers>
+                </Style>
+            </TextBlock.Style>
+        </TextBlock>
+
+        <materialDesign:Card Grid.Row="2" Margin="10" Padding="0">
             <TextBox x:Name="LogTextBox"
                          MinWidth="0"
                          MinHeight="0"
@@ -49,7 +69,7 @@
                          BorderThickness="0"
                          Background="Transparent"
                          TextChanged="LogTextBox_OnTextChanged"
-                         materialDesign:HintAssist.Hint="Local Serilog file (Logs/log-yyyyMMdd.txt)" />
+                         materialDesign:HintAssist.Hint="{loc:Localize LocalLog_ContentHint}" />
         </materialDesign:Card>
     </Grid>
 </UserControl>

@@ -1,7 +1,11 @@
 ﻿using Lemon.Template.Wpf.Infrastructures.Dialogs;
+using Lemon.Template.Wpf.Infrastructures.Localization;
+using Lemon.Template.Wpf.Infrastructures.Navigations;
 using Lemon.Template.Wpf.Themes.Controls;
+using Serilog;
 using System;
 using System.Windows;
+using System.Windows.Controls;
 using System.Windows.Input;
 using Volo.Abp.DependencyInjection;
 
@@ -11,10 +15,13 @@ namespace Lemon.Template.Wpf.Views
     public partial class MainWindow : Window, ISingletonDependency
     {
         private readonly IHostDialogService _dialog;
-        public MainWindow(IHostDialogService dialog)
+        private readonly INavigationService _navigationService;
+
+        public MainWindow(IHostDialogService dialog, INavigationService navigationService)
         {
             InitializeComponent();
             _dialog = dialog;
+            _navigationService = navigationService;
 
             HeaderBorder.MouseDown += (s, e) =>
             {
@@ -68,8 +75,20 @@ namespace Lemon.Template.Wpf.Views
 
         private async void BtnClose_Click(object sender, RoutedEventArgs e)
         {
-            if (await _dialog.Question("Are You Want to Leave?"))
-                Environment.Exit(0);
+            try
+            {
+                if (await _dialog.Question(LocalizationService.Instance.GetString("Shell_ConfirmExit")))
+                {
+                    // Shutdown() runs App.OnExit (ABP shutdown, Hangfire stop, Serilog flush).
+                    // Environment.Exit would skip all of it and lose buffered log entries.
+                    Application.Current.Shutdown();
+                }
+            }
+            catch (Exception ex)
+            {
+                // An async void handler faulting after the first await escapes DispatcherUnhandledException.
+                Log.Error(ex, "Close confirmation failed.");
+            }
         }
 
         private void BtnMax_Click(object sender, RoutedEventArgs e)
@@ -108,12 +127,15 @@ namespace Lemon.Template.Wpf.Views
             }
         }
 
+        /// <summary>
+        /// Handler for <c>controls:TabCloseItem.CloseClick</c>; wire it up when switching the main
+        /// region over to the tabbed <see cref="Themes.Controls.TabControl"/> (see MainWindow.xaml).
+        /// </summary>
         private void OnCloseButtonClick(object sender, RoutedEventArgs e)
         {
-            if (e.OriginalSource != null && e.OriginalSource is TabCloseItem tabItem)
+            if (e.OriginalSource is TabCloseItem { Content: UserControl view })
             {
-                //if (this.DataContext is MainWindowViewModel viewModel)
-                //    viewModel.NavigationService.RemoveView(tabItem.Content);
+                _navigationService.RemoveView(view);
             }
         }
     }
