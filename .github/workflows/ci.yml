@@ -22,8 +22,9 @@ env:
 
 jobs:
   build:
-    name: Build and test
-    # WPF needs Windows; net*-windows will not build on ubuntu runners.
+    name: Build and test (Windows)
+    # WPF needs Windows; net*-windows will not build on ubuntu runners. The Avalonia projects are in the
+    # same solution, so this job covers them on Windows too.
     runs-on: windows-latest
 
     steps:
@@ -33,7 +34,7 @@ jobs:
       - name: Set up .NET
         uses: actions/setup-dotnet@v4
         with:
-          # The application targets net10.0-windows, so the released .NET 10 SDK is enough.
+          # Both apps target .NET 10 (net10.0-windows / net10.0), so the released .NET 10 SDK is enough.
           dotnet-version: '10.0.x'
 
       - name: Restore
@@ -57,11 +58,11 @@ jobs:
           path: artifacts/test-results
           if-no-files-found: warn
 
-  template:
-    name: Template round-trip
-    # Building the repository is not enough: the template engine strips the conditional blocks that the
-    # repository itself compiles with enabled, so the scaffolded output has to be built separately.
-    runs-on: windows-latest
+  build-macos:
+    name: Build and test (macOS, Avalonia)
+    # The solution also holds the WPF projects, which cannot build here, so only the Avalonia test project
+    # is built; it references the Avalonia app.
+    runs-on: macos-latest
 
     steps:
       - name: Check out
@@ -72,8 +73,73 @@ jobs:
         with:
           dotnet-version: '10.0.x'
 
-      - name: Install the template from source
-        run: dotnet new install .
+      - name: Test
+        run: >
+          dotnet test tests/Lemon.Template.Avalonia.Tests/Lemon.Template.Avalonia.Tests.csproj -c Release
+          --logger "trx;LogFileName=test-results.trx"
+          --results-directory artifacts/test-results
+
+      - name: Publish a macOS build
+        # Proves every native dependency (Skia, HarfBuzz, SQLite, the Avalonia native backend) resolves for macOS.
+        run: dotnet publish src/Lemon.Template.Avalonia/Lemon.Template.Avalonia.csproj -c Release -r osx-arm64 --self-contained -o artifacts/publish-osx-arm64
+
+      - name: Upload test results and page renders
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-results-macos
+          # The headless view tests write the frames they render to renders/ next to the test assembly.
+          path: |
+            artifacts/test-results
+            tests/Lemon.Template.Avalonia.Tests/bin/Release/net10.0/renders
+          if-no-files-found: warn
+
+  pack:
+    name: Pack the templates
+    # Packing only copies files, so the cheapest runner is enough.
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Pack
+        run: dotnet pack Lemon.Template.Wpf.TemplatePack.csproj -c Release -o artifacts/package
+
+      - name: Upload template package
+        uses: actions/upload-artifact@v4
+        with:
+          name: template-package
+          path: artifacts/package/*.nupkg
+
+  template-wpf:
+    name: Template round-trip (lemon-wpf)
+    # Building the repository is not enough: the template engine strips the conditional blocks that the
+    # repository itself compiles with enabled, so the scaffolded output has to be built separately. The
+    # round-trip installs the packed .nupkg, so it also proves the package layout.
+    needs: pack
+    runs-on: windows-latest
+
+    steps:
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Download the template package
+        uses: actions/download-artifact@v4
+        with:
+          name: template-package
+          path: artifacts/package
+
+      - name: Install the template package
+        shell: pwsh
+        run: dotnet new install (Get-ChildItem artifacts/package/*.nupkg).FullName
 
       - name: Scaffold with default options
         run: dotnet new lemon-wpf -n Acme.FullApp -o "${{ runner.temp }}/Full"
@@ -108,7 +174,7 @@ jobs:
 
           # Unprocessed conditional markers mean a directive was malformed and shipped verbatim.
           $leftovers = Get-ChildItem "$min" -Recurse -File -Include *.cs,*.csproj,*.xaml `
-            | Where-Object { $_.FullName -notmatch '\\(bin|obj)\\' } `
+            | Where-Object { $_.FullName -notmatch '[\\/](bin|obj)[\\/]' } `
             | Select-String -Pattern '#if \(Enable', '#endif' -List
           foreach ($hit in $leftovers) { $failures += "leftover template directive in $($hit.Path)" }
 
@@ -117,33 +183,111 @@ jobs:
             -Pattern 'Hangfire', 'NotifyIcon', 'WebView2', 'Microsoft.AspNetCore.App'
           foreach ($hit in $stray) { $failures += "disabled dependency still referenced: $($hit.Line.Trim())" }
 
+          # The other template's sources must not leak into this one.
+          $foreign = Get-ChildItem "${{ runner.temp }}/Full" -Recurse -File -Include *.axaml
+          foreach ($hit in $foreign) { $failures += "Avalonia file in the WPF scaffold: $($hit.FullName)" }
+
           if ($failures.Count -gt 0) {
             $failures | ForEach-Object { Write-Error $_ }
             exit 1
           }
           Write-Host 'Minimal scaffold is clean.'
 
-      - name: Pack the template
-        run: dotnet pack Lemon.Template.Wpf.TemplatePack.csproj -c Release -o artifacts/package
+  template-avalonia:
+    name: Template round-trip (lemon-avalonia, ${{ matrix.os }})
+    needs: pack
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
 
-      - name: Upload template package
-        uses: actions/upload-artifact@v4
+    steps:
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Download the template package
+        uses: actions/download-artifact@v4
         with:
           name: template-package
-          path: artifacts/package/*.nupkg
+          path: artifacts/package
 
-      - name: Uninstall the template
-        if: always()
-        run: dotnet new uninstall .
+      - name: Install the template package
+        shell: pwsh
+        run: dotnet new install (Get-ChildItem artifacts/package/*.nupkg).FullName
+
+      - name: Scaffold with default options
+        run: dotnet new lemon-avalonia -n Acme.FullApp -o "${{ runner.temp }}/Full"
+
+      - name: Build the default scaffold
+        run: dotnet build "${{ runner.temp }}/Full/src/Acme.FullApp/Acme.FullApp.csproj" -c Release
+
+      - name: Test the default scaffold
+        run: dotnet test "${{ runner.temp }}/Full/tests/Acme.FullApp.Tests/Acme.FullApp.Tests.csproj" -c Release
+
+      - name: Scaffold with every optional feature disabled
+        run: >
+          dotnet new lemon-avalonia -n Acme.MinApp -o "${{ runner.temp }}/Min"
+          --EnableHangfire false --EnableTrayIcon false --IncludeTests false
+
+      - name: Build the minimal scaffold
+        run: dotnet build "${{ runner.temp }}/Min/src/Acme.MinApp/Acme.MinApp.csproj" -c Release
+
+      - name: Scaffold and build with the desktop shortcut enabled
+        # Windows-only code behind an OperatingSystem guard: CA1416 must stay quiet on every platform.
+        run: >
+          dotnet new lemon-avalonia -n Acme.ShortcutApp -o "${{ runner.temp }}/Shortcut"
+          --EnableDesktopShortcut true --IncludeTests false
+          && dotnet build "${{ runner.temp }}/Shortcut/src/Acme.ShortcutApp/Acme.ShortcutApp.csproj" -c Release
+
+      - name: Assert disabled features left nothing behind
+        shell: pwsh
+        run: |
+          $min = "${{ runner.temp }}/Min"
+          $failures = @()
+
+          foreach ($path in @(
+              "$min/src/Acme.MinApp/Services/Hangfire",
+              "$min/src/Acme.MinApp/Views/Tools",
+              "$min/src/Acme.MinApp/ViewModels/Tools",
+              "$min/tests")) {
+            if (Test-Path $path) { $failures += "should not exist: $path" }
+          }
+
+          # Unprocessed conditional markers mean a directive was malformed and shipped verbatim.
+          $leftovers = Get-ChildItem "$min" -Recurse -File -Include *.cs,*.csproj,*.axaml `
+            | Where-Object { $_.FullName -notmatch '[\\/](bin|obj)[\\/]' } `
+            | Select-String -Pattern '#if \(Enable', '#endif' -List
+          foreach ($hit in $leftovers) { $failures += "leftover template directive in $($hit.Path)" }
+
+          # Features that were switched off must not be referenced any more.
+          $stray = Select-String -Path "$min/src/Acme.MinApp/Acme.MinApp.csproj" `
+            -Pattern 'Hangfire', 'Microsoft.AspNetCore.App'
+          foreach ($hit in $stray) { $failures += "disabled dependency still referenced: $($hit.Line.Trim())" }
+          if (Select-String -Path "$min/src/Acme.MinApp/App.axaml.cs" -Pattern 'TrayIcon' -Quiet) {
+            $failures += 'tray icon code still present in App.axaml.cs'
+          }
+
+          # The other template's sources must not leak into this one.
+          $foreign = Get-ChildItem "${{ runner.temp }}/Full" -Recurse -File -Include *.xaml
+          foreach ($hit in $foreign) { $failures += "WPF file in the Avalonia scaffold: $($hit.FullName)" }
+
+          if ($failures.Count -gt 0) {
+            $failures | ForEach-Object { Write-Error $_ }
+            exit 1
+          }
+          Write-Host 'Minimal scaffold is clean.'
 
   publish:
     name: Publish to NuGet
     # Only the package that already passed build, test and the round-trip check is pushed.
-    needs: [build, template]
+    needs: [build, build-macos, template-wpf, template-avalonia]
     if: >-
       (github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')) ||
       (github.event_name == 'workflow_dispatch' && inputs.publish)
-    # Pushing a .nupkg needs no WPF toolchain, so the cheaper runner is enough.
+    # Pushing a .nupkg needs no desktop toolchain, so the cheaper runner is enough.
     runs-on: ubuntu-latest
     # nuget.org binds Trusted Publishing to this workflow file *and* this environment name; renaming either
     # side invalidates the OIDC exchange and the run falls back to the API key.

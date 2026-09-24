@@ -1,0 +1,34 @@
+<UserControl x:Class="Lemon.Template.Avalonia.Views.Settings.LanguageView"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:controls="clr-namespace:Material.Styles.Controls;assembly=Material.Styles"
+             xmlns:assists="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
+             xmlns:loc="clr-namespace:Lemon.Template.Avalonia.Infrastructures.Localization"
+             xmlns:vm="clr-namespace:Lemon.Template.Avalonia.ViewModels.Settings"
+             mc:Ignorable="d"
+             d:DesignHeight="480"
+             d:DesignWidth="960"
+             x:DataType="vm:LanguageViewModel">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Margin="24" MaxWidth="720">
+            <TextBlock Text="{loc:Localize Language_Title}"
+                       Classes="Headline5"
+                       Margin="0,0,0,8" />
+            <TextBlock TextWrapping="Wrap"
+                       Classes="Body2"
+                       Foreground="{DynamicResource MaterialBodyLightBrush}"
+                       Text="{loc:Localize Language_Description}" />
+
+            <controls:Card Margin="0,16,0,0" Padding="16">
+                <!-- LanguageOption.ToString() is the display name, so no item template is needed. -->
+                <ComboBox ItemsSource="{Binding Languages}"
+                          SelectedItem="{Binding SelectedLanguage, Mode=TwoWay}"
+                          assists:ComboBoxAssist.Label="{loc:Localize Language_SelectorHint}"
+                          Theme="{DynamicResource MaterialOutlineComboBox}"
+                          HorizontalAlignment="Stretch" />
+            </controls:Card>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

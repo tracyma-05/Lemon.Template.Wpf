@@ -1,0 +1,45 @@
+<UserControl x:Class="Lemon.Template.Avalonia.Views.Dialogs.HostMessageBoxView"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             xmlns:vm="clr-namespace:Lemon.Template.Avalonia.ViewModels.Dialogs"
+             mc:Ignorable="d"
+             x:DataType="vm:HostMessageBoxViewModel"
+             Width="450"
+             Height="200">
+    <Grid RowDefinitions="*,Auto">
+        <Grid Margin="20" VerticalAlignment="Center" RowDefinitions="Auto,*">
+            <StackPanel Orientation="Horizontal">
+                <materialIcons:MaterialIcon Width="50"
+                                            Height="50"
+                                            VerticalAlignment="Bottom"
+                                            Kind="Information" />
+                <TextBlock Margin="10,0,0,0"
+                           VerticalAlignment="Center"
+                           FontSize="16"
+                           FontWeight="Bold"
+                           Text="{Binding Title}" />
+            </StackPanel>
+
+            <TextBlock Grid.Row="1"
+                       Margin="60,0"
+                       HorizontalAlignment="Left"
+                       VerticalAlignment="Top"
+                       Opacity="0.6"
+                       Text="{Binding Message}"
+                       TextWrapping="Wrap" />
+        </Grid>
+
+        <StackPanel Grid.Row="1"
+                    Margin="10"
+                    HorizontalAlignment="Right"
+                    VerticalAlignment="Bottom"
+                    Orientation="Horizontal"
+                    Spacing="10">
+            <Button Command="{Binding SaveCommand}" Content="Yes" IsDefault="True" />
+            <Button Command="{Binding CancelCommand}" Content="No" IsCancel="True" Classes="Outline" />
+        </StackPanel>
+    </Grid>
+</UserControl>

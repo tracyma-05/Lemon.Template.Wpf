@@ -1,9 +1,9 @@
 <Project>
   <PropertyGroup>
     <LangVersion>latest</LangVersion>
-    <Version>1.0.6</Version>
+    <Version>1.1.0</Version>
     <Authors>Tracy Ma</Authors>
-    <Description>Material Design WPF starter — dotnet new template.</Description>
+    <Description>Material Design desktop starters — dotnet new templates for WPF (lemon-wpf) and cross-platform Avalonia on Windows / macOS (lemon-avalonia).</Description>
     <NoWarn>$(NoWarn);CS1591;CS0436</NoWarn>
 
     <!-- NuGet / assembly: source repository (shows on nuget.org after publish) -->

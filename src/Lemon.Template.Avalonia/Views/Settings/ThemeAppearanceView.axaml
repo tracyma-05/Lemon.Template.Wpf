@@ -1,0 +1,123 @@
+<UserControl x:Class="Lemon.Template.Avalonia.Views.Settings.ThemeAppearanceView"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:controls="clr-namespace:Material.Styles.Controls;assembly=Material.Styles"
+             xmlns:assists="clr-namespace:Material.Styles.Assists;assembly=Material.Styles"
+             xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             xmlns:loc="clr-namespace:Lemon.Template.Avalonia.Infrastructures.Localization"
+             xmlns:vm="clr-namespace:Lemon.Template.Avalonia.ViewModels.Settings"
+             mc:Ignorable="d"
+             d:DesignHeight="720"
+             d:DesignWidth="960"
+             x:DataType="vm:ThemeAppearanceViewModel">
+    <UserControl.Styles>
+        <Style Selector="TextBlock.channel">
+            <Setter Property="Width" Value="28" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+        <Style Selector="TextBlock.channel-value">
+            <Setter Property="Width" Value="40" />
+            <Setter Property="VerticalAlignment" Value="Center" />
+        </Style>
+    </UserControl.Styles>
+
+    <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Margin="24" MaxWidth="720">
+            <TextBlock Text="{loc:Localize Theme_Title}"
+                       Classes="Headline5"
+                       Margin="0,0,0,8" />
+            <TextBlock TextWrapping="Wrap"
+                       Classes="Body2"
+                       Foreground="{DynamicResource MaterialBodyLightBrush}"
+                       Text="{loc:Localize Theme_Description}" />
+
+            <controls:Card Margin="0,16,0,0" Padding="16">
+                <StackPanel>
+                    <TextBlock Text="{loc:Localize Theme_Base_Title}" Classes="Subtitle1" Margin="0,0,0,8" />
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="{loc:Localize Theme_Base_SyncNote}"
+                                   VerticalAlignment="Center"
+                                   Margin="0,0,12,0"
+                                   Classes="Body2"
+                                   Foreground="{DynamicResource MaterialBodyLightBrush}" />
+                        <Button Command="{Binding ToggleDarkCommand}"
+                                Classes="Flat icon"
+                                Padding="8,4"
+                                ToolTip.Tip="{loc:Localize Theme_Base_ToolTip}">
+                            <Panel Width="22" Height="22">
+                                <materialIcons:MaterialIcon Width="22" Height="22" Kind="WeatherNight" IsVisible="{Binding !IsDark}" />
+                                <materialIcons:MaterialIcon Width="22" Height="22" Kind="WhiteBalanceSunny" IsVisible="{Binding IsDark}" />
+                            </Panel>
+                        </Button>
+                    </StackPanel>
+                </StackPanel>
+            </controls:Card>
+
+            <controls:Card Margin="0,16,0,0" Padding="16">
+                <StackPanel>
+                    <TextBlock Text="{loc:Localize Theme_Primary}" Classes="Subtitle1" Margin="0,0,0,8" />
+                    <ComboBox ItemsSource="{Binding PrimarySwatches}"
+                              SelectedItem="{Binding SelectedPrimarySwatch, Mode=TwoWay}"
+                              assists:ComboBoxAssist.Label="{loc:Localize Theme_SwatchHint}"
+                              Theme="{DynamicResource MaterialOutlineComboBox}"
+                              HorizontalAlignment="Stretch"
+                              Margin="0,0,0,12" />
+                    <UniformGrid Columns="3" Margin="0,0,0,8">
+                        <Slider Minimum="0" Maximum="255" Value="{Binding PrimaryR, Mode=TwoWay}" TickFrequency="1" IsSnapToTickEnabled="True" Margin="0,0,8,0" />
+                        <Slider Minimum="0" Maximum="255" Value="{Binding PrimaryG, Mode=TwoWay}" TickFrequency="1" IsSnapToTickEnabled="True" Margin="4,0" />
+                        <Slider Minimum="0" Maximum="255" Value="{Binding PrimaryB, Mode=TwoWay}" TickFrequency="1" IsSnapToTickEnabled="True" Margin="8,0,0,0" />
+                    </UniformGrid>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                        <TextBlock Text="R" Classes="Caption channel" />
+                        <TextBlock Text="{Binding PrimaryR}" Classes="channel-value" />
+                        <TextBlock Text="G" Classes="Caption channel" Margin="16,0,0,0" />
+                        <TextBlock Text="{Binding PrimaryG}" Classes="channel-value" />
+                        <TextBlock Text="B" Classes="Caption channel" Margin="16,0,0,0" />
+                        <TextBlock Text="{Binding PrimaryB}" Classes="channel-value" />
+                    </StackPanel>
+                    <Border Height="40" CornerRadius="4" BorderBrush="{DynamicResource MaterialDividerBrush}" BorderThickness="1" Background="{Binding PrimaryPreview}" />
+                </StackPanel>
+            </controls:Card>
+
+            <controls:Card Margin="0,16,0,0" Padding="16">
+                <StackPanel>
+                    <TextBlock Text="{loc:Localize Theme_Secondary}" Classes="Subtitle1" Margin="0,0,0,8" />
+                    <ComboBox ItemsSource="{Binding SecondarySwatches}"
+                              SelectedItem="{Binding SelectedSecondarySwatch, Mode=TwoWay}"
+                              assists:ComboBoxAssist.Label="{loc:Localize Theme_SwatchHint}"
+                              Theme="{DynamicResource MaterialOutlineComboBox}"
+                              HorizontalAlignment="Stretch"
+                              Margin="0,0,0,12" />
+                    <UniformGrid Columns="3" Margin="0,0,0,8">
+                        <Slider Minimum="0" Maximum="255" Value="{Binding SecondaryR, Mode=TwoWay}" TickFrequency="1" IsSnapToTickEnabled="True" Margin="0,0,8,0" />
+                        <Slider Minimum="0" Maximum="255" Value="{Binding SecondaryG, Mode=TwoWay}" TickFrequency="1" IsSnapToTickEnabled="True" Margin="4,0" />
+                        <Slider Minimum="0" Maximum="255" Value="{Binding SecondaryB, Mode=TwoWay}" TickFrequency="1" IsSnapToTickEnabled="True" Margin="8,0,0,0" />
+                    </UniformGrid>
+                    <StackPanel Orientation="Horizontal" Margin="0,0,0,8">
+                        <TextBlock Text="R" Classes="Caption channel" />
+                        <TextBlock Text="{Binding SecondaryR}" Classes="channel-value" />
+                        <TextBlock Text="G" Classes="Caption channel" Margin="16,0,0,0" />
+                        <TextBlock Text="{Binding SecondaryG}" Classes="channel-value" />
+                        <TextBlock Text="B" Classes="Caption channel" Margin="16,0,0,0" />
+                        <TextBlock Text="{Binding SecondaryB}" Classes="channel-value" />
+                    </StackPanel>
+                    <Border Height="40" CornerRadius="4" BorderBrush="{DynamicResource MaterialDividerBrush}" BorderThickness="1" Background="{Binding SecondaryPreview}" />
+                </StackPanel>
+            </controls:Card>
+
+            <StackPanel Orientation="Horizontal" Margin="0,24,0,0" Spacing="8">
+                <Button Content="{loc:Localize Theme_Apply}"
+                        Command="{Binding ApplyThemeCommand}" />
+                <Button Content="{loc:Localize Theme_ReloadFromUi}"
+                        Classes="Outline"
+                        Command="{Binding ReloadFromUiCommand}" />
+                <Button Content="{loc:Localize Theme_ResetSwatches}"
+                        Classes="Outline"
+                        Command="{Binding ResetDefaultSwatchesCommand}"
+                        ToolTip.Tip="{loc:Localize Theme_ResetSwatches_ToolTip}" />
+            </StackPanel>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

@@ -13,7 +13,7 @@
     <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
   </PropertyGroup>
 
-  <ItemGroup Label="WPF application">
+  <ItemGroup Label="Application (shared by the WPF and Avalonia templates unless noted)">
     <PackageVersion Include="CommunityToolkit.Mvvm" Version="8.4.2" />
     <PackageVersion Include="H.NotifyIcon.Wpf" Version="2.4.1" />
     <PackageVersion Include="Hangfire.AspNetCore" Version="1.8.24" />
@@ -24,6 +24,16 @@
     <PackageVersion Include="Microsoft.Web.WebView2" Version="1.0.4078.44" />
     <PackageVersion Include="Volo.Abp.Autofac" Version="10.5.0" />
     <PackageVersion Include="Volo.Abp.BackgroundJobs.HangFire" Version="10.5.0" />
+  </ItemGroup>
+
+  <ItemGroup Label="Avalonia application">
+    <!-- Material.Avalonia 3.20 needs Avalonia >= 12.1.1; keep the Avalonia packages on one version. -->
+    <PackageVersion Include="Avalonia" Version="12.1.3" />
+    <PackageVersion Include="Avalonia.Desktop" Version="12.1.3" />
+    <PackageVersion Include="Avalonia.Headless.XUnit" Version="12.1.3" />
+    <PackageVersion Include="DialogHost.Avalonia" Version="0.12.3" />
+    <PackageVersion Include="Material.Avalonia" Version="3.20.0" />
+    <PackageVersion Include="Material.Icons.Avalonia" Version="3.0.2" />
   </ItemGroup>
 
   <ItemGroup Label="Security remediation">
@@ -48,6 +58,8 @@
     <PackageVersion Include="Microsoft.Extensions.Logging.Abstractions" Version="10.0.10" />
     <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="18.8.1" />
     <PackageVersion Include="xunit" Version="2.9.3" />
+    <!-- Avalonia.Headless.XUnit 12 is built on xunit v3 (3.2.x); the Avalonia test project uses it instead of xunit 2. -->
+    <PackageVersion Include="xunit.v3" Version="3.2.2" />
     <PackageVersion Include="xunit.runner.visualstudio" Version="3.1.5" />
   </ItemGroup>
 

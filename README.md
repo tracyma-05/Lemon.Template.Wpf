@@ -1,11 +1,18 @@
-# Material Design WPF Starter
+# Material Design Desktop Starters (WPF · Avalonia)
 
 [![CI](https://github.com/tracyma-05/Lemon.Template.Wpf/actions/workflows/ci.yml/badge.svg)](https://github.com/tracyma-05/Lemon.Template.Wpf/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE.txt)
-[![.NET](https://img.shields.io/badge/.NET-net10.0--windows-512BD4?logo=dotnet)](https://dotnet.microsoft.com/)
-[![Platform](https://img.shields.io/badge/Platform-Windows-0078D4?logo=windows)](https://github.com/)
+[![.NET](https://img.shields.io/badge/.NET-10-512BD4?logo=dotnet)](https://dotnet.microsoft.com/)
+[![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20macOS-0078D4)](https://github.com/)
 
-A **Windows desktop WPF** starter that combines **Material Design In XAML**, **dependency injection**, **SQLite-backed settings & jobs**, and an optional **`dotnet new` template** for scaffolding similar apps quickly.
+Two **`dotnet new` templates** for Material Design desktop apps with **dependency injection**, **SQLite-backed settings & jobs**, navigation, localization and file logging:
+
+| Template | UI | Runs on | Short name |
+|----------|----|---------|------------|
+| WPF | WPF + [Material Design In XAML](https://github.com/MaterialDesignInXAML/MaterialDesignInXamlToolkit) | Windows | `lemon-wpf` |
+| Avalonia | [Avalonia](https://avaloniaui.net/) + [Material.Avalonia](https://github.com/AvaloniaCommunity/Material.Avalonia) | **Windows and macOS** | `lemon-avalonia` |
+
+Both ship in the same NuGet package (`Lemon.Templates.Wpf`) and share the same architecture; most of this README applies to both, and [Avalonia template (Windows / macOS)](#avalonia-template-windows--macos) lists what differs.
 
 ---
 
@@ -15,6 +22,7 @@ A **Windows desktop WPF** starter that combines **Material Design In XAML**, **d
 - [Features](#features)
 - [Tech stack](#tech-stack)
 - [Architecture notes](#architecture-notes)
+- [Avalonia template (Windows / macOS)](#avalonia-template-windows--macos)
 - [Getting started](#getting-started)
 - [Using as a `dotnet new` template](#using-as-a-dotnet-new-template)
 - [Publish template to NuGet](#publish-template-to-nuget)
@@ -30,7 +38,7 @@ A **Windows desktop WPF** starter that combines **Material Design In XAML**, **d
 
 This repository is intended as a **clean, generic baseline** for line-of-business style WPF applications: a single main window with a side navigation shell, region-based content, theme persistence, local file logging, and a **Hangfire** dashboard hosted in-process (Kestrel on loopback) with **SQLite** storage shared with other app data.
 
-It is also packaged as a **.NET project template** (see `.template.config/template.json`) so you can install it locally or ship it in a NuGet template package.
+It is also packaged as **.NET project templates** (`.template.config/template.json` for WPF, `templates/avalonia/.template.config/template.json` for Avalonia) so you can install them locally or ship them in a NuGet template package.
 
 ---
 
@@ -84,6 +92,73 @@ It is also packaged as a **.NET project template** (see `.template.config/templa
 
 ---
 
+## :apple: Avalonia template (Windows / macOS)
+
+`src/Lemon.Template.Avalonia` is the same application rebuilt on **Avalonia 12** so a generated project runs
+on **Windows and macOS** from one code base (`net10.0`, no `-windows` TFM). Pages, navigation, dialogs,
+theming, localization, SQLite stores, ABP/Autofac and Hangfire are ported one-to-one; the view models and
+services are largely unchanged.
+
+| Layer | Avalonia template |
+|-------|-------------------|
+| **UI** | Avalonia 12, [Material.Avalonia](https://github.com/AvaloniaCommunity/Material.Avalonia), [Material.Icons.Avalonia](https://github.com/AvaloniaUtils/Material.Icons.Avalonia), [DialogHost.Avalonia](https://github.com/AvaloniaUtils/DialogHost.Avalonia) |
+| **Bindings** | Compiled bindings by default (`x:DataType` on every view) |
+| **Tray** | Avalonia's built-in `TrayIcon` — notification area on Windows, menu bar extra on macOS |
+| **Tests** | xUnit v3 + `Avalonia.Headless.XUnit` (`[AvaloniaFact]`), runs on Windows and macOS |
+| **Target** | `net10.0` |
+
+### What differs from the WPF template
+
+| Area | WPF | Avalonia |
+|------|-----|----------|
+| **Modal window dialogs** | `IDialogService.ShowDialog(name, params, callback)`, `IHostDialogService.ShowWindow(...)` (synchronous) | `await IDialogService.ShowWindowAsync(name, params)` — an Avalonia modal window cannot block the caller. In-window `DialogHost` dialogs (`ShowDialogAsync`) are unchanged. |
+| **Tools → Cron** | Hangfire dashboard embedded with WebView2 | Shows the dashboard URL and an **Open in browser** button: WebView2 is Windows-only, and the system browser works the same on both platforms with no extra native dependency. |
+| **Window chrome** | Borderless window with drawn min/max/close buttons | Client area extends into the title bar with `WindowDecorations="BorderOnly"`. Windows gets the template's own min/max/close buttons; macOS keeps its native traffic lights. `WindowDecorationProperties.ElementRole` marks the title strip (`TitleBar`, so the OS handles drag, double-click and snapping), the caption buttons, and every clickable control on the strip (`User`). Closing asks for confirmation whichever way it is requested (caption button, Alt+F4, the red button); tray **Exit**, Cmd+Q and OS shutdown do not ask. |
+| **Theme switching** | `PaletteHelper` on MDIX's `BundledTheme` | `CustomMaterialTheme` with `BaseTheme="Inherit"`: light / dark is only `Application.RequestedThemeVariant`, and primary / secondary are the theme's `Color` properties. (`MaterialTheme` rebuilds its palette from an enum asynchronously on every switch, which undid the switch.) On a dark base the mid primary is replaced by its light shade for contrast, as MDIX's `ColorAdjustment` does. |
+| **Fonts** | MDIX default | **Bundled** in `Assets/Fonts`, so every Windows and macOS machine renders the same: Noto Sans SC Regular / Medium / Bold (static OTFs from [notofonts/noto-cjk](https://github.com/notofonts/noto-cjk)) as `UiFont`, and Cascadia Mono (from [google/fonts](https://github.com/google/fonts/tree/main/ofl/cascadiamono)) as `CodeFont`, applied to every window. Both are SIL OFL 1.1; the licence texts ship next to the executable in `Licenses/Fonts`. Material.Avalonia's default Roboto has no CJK glyphs, which split mixed Chinese / Latin text across two fonts. Static weights rather than the variable Noto file because Avalonia does not apply a variable font's weight axis (it renders everything at the default Thin). Cost: about 26 MB per app. |
+| **Log files** | `<app folder>/Logs` | `<LocalApplicationData>/<AssemblyName>/Logs` (`%LOCALAPPDATA%` on Windows, `~/Library/Application Support` on macOS) — an `.app` bundle is not writable. |
+| **Desktop shortcut** | `--EnableDesktopShortcut` | Same option, **Windows only** (`.lnk` via COM); a no-op on macOS. |
+| **Localization refresh** | `LocalizationService` raises `"Item[]"` | Raises `"Item"`, the name Avalonia's indexer bindings listen for (covered by `LocalizeExtensionTests`). |
+| **Visibility converters** | `BoolToVisibility`, `InverseBoolToVisibility`, `CountToVisibility` | Avalonia has no `Visibility`: bind `IsVisible` directly (`{Binding !Flag}` / `{Binding !!Items.Count}`), or use `CountToBoolConverter`. |
+
+### Run from source
+
+```bash
+dotnet run --project src/Lemon.Template.Avalonia/Lemon.Template.Avalonia.csproj
+```
+
+```bash
+dotnet test tests/Lemon.Template.Avalonia.Tests/Lemon.Template.Avalonia.Tests.csproj
+```
+
+On macOS use those two commands rather than building the whole solution: `Lemon.Template.Wpf.sln` also
+contains the WPF projects, which only build on Windows. The headless view tests write the frames they render
+to `renders/` next to the test assembly, which is a quick way to check a page's look on a machine you are not
+sitting at.
+
+### Publishing
+
+```bash
+dotnet publish src/Lemon.Template.Avalonia/Lemon.Template.Avalonia.csproj -c Release -r win-x64 --self-contained
+```
+
+```bash
+dotnet publish src/Lemon.Template.Avalonia/Lemon.Template.Avalonia.csproj -c Release -r osx-arm64 --self-contained
+```
+
+Use `osx-x64` for Intel Macs. To get a double-clickable **`.app` bundle**, run this on a Mac:
+
+```bash
+bash src/Lemon.Template.Avalonia/Packaging/macOS/bundle.sh
+```
+
+It publishes, assembles `<AppName>.app` with `Packaging/macOS/Info.plist`, generates the icon with `sips` /
+`iconutil`, and signs the bundle ad hoc so it launches locally. Set `CFBundleIdentifier` in `Info.plist` to
+your own reverse-DNS name first. Shipping to other Macs additionally needs a Developer ID signature and
+notarization, which the script does not do.
+
+---
+
 ## :door: Getting started
 
 ### Prerequisites
@@ -125,27 +200,32 @@ Open the solution in Visual Studio / Rider if you prefer an IDE workflow.
 
 ### Continuous integration
 
-[`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs on `windows-latest` in two jobs:
+[`.github/workflows/ci.yml`](.github/workflows/ci.yml) runs these jobs:
 
-- **Build and test** — restore, build the solution in `Release`, run the test suite, upload the `.trx`.
-- **Template round-trip** — install the template from source, scaffold it twice (default options, and with
-  every optional feature disabled), build both outputs, run the scaffolded tests, assert the disabled
-  features left no files/dependencies/conditional markers behind, then pack the template package.
+- **Build and test (Windows)** — restore, build the whole solution in `Release` (WPF and Avalonia), run both
+  test suites, upload the `.trx`.
+- **Build and test (macOS, Avalonia)** — run the Avalonia test suite on `macos-latest`, publish an
+  `osx-arm64` build, and upload the test results plus the frames the headless view tests rendered.
+- **Pack** — build the template package once; every round-trip below installs that exact `.nupkg`.
+- **Template round-trip** — `lemon-wpf` on Windows, `lemon-avalonia` on Windows *and* macOS: scaffold with
+  default options and with every optional feature disabled, build both, run the scaffolded tests, assert the
+  disabled features left no files/dependencies/conditional markers behind (and that neither template leaks
+  the other's sources). The Avalonia leg also builds a scaffold with the Windows-only desktop shortcut on.
 
-The second job exists because building this repository does **not** prove the template works: the template
+The round-trip exists because building this repository does **not** prove the templates work: the template
 engine strips conditional blocks that the repository compiles with enabled.
 
 ---
 
 ## :package: Using as a `dotnet new` template
 
-Install from a **local clone** of this repository (folder that contains `.template.config`):
+Install from a **local clone** of this repository (the folder that contains `.template.config`); this registers both `lemon-wpf` and `lemon-avalonia`:
 
 ```bash
 dotnet new install .
 ```
 
-The repository root **`Lemon.Template.Wpf.sln`** is the full developer solution (includes the template pack, publisher tool, and nested solution folders). The **NuGet package** ships a slimmer solution that only loads the WPF app and a few shared files—see **`packaging/Lemon.Template.Wpf.sln`** (paths are written for that packaged layout, not for opening from `packaging/` on disk).
+The repository root **`Lemon.Template.Wpf.sln`** is the full developer solution (both apps, both test projects, the template pack and the publisher tool). Each template ships a slimmer solution that only loads its app and a few shared files—see **`packaging/Lemon.Template.Wpf.sln`** and **`packaging/Lemon.Template.Avalonia.sln`** (paths are written for the generated layout, not for opening from `packaging/` on disk).
 
 Create a new project (default `sourceName` is `Lemon.Template.Wpf`; replace `-n` / `-o` with your app name):
 
@@ -153,13 +233,19 @@ Create a new project (default `sourceName` is `Lemon.Template.Wpf`; replace `-n`
 dotnet new lemon-wpf -n MyCompany.MyApp -o MyCompany.MyApp
 ```
 
+or, for Windows **and** macOS (default `sourceName` `Lemon.Template.Avalonia`):
+
+```bash
+dotnet new lemon-avalonia -n MyCompany.MyApp -o MyCompany.MyApp
+```
+
 ### Options
 
 | Option | Default | Effect |
 |--------|---------|--------|
-| `--EnableHangfire` | `true` | Hangfire job server and the embedded dashboard page. Off also drops the `Microsoft.AspNetCore.App` framework reference, WebView2 and both Hangfire packages, and omits `Services/Hangfire`, `Views/Tools` and `ViewModels/Tools`. |
-| `--EnableTrayIcon` | `true` | Tray icon with an Exit command; restores the window on left click. Off drops `H.NotifyIcon.Wpf`. |
-| `--EnableDesktopShortcut` | `false` | Recreates a desktop shortcut on every launch. Off by default because silently writing to the user's desktop is surprising for a fresh app. |
+| `--EnableHangfire` | `true` | Hangfire job server and the dashboard page (embedded with WebView2 in WPF, opened in the browser in Avalonia). Off also drops the `Microsoft.AspNetCore.App` framework reference, WebView2 (WPF) and both Hangfire packages, and omits `Services/Hangfire`, `Views/Tools` and `ViewModels/Tools`. |
+| `--EnableTrayIcon` | `true` | Tray icon with an Exit command; restores the window on left click. WPF uses `H.NotifyIcon.Wpf`; Avalonia uses its built-in `TrayIcon` (a menu bar extra on macOS, where a click opens the menu). |
+| `--EnableDesktopShortcut` | `false` | Recreates a desktop shortcut on every launch. Off by default because silently writing to the user's desktop is surprising for a fresh app. Windows only; the Avalonia app skips it on macOS. |
 | `--IncludeTests` | `true` | The xUnit test project under `tests/`. |
 | `--skipRestore` | `false` | Skip the implicit `dotnet restore` after creation. |
 
@@ -169,7 +255,7 @@ A minimal shell with no background jobs and no tray icon:
 dotnet new lemon-wpf -n MyCompany.MyApp --EnableHangfire false --EnableTrayIcon false
 ```
 
-The packaged solution (`packaging/Lemon.Template.Wpf.sln`) loads the application project only; add the
+The packaged solutions load the application project only; add the
 test project with `dotnet sln add tests/*/*.csproj` if you want it in the same solution.
 
 Uninstall when you no longer need the template:
@@ -243,8 +329,10 @@ dotnet new install Lemon.Templates.Wpf@1.0.1
 | `App:SqliteDatabasePath` | Optional. Absolute path, or path relative to the app base directory. If empty, the database is created under `%LocalApplicationData%\<AssemblyName>\`. |
 | `HangfireDashboard:Url` | Optional. Base URL for the embedded Kestrel host (e.g. `http://127.0.0.1:5088`). If empty, **`http://127.0.0.1:0`** is used (dynamic port). |
 
-Serilog writes rolling files to `Logs/log-YYYYMMDD.txt` under the **application base directory**
-(`AppContext.BaseDirectory`), which is also where the Logs → Local-Logs page reads from.
+Serilog writes rolling files to `Logs/log-YYYYMMDD.txt`, which is also where the Logs → Local-Logs page
+reads from: under the **application base directory** (`AppContext.BaseDirectory`) in the WPF app, and under
+`<LocalApplicationData>/<AssemblyName>/Logs` in the Avalonia app (see
+[What differs](#what-differs-from-the-wpf-template)).
 
 Minimum levels are set in `App.OnStartup` and differ per configuration: **Release** records `Warning` and
 above, **Debug** records `Information` and above. The `Microsoft` namespace is capped at `Warning` in both.
@@ -279,7 +367,10 @@ is missing from the neutral file renders as `[My_Key]` so the gap is visible rat
 
 | Symptom | Cause / fix |
 |---------|-------------|
-| Tools → Cron is blank | The **WebView2 Runtime** is missing. Install the [Evergreen runtime](https://developer.microsoft.com/microsoft-edge/webview2/). |
+| Tools → Cron is blank (WPF) | The **WebView2 Runtime** is missing. Install the [Evergreen runtime](https://developer.microsoft.com/microsoft-edge/webview2/). |
+| Tools → Cron says the dashboard is not running (Avalonia) | The loopback Kestrel host failed to start — usually a fixed `HangfireDashboard:Url` whose port is taken. Leave it empty for a dynamic port; the log has the details. |
+| macOS: "the app is damaged" / cannot be opened | The bundle was downloaded (quarantined) without a Developer ID signature and notarization. For a local test build, `xattr -dr com.apple.quarantine <App>.app`; to distribute, sign and notarize. |
+| `dotnet build` of the solution fails on macOS | Expected: the solution includes the WPF projects. Build or test the Avalonia projects directly (see the Avalonia *Run from source* commands). |
 | `NETSDK1057` / SDK not found | `net10.0-windows` needs the **.NET 10 SDK**. Install it from [dotnet.microsoft.com](https://dotnet.microsoft.com/download). |
 | `NU1507` warning about package sources | Central Package Management wants a single feed, or [package source mapping](https://aka.ms/nuget-package-source-mapping) in your `NuGet.config`. Deliberately left as a warning so the template still restores on machines with an internal mirror. |
 | A theme or language change is not remembered | The preferences tables live in the shared SQLite file; check `App:SqliteDatabasePath` and that the folder is writable. Failures are logged as warnings rather than thrown. |
@@ -297,8 +388,9 @@ Lemon.Template.Wpf/
 ├── Directory.Build.props      # Shared build conventions (imports common.props)
 ├── Directory.Packages.props   # Central Package Management: every dependency version
 ├── common.props               # Package metadata + shipped Version
-├── packaging/                 # Consumer .sln used only inside the NuGet template (not the full dev solution)
-├── Lemon.Template.Wpf.TemplatePack.csproj   # NuGet template pack (PackageType=Template)
+├── templates/avalonia/.template.config/   # lemon-avalonia manifest (reads the repo root via "source": "../../")
+├── packaging/                 # Consumer .sln files used only inside the templates (not the full dev solution)
+├── Lemon.Template.Wpf.TemplatePack.csproj   # NuGet template pack (PackageType=Template), both templates
 ├── src/Lemon.Template.Wpf/    # Main WPF application
 │   ├── Commons/               # Shared constants (routes, regions, icons)
 │   ├── Infrastructures/       # DI extensions, navigation, dialogs, localization, data paths, shell
@@ -307,7 +399,10 @@ Lemon.Template.Wpf/
 │   ├── Themes/                # Control templates and shared styles (incl. Navigation.xaml)
 │   ├── Views/ / ViewModels/   # UI + MVVM
 │   └── appsettings.json
+├── src/Lemon.Template.Avalonia/        # The same app on Avalonia (Windows / macOS); same folder structure
+│   └── Packaging/macOS/               # Info.plist + bundle.sh for a .app bundle
 ├── tests/Lemon.Template.Wpf.Tests/   # xUnit suite
+├── tests/Lemon.Template.Avalonia.Tests/   # xUnit v3 + Avalonia headless suite
 ├── tools/
 │   └── NuGet.TemplatePublisher/   # Pack + push to NuGet (NuGet.Protocol / NuGet.Packaging)
 ├── CHANGELOG.md

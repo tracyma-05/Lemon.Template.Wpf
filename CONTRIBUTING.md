@@ -53,7 +53,8 @@ constant, a `[NavigationRegister]` attribute, and `Menu_*` resource entries for 
 
 ## Changing the template itself
 
-Anything under `.template.config/`, a new feature switch, or a new top-level file needs a round-trip check —
+Anything under `.template.config/` or `templates/avalonia/.template.config/`, a new feature switch, or a new
+top-level file needs a round-trip check —
 building the repository is *not* enough, because the template engine strips conditional blocks that the
 repository compiles with enabled.
 
@@ -69,7 +70,18 @@ dotnet new lemon-wpf -n Acme.FullApp -o /tmp/Full
 dotnet new lemon-wpf -n Acme.MinApp -o /tmp/Min --EnableHangfire false --EnableTrayIcon false --IncludeTests false
 ```
 
-Then build **both** outputs, and run the scaffolded tests for the full one. Watch for:
+The same for the Avalonia template (`lemon-avalonia`), which is also worth building on a Mac when the change
+touches anything platform-specific:
+
+```bash
+dotnet new lemon-avalonia -n Acme.FullApp -o /tmp/AvaloniaFull
+```
+
+```bash
+dotnet new lemon-avalonia -n Acme.MinApp -o /tmp/AvaloniaMin --EnableHangfire false --EnableTrayIcon false --IncludeTests false
+```
+
+Then build **both** outputs of each template, and run the scaffolded tests for the full ones. Watch for:
 
 - leftover `#if (Enable...)` / `<!--#if ... -->` markers in the generated files;
 - references to a feature you disabled (packages, `using` directives, `FrameworkReference`);
@@ -78,8 +90,13 @@ Then build **both** outputs, and run the scaffolded tests for the full one. Watc
 
 Finally, `dotnet new uninstall .` so you do not leave a local template registered.
 
-New files at the repository root must also be added to the `<Content Include=...>` list in
-`Lemon.Template.Wpf.TemplatePack.csproj`, or they will be missing from the published package.
+New files at the repository root must also be added to the `SharedTemplateFile` list in
+`Lemon.Template.Wpf.TemplatePack.csproj` — and, for the Avalonia template, to the `include` list of
+`templates/avalonia/.template.config/template.json` — or they will be missing from the published package.
+
+A change to one app usually belongs in the other too: `src/Lemon.Template.Wpf` and
+`src/Lemon.Template.Avalonia` share their structure, services and view models on purpose. Port it, or say in
+the pull request why it is WPF- or Avalonia-only.
 
 ## Commits and pull requests
 

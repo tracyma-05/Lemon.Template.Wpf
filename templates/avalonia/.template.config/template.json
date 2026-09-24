@@ -1,0 +1,140 @@
+{
+    "$schema": "http://json.schemastore.org/template",
+    "author": "Tracy Ma",
+    "classifications": [
+        "Avalonia",
+        "Desktop",
+        "Cross-platform",
+        "Material Design"
+    ],
+    "name": "Material Design Avalonia starter (Windows / macOS)",
+    "description": "A cross-platform Avalonia desktop starter for Windows and macOS with Material.Avalonia, ABP/Autofac dependency injection, navigation, Serilog file logging, SQLite-backed settings, localization, and an optional in-process Hangfire dashboard.",
+    "identity": "Lemon.Template.Avalonia",
+    "shortName": "lemon-avalonia",
+    "defaultName": "AvaloniaApp",
+    "tags": {
+        "language": "C#",
+        "type": "project"
+    },
+    "sourceName": "Lemon.Template.Avalonia",
+    "preferNameDirectory": true,
+    "symbols": {
+        "EnableHangfire": {
+            "type": "parameter",
+            "datatype": "bool",
+            "defaultValue": "true",
+            "displayName": "Hangfire background jobs",
+            "description": "Include the Hangfire job server and a page that opens its dashboard in the default browser. Turning this off also drops the ASP.NET Core dependency."
+        },
+        "EnableTrayIcon": {
+            "type": "parameter",
+            "datatype": "bool",
+            "defaultValue": "true",
+            "displayName": "Tray / menu bar icon",
+            "description": "Show a notification-area icon on Windows (a menu bar extra on macOS) with an Exit command."
+        },
+        "EnableDesktopShortcut": {
+            "type": "parameter",
+            "datatype": "bool",
+            "defaultValue": "false",
+            "displayName": "Desktop shortcut (Windows only)",
+            "description": "Recreate a desktop shortcut to the application on every launch. Has no effect on macOS."
+        },
+        "IncludeTests": {
+            "type": "parameter",
+            "datatype": "bool",
+            "defaultValue": "true",
+            "displayName": "Unit test project",
+            "description": "Include the xUnit test project (headless Avalonia) covering navigation registration, localization, theming and path resolution."
+        },
+        "skipRestore": {
+            "type": "parameter",
+            "datatype": "bool",
+            "defaultValue": "false",
+            "displayName": "Skip restore",
+            "description": "Do not run an implicit dotnet restore after the project is created."
+        }
+    },
+    "sources": [
+        {
+            "source": "../../",
+            "target": "./",
+            "include": [
+                "src/Lemon.Template.Avalonia/**",
+                "tests/Lemon.Template.Avalonia.Tests/**",
+                ".editorconfig",
+                "common.props",
+                "Directory.Build.props",
+                "Directory.Packages.props",
+                "LICENSE.txt",
+                "README.md",
+                "CONTRIBUTING.md",
+                "CHANGELOG.md"
+            ],
+            "exclude": [
+                "**/[Bb]in/**",
+                "**/[Oo]bj/**",
+                "**/.vs/**",
+                "**/.git/**",
+                "artifacts/**",
+                "**/[Ll]ogs/**",
+                "**/*.filelist",
+                "**/*.user",
+                "**/*.lock.json",
+                "**/*.nupkg",
+                "**/*.db",
+                "**/*.db-shm",
+                "**/*.db-wal",
+                "**/secret.json"
+            ],
+            "copyOnly": [
+                "**/*.otf",
+                "**/*.ttf",
+                "**/*.png",
+                "**/*.ico"
+            ],
+            "modifiers": [
+                {
+                    "condition": "(!EnableHangfire)",
+                    "exclude": [
+                        "src/Lemon.Template.Avalonia/Services/Hangfire/**",
+                        "src/Lemon.Template.Avalonia/Views/Tools/**",
+                        "src/Lemon.Template.Avalonia/ViewModels/Tools/**"
+                    ]
+                },
+                {
+                    "condition": "(!IncludeTests)",
+                    "exclude": [
+                        "tests/**"
+                    ]
+                }
+            ]
+        },
+        {
+            "source": "../../packaging/",
+            "target": "./",
+            "include": [
+                "Lemon.Template.Avalonia.sln"
+            ]
+        }
+    ],
+    "primaryOutputs": [
+        {
+            "path": "src/Lemon.Template.Avalonia/Lemon.Template.Avalonia.csproj"
+        }
+    ],
+    "postActions": [
+        {
+            "id": "restore",
+            "condition": "(!skipRestore)",
+            "description": "Restore NuGet packages required by this project.",
+            "manualInstructions": [
+                {
+                    "text": "Run 'dotnet restore'"
+                }
+            ],
+            "actionId": "210D431B-A78B-4D2F-B762-4ED3E3EA9025",
+            "continueOnError": true
+        }
+    ]
+}

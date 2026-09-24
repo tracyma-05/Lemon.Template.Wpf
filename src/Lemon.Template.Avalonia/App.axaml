@@ -1,0 +1,46 @@
+<Application x:Class="Lemon.Template.Avalonia.App"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:themes="clr-namespace:Material.Styles.Themes;assembly=Material.Styles"
+             xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             xmlns:dialogHost="clr-namespace:DialogHostAvalonia;assembly=DialogHost.Avalonia"
+             Name="Lemon.Template.Avalonia"
+             RequestedThemeVariant="Light">
+    <Application.Styles>
+        <!--
+            CustomMaterialTheme rather than MaterialTheme: MaterialTheme's primary is an enum, and every light /
+            dark switch (or BaseTheme change) makes it rebuild the whole palette from that enum, asynchronously,
+            wiping a custom primary. Here the colours are plain Colors and BaseTheme follows
+            Application.RequestedThemeVariant, which is the only thing AppThemeService switches.
+
+            Defaults: DeepPurple 500 / Lime A700, the same as MaterialDesignSwatches.DefaultPrimary / Secondary
+            (AppThemeServiceTests keeps the two in step). The persisted choice is applied on top at start-up.
+        -->
+        <themes:CustomMaterialTheme BaseTheme="Inherit" PrimaryColor="#673AB7" SecondaryColor="#AEEA00" />
+        <materialIcons:MaterialIconStyles />
+        <dialogHost:DialogHostStyles />
+
+        <StyleInclude Source="avares://Lemon.Template.Avalonia/Themes/Controls.axaml" />
+        <StyleInclude Source="avares://Lemon.Template.Avalonia/Themes/Navigation.axaml" />
+        <StyleInclude Source="avares://Lemon.Template.Avalonia/Themes/TabControl.axaml" />
+    </Application.Styles>
+
+    <Application.Resources>
+        <!--
+            Fonts, bundled in Assets/Fonts so the app looks the same on every Windows and macOS machine (both
+            SIL OFL 1.1; licences in Assets/Fonts/*-OFL.txt, copied to Licenses/Fonts in the output).
+            Material.Avalonia sets Roboto on every window, and Roboto has no CJK glyphs, so mixed Chinese / Latin
+            text came out in two fonts with mismatched weight and baseline. Noto Sans SC carries both scripts.
+
+            Noto Sans SC ships as static Regular / Medium / Bold OTFs, not the variable font: Avalonia does not
+            apply a variable font's weight axis, and the variable file renders every weight at its default Thin.
+            The system names after the bundled family are only a safety net for glyphs the subset lacks.
+
+            Styles load before these resources, so style files must reference them with DynamicResource.
+        -->
+        <FontFamily x:Key="UiFont">avares://Lemon.Template.Avalonia/Assets/Fonts#Noto Sans SC, Microsoft YaHei UI, PingFang SC, Segoe UI</FontFamily>
+
+        <!-- Cascadia Mono, not Cascadia Code: the latter has ligatures and would merge a double hyphen in log text. -->
+        <FontFamily x:Key="CodeFont">avares://Lemon.Template.Avalonia/Assets/Fonts#Cascadia Mono, Consolas, Menlo, Courier New</FontFamily>
+    </Application.Resources>
+</Application>

@@ -6,6 +6,67 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [1.1.0] - 2026-09-24
+
+### Added
+
+- **Avalonia template, `lemon-avalonia` (Windows / macOS).** `src/Lemon.Template.Avalonia` is the same app
+  rebuilt on Avalonia 12 + Material.Avalonia 3.20 + DialogHost.Avalonia, targeting plain `net10.0`, so a
+  generated project runs on Windows and macOS. Navigation, dialogs, theming, localization, SQLite stores,
+  ABP/Autofac, Serilog and Hangfire are ported one-to-one, with the same template options. Differences from
+  the WPF template, all documented in the README:
+  - Modal window dialogs are awaited: `IDialogService.ShowWindowAsync` replaces `ShowDialog`/`ShowWindow`.
+  - Tools → Cron opens the Hangfire dashboard in the default browser instead of embedding WebView2.
+  - Closing asks for confirmation however it is requested (caption button, Alt+F4, the macOS red button).
+  - Logs are written under the per-user app data folder, because an `.app` bundle is not writable.
+  - The tray icon is Avalonia's built-in `TrayIcon` (menu bar extra on macOS); the desktop shortcut is
+    Windows-only.
+  - `Packaging/macOS/Info.plist` and `bundle.sh` build an ad hoc-signed `.app` bundle on a Mac.
+  - Theme: `CustomMaterialTheme` driven only by `RequestedThemeVariant`, with the dark-base contrast
+    correction. `MaterialTheme` rebuilt its palette asynchronously after each switch and undid it, which
+    made the title-bar light / dark button unreliable.
+  - Window chrome: `WindowDecorations="BorderOnly"` (Avalonia no longer prints the window title over the
+    side menu) with the template's own caption buttons on Windows and element roles on the title strip,
+    so clicks on its buttons are not taken as title-bar drags.
+  - Fonts: Noto Sans SC (static Regular / Medium / Bold) and Cascadia Mono bundled in `Assets/Fonts` instead
+    of Material's Roboto, which has no CJK glyphs. SIL OFL 1.1; licence texts are copied to
+    `Licenses/Fonts` in the output. About 26 MB per app.
+  - Side menu: top-level entries line up with the group headers, child entries are indented from their
+    group, and the group chevrons fade out with the labels when the menu collapses to icons.
+- **`tests/Lemon.Template.Avalonia.Tests`**, on xUnit v3 + `Avalonia.Headless.XUnit`: the WPF suite ported,
+  plus end-to-end checks that `{loc:Localize}` bindings refresh on a language switch, that a custom palette
+  survives a light/dark switch, that auto-wiring ignores an inherited `DataContext`, and headless render
+  smoke tests for the settings pages (frames saved to `renders/`).
+- **CI on macOS.** A `macos-latest` job runs the Avalonia tests and an `osx-arm64` publish, and the
+  `lemon-avalonia` round-trip runs on both Windows and macOS.
+
+### Changed
+
+- **One package, two templates.** `Lemon.Templates.Wpf` now installs `lemon-wpf` and `lemon-avalonia`. The
+  pack project lists the shared repository files once for both, narrows the WPF content to its own
+  `src/`/`tests/` folders, and the WPF manifest excludes the Avalonia sources. Version bumped to `1.1.0`.
+- **CI round-trips the packed `.nupkg`** instead of installing from source, so the package layout itself is
+  tested; the pack runs once in its own job.
+- **WPF: side menu alignment, animation and selection highlight.** A top-level page with no children (`Home`)
+  used a smaller icon, a wider left margin and a shorter row than the expander headers next to it, so its
+  label sat indented as though it were a child. Entry metrics are now shared — 24px icon, 12px label gap,
+  44px row — with the indent expressed as `Padding`, so childless top-level pages line up with the group
+  headers and children read as nested. Navigating from the home page's shortcuts now expands the group that
+  owns the target page (`NavigationItem.IsExpanded`, set by `IMenuNavigator`), instead of leaving it
+  selected inside a closed expander. Hover and selection fade in as two independent overlays tinted with
+  the theme primary brush, the children of a group fade and slide in when it expands, and the rail itself
+  animates between its expanded and collapsed widths via a new `GridLengthAnimation` (WPF ships no
+  animation for `GridLength`). The selected entry is marked by the tinted pill plus a semibold label rather
+  than a primary-coloured label: the accent is user-chosen on the Theme page, and on a dark base a
+  primary-coloured label on its own tint reads *less* clearly than the unselected entries.
+- **WPF: menu collapse driven by the toggle's state.** `toggleMenuButton` now handles `Checked`/`Unchecked`
+  instead of `Click`. Its arrow icon follows `IsChecked`, which an automation client can set without ever
+  raising `Click` — leaving the icon pointing one way and the menu sized the other.
+
+## [1.0.6]
+
+Covers 1.0.5 and 1.0.6, which were published without changelog sections of their own.
+
 ### Added
 
 - **Home page.** A landing page (`Views/Home`) shown on first launch, with the application name and version,
@@ -93,21 +154,6 @@ All notable changes to this project are documented here. The format follows
 
 ### Changed
 
-- **Side menu: alignment, animation and selection highlight.** A top-level page with no children (`Home`)
-  used a smaller icon, a wider left margin and a shorter row than the expander headers next to it, so its
-  label sat indented as though it were a child. Entry metrics are now shared — 24px icon, 12px label gap,
-  44px row — with the indent expressed as `Padding`, so childless top-level pages line up with the group
-  headers and children read as nested. Navigating from the home page's shortcuts now expands the group that
-  owns the target page (`NavigationItem.IsExpanded`, set by `IMenuNavigator`), instead of leaving it
-  selected inside a closed expander. Hover and selection fade in as two independent overlays tinted with
-  the theme primary brush, the children of a group fade and slide in when it expands, and the rail itself
-  animates between its expanded and collapsed widths via a new `GridLengthAnimation` (WPF ships no
-  animation for `GridLength`). The selected entry is marked by the tinted pill plus a semibold label rather
-  than a primary-coloured label: the accent is user-chosen on the Theme page, and on a dark base a
-  primary-coloured label on its own tint reads *less* clearly than the unselected entries.
-- **Menu collapse driven by the toggle's state.** `toggleMenuButton` now handles `Checked`/`Unchecked`
-  instead of `Click`. Its arrow icon follows `IsChecked`, which an automation client can set without ever
-  raising `Click` — leaving the icon pointing one way and the menu sized the other.
 - **Log levels cut back.** Release builds now record **Warning** and above; Debug builds record
   **Information** and above (previously Information / Debug). The `Microsoft` override moved from
   `Information` to `Warning` — at the old value the framework raised the volume in Release above the

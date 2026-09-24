@@ -1,0 +1,73 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:assists="clr-namespace:Material.Styles.Assists;assembly=Material.Styles">
+
+    <!-- Shared shell styles. Resources from App.axaml are referenced with DynamicResource: styles load first. -->
+
+    <!--
+        Interface font for every window, dialog and popup. Material.Avalonia sets Roboto on each TopLevel and
+        everything inherits it; this style is declared after the Material theme, so it wins.
+    -->
+    <Style Selector=":is(TopLevel)">
+        <Setter Property="FontFamily" Value="{DynamicResource UiFont}" />
+    </Style>
+
+    <!-- Monospaced text (log viewer, URLs). -->
+    <Style Selector=":is(Control).mono">
+        <Setter Property="TextElement.FontFamily" Value="{DynamicResource CodeFont}" />
+    </Style>
+
+    <!-- Borderless icon button used by the menu toggle and the theme toggle. -->
+    <Style Selector="Button.icon, ToggleButton.icon">
+        <Setter Property="Padding" Value="6" />
+        <Setter Property="Margin" Value="2" />
+        <Setter Property="MinWidth" Value="0" />
+        <Setter Property="MinHeight" Value="0" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="HorizontalAlignment" Value="Center" />
+    </Style>
+
+    <!-- Material draws ToggleButton as a raised action button; these are flat toolbar icons. -->
+    <Style Selector="ToggleButton.icon">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{DynamicResource MaterialBodyBrush}" />
+        <Setter Property="assists:ShadowAssist.ShadowDepth" Value="Depth0" />
+    </Style>
+    <!-- The icon itself shows the state (moon/sun, menu/arrow), so the checked fill is dropped too. -->
+    <Style Selector="ToggleButton.icon:checked">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{DynamicResource MaterialBodyBrush}" />
+    </Style>
+
+    <!--
+        Outline buttons: Material colours their text with the primary, which is too faint on a dark card and
+        makes a row of them read as disabled. Body text colour instead; the outline takes the primary on hover.
+    -->
+    <Style Selector="Button.Outline">
+        <Setter Property="Foreground" Value="{DynamicResource MaterialBodyBrush}" />
+    </Style>
+    <Style Selector="Button.Outline:pointerover">
+        <Setter Property="BorderBrush" Value="{DynamicResource MaterialPrimaryMidBrush}" />
+    </Style>
+
+    <!--
+        Minimise / maximise / close in the main window's title bar (Windows only; macOS keeps its traffic
+        lights). Full title-bar height and 46 px wide like the system buttons; close turns red on hover.
+    -->
+    <Style Selector="Button.caption">
+        <Setter Property="Width" Value="46" />
+        <Setter Property="MinWidth" Value="0" />
+        <Setter Property="MinHeight" Value="0" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="CornerRadius" Value="0" />
+        <Setter Property="VerticalAlignment" Value="Stretch" />
+        <Setter Property="HorizontalContentAlignment" Value="Center" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{DynamicResource MaterialBodyBrush}" />
+    </Style>
+    <Style Selector="Button.caption.close:pointerover">
+        <Setter Property="Background" Value="#E81123" />
+        <Setter Property="Foreground" Value="White" />
+    </Style>
+</Styles>

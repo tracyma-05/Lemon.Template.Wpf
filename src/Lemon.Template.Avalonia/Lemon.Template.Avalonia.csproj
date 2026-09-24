@@ -1,0 +1,84 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <!-- Shared properties come from Directory.Build.props; package versions from Directory.Packages.props. -->
+
+    <PropertyGroup>
+        <!-- WinExe suppresses the console window on Windows and is ignored on macOS. -->
+        <OutputType>WinExe</OutputType>
+        <TargetFramework>net10.0</TargetFramework>
+        <ApplicationIcon>Assets\Images\logo.ico</ApplicationIcon>
+        <ApplicationManifest>app.manifest</ApplicationManifest>
+        <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+        <!--
+            AVLN3001: MainWindow has no parameterless constructor, so the runtime XAML loader cannot create
+            it. Intentional: the window takes its services by constructor injection and is always resolved
+            from the container, never loaded by URI.
+        -->
+        <NoWarn>$(NoWarn);AVLN3001</NoWarn>
+    </PropertyGroup>
+
+    <!--
+        Feature switches. Each constant matches a `dotnet new` template symbol, so the enabled set here
+        always mirrors the features this project actually contains.
+    -->
+    <PropertyGroup>
+        <!--#if (EnableHangfire) -->
+        <DefineConstants>$(DefineConstants);EnableHangfire</DefineConstants>
+        <!--#endif -->
+        <!--#if (EnableTrayIcon) -->
+        <DefineConstants>$(DefineConstants);EnableTrayIcon</DefineConstants>
+        <!--#endif -->
+        <!--#if (EnableDesktopShortcut) -->
+        <DefineConstants>$(DefineConstants);EnableDesktopShortcut</DefineConstants>
+        <!--#endif -->
+    </PropertyGroup>
+
+    <!--#if (EnableHangfire) -->
+    <ItemGroup>
+        <FrameworkReference Include="Microsoft.AspNetCore.App" />
+    </ItemGroup>
+    <!--#endif -->
+
+    <ItemGroup>
+        <InternalsVisibleTo Include="Lemon.Template.Avalonia.Tests" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Avalonia" />
+        <PackageReference Include="Avalonia.Desktop" />
+        <PackageReference Include="CommunityToolkit.Mvvm" />
+        <PackageReference Include="DialogHost.Avalonia" />
+        <PackageReference Include="Material.Avalonia" />
+        <PackageReference Include="Material.Icons.Avalonia" />
+        <PackageReference Include="Microsoft.Data.Sqlite" />
+        <PackageReference Include="SQLitePCLRaw.lib.e_sqlite3" />
+        <PackageReference Include="Volo.Abp.Autofac" />
+        <!--#if (EnableHangfire) -->
+        <PackageReference Include="Hangfire.AspNetCore" />
+        <PackageReference Include="Hangfire.Storage.SQLite" />
+        <PackageReference Include="Volo.Abp.BackgroundJobs.HangFire" />
+        <!--#endif -->
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Serilog.Extensions.Hosting" />
+        <PackageReference Include="Serilog.Extensions.Logging" />
+        <PackageReference Include="Serilog.Sinks.Async" />
+        <PackageReference Include="Serilog.Sinks.File" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <AvaloniaResource Include="Assets\**" Exclude="Assets\Fonts\*.txt" />
+        <!--
+            Bundled fonts are SIL OFL 1.1, which asks for the licence to travel with every copy: the texts are
+            copied next to the executable (Licenses/Fonts) rather than hidden inside the assembly.
+        -->
+        <None Include="Assets\Fonts\*.txt" Link="Licenses\Fonts\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+        <Content Include="appsettings.json">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+        <!-- macOS bundle inputs: used by the publish steps in README, not by the build. -->
+        <None Include="Packaging\**" />
+    </ItemGroup>
+
+</Project>

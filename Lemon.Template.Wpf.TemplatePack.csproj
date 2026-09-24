@@ -1,6 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <!-- Version / Authors / Description arrive via Directory.Build.props -> common.props. -->
-  <!-- NuGet template pack: installs as `dotnet new install <PackageId>` -->
+  <!--
+    NuGet template pack: installs as `dotnet new install <PackageId>` and brings two templates:
+      lemon-wpf       content/Lemon.Template.Wpf        (Windows, WPF)
+      lemon-avalonia  content/Lemon.Template.Avalonia   (Windows / macOS, Avalonia)
+  -->
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
     <IncludeBuildOutput>false</IncludeBuildOutput>
@@ -19,7 +23,7 @@
     <PackageVersion>$(Version)</PackageVersion>
     <Authors>$(Authors)</Authors>
     <Description>$(Description)</Description>
-    <PackageTags>dotnet-new;template;WPF;MaterialDesign;Hangfire</PackageTags>
+    <PackageTags>dotnet-new;template;WPF;Avalonia;CrossPlatform;MaterialDesign;Hangfire</PackageTags>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
     <PackageReadmeFile>README.md</PackageReadmeFile>
     <!-- NuGet.org only allows PackageIcon as .png / .jpg (not .ico). Use the same artwork as the app. -->
@@ -31,22 +35,37 @@
     <None Include="src\Lemon.Template.Wpf\Assets\Images\logo.png" Pack="true" PackagePath="logo.png" />
   </ItemGroup>
 
+  <!--
+    Repository-level files every scaffold needs. Listed once and packed into each template's content folder
+    below, so the two templates cannot drift apart.
+  -->
+  <ItemGroup>
+    <SharedTemplateFile Include=".templateignore;.editorconfig;common.props;LICENSE.txt;README.md;CONTRIBUTING.md;CHANGELOG.md" />
+    <!-- The scaffolded app relies on both: PackageReference entries carry no Version of their own. -->
+    <SharedTemplateFile Include="Directory.Build.props;Directory.Packages.props" />
+  </ItemGroup>
+
+  <!-- lemon-wpf -->
   <ItemGroup>
     <Content Include=".template.config\**\*" PackagePath="content\Lemon.Template.Wpf\.template.config\%(RecursiveDir)%(Filename)%(Extension)" />
-    <Content Include=".templateignore" PackagePath="content\Lemon.Template.Wpf\" />
-    <Content Include=".editorconfig" PackagePath="content\Lemon.Template.Wpf\" />
-    <Content Include="common.props" PackagePath="content\Lemon.Template.Wpf\" />
-    <!-- The scaffolded app relies on both: PackageReference entries carry no Version of their own. -->
-    <Content Include="Directory.Build.props" PackagePath="content\Lemon.Template.Wpf\" />
-    <Content Include="Directory.Packages.props" PackagePath="content\Lemon.Template.Wpf\" />
+    <Content Include="@(SharedTemplateFile)" PackagePath="content\Lemon.Template.Wpf\" />
     <!-- Consumer-facing sln only (avoids tools/template-pack/.template.config nodes from the dev solution). -->
     <Content Include="packaging\Lemon.Template.Wpf.sln" PackagePath="content\Lemon.Template.Wpf\Lemon.Template.Wpf.sln" />
-    <Content Include="LICENSE.txt" PackagePath="content\Lemon.Template.Wpf\" />
-    <Content Include="README.md" PackagePath="content\Lemon.Template.Wpf\" />
-    <Content Include="CONTRIBUTING.md" PackagePath="content\Lemon.Template.Wpf\" />
-    <Content Include="CHANGELOG.md" PackagePath="content\Lemon.Template.Wpf\" />
-    <Content Include="src\**\*" Exclude="src\**\bin\**;src\**\obj\**" PackagePath="content\Lemon.Template.Wpf\src\%(RecursiveDir)%(Filename)%(Extension)" />
+    <Content Include="src\Lemon.Template.Wpf\**\*" Exclude="src\**\bin\**;src\**\obj\**" PackagePath="content\Lemon.Template.Wpf\src\Lemon.Template.Wpf\%(RecursiveDir)%(Filename)%(Extension)" />
     <!-- Shipped unless the consumer sets the IncludeTests option to false, which excludes tests/ at instantiation. -->
-    <Content Include="tests\**\*" Exclude="tests\**\bin\**;tests\**\obj\**" PackagePath="content\Lemon.Template.Wpf\tests\%(RecursiveDir)%(Filename)%(Extension)" />
+    <Content Include="tests\Lemon.Template.Wpf.Tests\**\*" Exclude="tests\**\bin\**;tests\**\obj\**" PackagePath="content\Lemon.Template.Wpf\tests\Lemon.Template.Wpf.Tests\%(RecursiveDir)%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <!--
+    lemon-avalonia. Laid out exactly like the repository: its template.json lives in templates/avalonia and
+    reads everything through "source": "../../", so the same manifest works for `dotnet new install .` from a
+    clone and for the installed package.
+  -->
+  <ItemGroup>
+    <Content Include="templates\avalonia\.template.config\**\*" PackagePath="content\Lemon.Template.Avalonia\templates\avalonia\.template.config\%(RecursiveDir)%(Filename)%(Extension)" />
+    <Content Include="@(SharedTemplateFile)" PackagePath="content\Lemon.Template.Avalonia\" />
+    <Content Include="packaging\Lemon.Template.Avalonia.sln" PackagePath="content\Lemon.Template.Avalonia\packaging\" />
+    <Content Include="src\Lemon.Template.Avalonia\**\*" Exclude="src\**\bin\**;src\**\obj\**" PackagePath="content\Lemon.Template.Avalonia\src\Lemon.Template.Avalonia\%(RecursiveDir)%(Filename)%(Extension)" />
+    <Content Include="tests\Lemon.Template.Avalonia.Tests\**\*" Exclude="tests\**\bin\**;tests\**\obj\**" PackagePath="content\Lemon.Template.Avalonia\tests\Lemon.Template.Avalonia.Tests\%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
 </Project>

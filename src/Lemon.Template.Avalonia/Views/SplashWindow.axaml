@@ -1,0 +1,15 @@
+<Window x:Class="Lemon.Template.Avalonia.Views.SplashWindow"
+        xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        WindowDecorations="None"
+        Background="Transparent"
+        TransparencyLevelHint="Transparent"
+        CanResize="False"
+        ShowInTaskbar="False"
+        WindowStartupLocation="CenterScreen"
+        Topmost="True"
+        SizeToContent="WidthAndHeight">
+    <Image Source="/Assets/Images/logo.png"
+           Stretch="None"
+           RenderOptions.BitmapInterpolationMode="HighQuality" />
+</Window>

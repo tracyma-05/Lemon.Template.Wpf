@@ -70,7 +70,11 @@
                 "**/secret.json",
                 ".templateignore",
                 "[Nn]u[Gg]et.[Cc]onfig",
-                "global.json"
+                "global.json",
+                "src/Lemon.Template.Avalonia/**",
+                "tests/Lemon.Template.Avalonia.Tests/**",
+                "templates/**",
+                "packaging/Lemon.Template.Avalonia.sln"
             ],
             "modifiers": [
                 {

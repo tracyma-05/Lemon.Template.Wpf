@@ -1,0 +1,25 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia">
+
+    <!--
+        Header for Themes.Controls.TabCloseItem: the title followed by a small close button. The button is
+        recognised by its "tab-close" class (TabCloseItem.CloseButtonClass), so no template part is needed.
+    -->
+    <Style Selector="TabItem.closable">
+        <Setter Property="HeaderTemplate">
+            <DataTemplate x:DataType="x:Object">
+                <StackPanel Orientation="Horizontal" Spacing="6">
+                    <TextBlock VerticalAlignment="Center" Text="{Binding}" />
+                    <Button Classes="Flat tab-close"
+                            Padding="2"
+                            MinWidth="0"
+                            MinHeight="0"
+                            VerticalAlignment="Center">
+                        <materialIcons:MaterialIcon Kind="Close" Width="14" Height="14" />
+                    </Button>
+                </StackPanel>
+            </DataTemplate>
+        </Setter>
+    </Style>
+</Styles>

@@ -1,0 +1,213 @@
+<UserControl x:Class="Lemon.Template.Avalonia.Views.Home.HomeView"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:controls="clr-namespace:Material.Styles.Controls;assembly=Material.Styles"
+             xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             xmlns:loc="clr-namespace:Lemon.Template.Avalonia.Infrastructures.Localization"
+             xmlns:model="clr-namespace:Lemon.Template.Avalonia.Models"
+             xmlns:vm="clr-namespace:Lemon.Template.Avalonia.ViewModels.Home"
+             mc:Ignorable="d"
+             d:DesignHeight="720"
+             d:DesignWidth="960"
+             x:DataType="vm:HomeViewModel">
+    <UserControl.Resources>
+
+        <!--
+            Link and shortcut templates reach the page's commands through the UserControl ancestor: inside an
+            ItemsControl the DataContext is the item, not the view model.
+        -->
+        <DataTemplate x:Key="HomeLinkTemplate" x:DataType="model:HomeLink">
+            <Button Margin="0,0,4,0"
+                    Padding="8,4"
+                    Classes="Flat"
+                    Foreground="{DynamicResource MaterialPrimaryMidBrush}"
+                    Command="{Binding $parent[UserControl].((vm:HomeViewModel)DataContext).OpenUrlCommand}"
+                    CommandParameter="{Binding Url}"
+                    ToolTip.Tip="{Binding Url}"
+                    AutomationProperties.HelpText="{Binding Url}">
+                <StackPanel Orientation="Horizontal">
+                    <materialIcons:MaterialIcon Width="18"
+                                                Height="18"
+                                                VerticalAlignment="Center"
+                                                Kind="{Binding Icon}" />
+                    <TextBlock Margin="6,0,0,0" VerticalAlignment="Center" Text="{Binding Title}" />
+                </StackPanel>
+            </Button>
+        </DataTemplate>
+
+        <DataTemplate x:Key="HomeShortcutTemplate" x:DataType="model:HomeShortcut">
+            <Button MinHeight="56"
+                    Height="NaN"
+                    Margin="0,0,0,4"
+                    Padding="8"
+                    Classes="Flat"
+                    HorizontalAlignment="Stretch"
+                    HorizontalContentAlignment="Stretch"
+                    Command="{Binding $parent[UserControl].((vm:HomeViewModel)DataContext).OpenShortcutCommand}"
+                    CommandParameter="{Binding}"
+                    ToolTip.Tip="{Binding Description}">
+                <Grid ColumnDefinitions="Auto,*,Auto">
+                    <Border Grid.Column="0"
+                            Width="36"
+                            Height="36"
+                            CornerRadius="18"
+                            Background="{DynamicResource MaterialPrimaryMidBrush}">
+                        <materialIcons:MaterialIcon Width="20"
+                                                    Height="20"
+                                                    HorizontalAlignment="Center"
+                                                    VerticalAlignment="Center"
+                                                    Foreground="{DynamicResource MaterialPrimaryMidForegroundBrush}"
+                                                    Kind="{Binding Icon}" />
+                    </Border>
+                    <StackPanel Grid.Column="1" Margin="12,0" VerticalAlignment="Center">
+                        <TextBlock FontWeight="SemiBold"
+                                   Foreground="{DynamicResource MaterialBodyBrush}"
+                                   Text="{Binding Title}" />
+                        <TextBlock Margin="0,2,0,0"
+                                   Classes="Caption"
+                                   Foreground="{DynamicResource MaterialBodyLightBrush}"
+                                   Text="{Binding Description}"
+                                   TextTrimming="CharacterEllipsis"
+                                   TextWrapping="Wrap" />
+                    </StackPanel>
+                    <materialIcons:MaterialIcon Grid.Column="2"
+                                                VerticalAlignment="Center"
+                                                Foreground="{DynamicResource MaterialBodyLightBrush}"
+                                                Kind="ChevronRight" />
+                </Grid>
+            </Button>
+        </DataTemplate>
+
+        <!-- Technology chip. Card background on top of paper, so it reads in both light and dark. -->
+        <DataTemplate x:Key="HomeTechChipTemplate" x:DataType="x:String">
+            <Border Margin="0,0,8,8"
+                    Padding="10,4"
+                    CornerRadius="12"
+                    Background="{DynamicResource MaterialCardBackgroundBrush}"
+                    BorderBrush="{DynamicResource MaterialDividerBrush}"
+                    BorderThickness="1">
+                <TextBlock Classes="Caption"
+                           Foreground="{DynamicResource MaterialBodyLightBrush}"
+                           Text="{Binding}" />
+            </Border>
+        </DataTemplate>
+
+    </UserControl.Resources>
+
+    <ScrollViewer HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="24" MaxWidth="1120">
+
+            <!--  Information links  -->
+            <StackPanel Orientation="Horizontal">
+                <materialIcons:MaterialIcon Width="18"
+                                            Height="18"
+                                            VerticalAlignment="Center"
+                                            Foreground="{DynamicResource MaterialBodyLightBrush}"
+                                            Kind="InformationOutline" />
+                <TextBlock Margin="8,0,12,0"
+                           VerticalAlignment="Center"
+                           Classes="Body2"
+                           Foreground="{DynamicResource MaterialBodyLightBrush}"
+                           Text="{loc:Localize Home_Links}" />
+                <ItemsControl ItemTemplate="{StaticResource HomeLinkTemplate}" ItemsSource="{Binding Links}">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <WrapPanel Orientation="Horizontal" />
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                </ItemsControl>
+            </StackPanel>
+            <Separator Margin="0,8,0,0" Background="{DynamicResource MaterialDividerBrush}" />
+
+            <!--  Hero  -->
+            <Grid Margin="0,40,0,40" HorizontalAlignment="Center" ColumnDefinitions="Auto,*">
+                <Border Grid.Column="0"
+                        Width="96"
+                        Height="96"
+                        Padding="14"
+                        VerticalAlignment="Center"
+                        CornerRadius="12"
+                        Background="{DynamicResource MaterialPrimaryMidBrush}">
+                    <Image Source="/Assets/Images/logo.png" Stretch="Uniform" />
+                </Border>
+                <StackPanel Grid.Column="1" Margin="24,0,0,0" VerticalAlignment="Center">
+                    <TextBlock Classes="Headline6"
+                               Foreground="{DynamicResource MaterialBodyLightBrush}"
+                               Text="{loc:Localize Home_Welcome}" />
+                    <TextBlock MaxWidth="620"
+                               Classes="Headline4"
+                               Text="{Binding ApplicationTitle}"
+                               TextWrapping="Wrap" />
+                    <TextBlock Margin="0,10,0,0"
+                               MaxWidth="620"
+                               Classes="Body1"
+                               Foreground="{DynamicResource MaterialBodyLightBrush}"
+                               Text="{loc:Localize Home_Subtitle}"
+                               TextWrapping="Wrap" />
+                    <StackPanel Margin="0,20,0,0" Orientation="Horizontal">
+                        <Button Command="{Binding GetStartedCommand}">
+                            <StackPanel Orientation="Horizontal">
+                                <materialIcons:MaterialIcon Width="18"
+                                                            Height="18"
+                                                            VerticalAlignment="Center"
+                                                            Kind="RocketLaunchOutline" />
+                                <TextBlock Margin="8,0,0,0" VerticalAlignment="Center" Text="{loc:Localize Home_GetStarted}" />
+                            </StackPanel>
+                        </Button>
+                        <TextBlock Margin="16,0,0,0"
+                                   VerticalAlignment="Center"
+                                   Classes="Caption"
+                                   Foreground="{DynamicResource MaterialBodyLightBrush}">
+                            <Run Text="{loc:Localize Home_Version}" />
+                            <Run Text="{Binding ApplicationVersion, Mode=OneWay}" />
+                        </TextBlock>
+                    </StackPanel>
+                </StackPanel>
+            </Grid>
+
+            <!--  Quick start + About  -->
+            <Grid ColumnDefinitions="*,*">
+                <controls:Card Grid.Column="0" Padding="20">
+                    <StackPanel>
+                        <TextBlock Classes="Headline6" Text="{loc:Localize Home_QuickStart}" />
+                        <TextBlock Margin="0,6,0,14"
+                                   Classes="Body2"
+                                   Foreground="{DynamicResource MaterialBodyLightBrush}"
+                                   Text="{loc:Localize Home_QuickStart_Description}"
+                                   TextWrapping="Wrap" />
+                        <ItemsControl ItemTemplate="{StaticResource HomeShortcutTemplate}" ItemsSource="{Binding Shortcuts}" />
+                    </StackPanel>
+                </controls:Card>
+
+                <controls:Card Grid.Column="1" Margin="24,0,0,0" Padding="20">
+                    <StackPanel>
+                        <TextBlock Classes="Headline6" Text="{loc:Localize Home_About}" />
+                        <TextBlock Margin="0,6,0,0"
+                                   Classes="Body2"
+                                   Foreground="{DynamicResource MaterialBodyLightBrush}"
+                                   Text="{loc:Localize Home_About_Description}"
+                                   TextWrapping="Wrap" />
+
+                        <TextBlock Margin="0,18,0,8" Classes="Subtitle2" Text="{loc:Localize Home_Stack}" />
+                        <ItemsControl ItemTemplate="{StaticResource HomeTechChipTemplate}" ItemsSource="{Binding TechStack}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel Orientation="Horizontal" />
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                        </ItemsControl>
+
+                        <Separator Margin="0,8,0,12" Background="{DynamicResource MaterialDividerBrush}" />
+                        <TextBlock Classes="Caption"
+                                   Foreground="{DynamicResource MaterialBodyLightBrush}"
+                                   Text="{loc:Localize Home_About_Hint}"
+                                   TextWrapping="Wrap" />
+                    </StackPanel>
+                </controls:Card>
+            </Grid>
+
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

@@ -1,0 +1,9 @@
+<Window x:Class="Lemon.Template.Avalonia.Infrastructures.Dialogs.DialogWindow"
+        xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:dialogs="clr-namespace:Lemon.Template.Avalonia.Infrastructures.Dialogs"
+        x:DataType="dialogs:IDialogAware"
+        Title="{Binding Title}"
+        WindowStartupLocation="CenterOwner"
+        SizeToContent="WidthAndHeight"
+        CanResize="False" />

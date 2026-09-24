@@ -1,0 +1,145 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:assists="clr-namespace:Material.Styles.Assists;assembly=Material.Styles">
+
+    <!--
+        Side-navigation menu styles.
+
+        The shell renders three kinds of menu entry (group header, child of an expander, and a top-level
+        entry with no children). They share one RadioButton template (class "nav"); the variants differ
+        only by the "child" / "root" classes.
+
+        Metrics match the Expander header in MainWindow.axaml: a 24x24 icon followed by a label with a
+        12px gap, and a 44px row. A top-level entry is a sibling of the group headers, so it uses no
+        padding and lines up with them; children add a small left padding so they read as nested.
+    -->
+
+    <!--
+        Label that fades out when the menu is collapsed to icons (the shell adds "menu-collapsed" to the
+        side panel). Fading rather than hiding keeps the text from popping out while the panel narrows;
+        the panel clips whatever is left.
+    -->
+    <Style Selector="TextBlock.nav-label">
+        <Setter Property="Margin" Value="12,0" />
+        <Setter Property="VerticalAlignment" Value="Center" />
+        <Setter Property="TextTrimming" Value="CharacterEllipsis" />
+        <Setter Property="Transitions">
+            <Transitions>
+                <DoubleTransition Property="Opacity" Duration="0:0:0.16" />
+            </Transitions>
+        </Setter>
+    </Style>
+    <Style Selector=".menu-collapsed TextBlock.nav-label">
+        <Setter Property="Opacity" Value="0" />
+    </Style>
+
+    <!--
+        The group chevron fades with the labels: in the 70 px collapsed menu it would otherwise sit on top of the
+        group icon. It lives in the header ToggleButton's own template, hence the two /template/ hops.
+    -->
+    <Style Selector="Expander.nav-group /template/ ToggleButton#PART_ToggleButton /template/ Path#PART_ExpandIcon">
+        <Setter Property="Transitions">
+            <Transitions>
+                <DoubleTransition Property="Opacity" Duration="0:0:0.16" />
+            </Transitions>
+        </Setter>
+    </Style>
+    <Style Selector=".menu-collapsed Expander.nav-group /template/ ToggleButton#PART_ToggleButton /template/ Path#PART_ExpandIcon">
+        <Setter Property="Opacity" Value="0" />
+    </Style>
+
+    <!--
+        Hover and selection are two separate overlays rather than one border at three opacities: they
+        animate independently, so entering or leaving an already-selected row cannot clobber the
+        selection tint. Both use the theme primary brush, so the highlight follows the swatch chosen on
+        the Theme page.
+    -->
+    <Style Selector="RadioButton.nav">
+        <Setter Property="Height" Value="44" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="Foreground" Value="{DynamicResource MaterialBodyBrush}" />
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+        <Setter Property="HorizontalContentAlignment" Value="Left" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Panel Background="{TemplateBinding Background}">
+                    <Border Name="HoverBackground"
+                            CornerRadius="4"
+                            Background="{DynamicResource MaterialPrimaryMidBrush}"
+                            Opacity="0">
+                        <Border.Transitions>
+                            <Transitions>
+                                <DoubleTransition Property="Opacity" Duration="0:0:0.15" />
+                            </Transitions>
+                        </Border.Transitions>
+                    </Border>
+                    <Border Name="SelectionBackground"
+                            CornerRadius="4"
+                            Background="{DynamicResource MaterialPrimaryMidBrush}"
+                            Opacity="0">
+                        <Border.Transitions>
+                            <Transitions>
+                                <DoubleTransition Property="Opacity" Duration="0:0:0.2" Easing="CubicEaseOut" />
+                            </Transitions>
+                        </Border.Transitions>
+                    </Border>
+                    <ContentPresenter Name="PART_ContentPresenter"
+                                      Margin="{TemplateBinding Padding}"
+                                      VerticalAlignment="Center"
+                                      HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                      Content="{TemplateBinding Content}"
+                                      ContentTemplate="{TemplateBinding ContentTemplate}" />
+                </Panel>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+    <Style Selector="RadioButton.nav:pointerover /template/ Border#HoverBackground">
+        <Setter Property="Opacity" Value="0.10" />
+    </Style>
+    <Style Selector="RadioButton.nav:checked /template/ Border#SelectionBackground">
+        <Setter Property="Opacity" Value="0.18" />
+    </Style>
+    <!--
+        Selection is carried by the tinted pill and the weight, not by colouring the label with the
+        primary brush: on a dark base the primary sits close to its own tinted background, and the swatch
+        is user-chosen on the Theme page, so no single accent can be assumed to pass contrast.
+    -->
+    <Style Selector="RadioButton.nav:checked">
+        <Setter Property="FontWeight" Value="SemiBold" />
+    </Style>
+    <Style Selector="RadioButton.nav:focus-visible /template/ Border#HoverBackground">
+        <Setter Property="Opacity" Value="0.14" />
+    </Style>
+
+    <!--
+        Horizontal metrics. Material's Expander header insets its content by 12 px, so a top-level entry uses
+        the same 12 px to line its icon up with the group headers, and a child adds 8 px on top of that (20 px)
+        to read as nested. Change them together with the Expander theme.
+    -->
+
+    <!-- Child entry inside an expanded group: indented, dimmed label. -->
+    <Style Selector="RadioButton.nav.child">
+        <Setter Property="Height" Value="38" />
+        <Setter Property="Padding" Value="20,0,0,0" />
+        <Setter Property="Foreground" Value="{DynamicResource MaterialBodyLightBrush}" />
+    </Style>
+    <Style Selector="RadioButton.nav.child:checked">
+        <Setter Property="Foreground" Value="{DynamicResource MaterialBodyBrush}" />
+    </Style>
+
+    <!-- Top-level entry with no children: a sibling of the group headers, so it matches them exactly. -->
+    <Style Selector="RadioButton.nav.root">
+        <Setter Property="FontSize" Value="16" />
+        <Setter Property="Padding" Value="12,0,0,0" />
+    </Style>
+
+    <!-- Group header: flat, full-width, no extra padding so its icon lines up with the root entries. -->
+    <Style Selector="Expander.nav-group">
+        <Setter Property="Background" Value="Transparent" />
+        <Setter Property="assists:ShadowAssist.ShadowDepth" Value="Depth0" />
+        <Setter Property="Padding" Value="0" />
+        <Setter Property="HorizontalAlignment" Value="Stretch" />
+    </Style>
+</Styles>

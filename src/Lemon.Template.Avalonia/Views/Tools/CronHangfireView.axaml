@@ -1,0 +1,48 @@
+<UserControl x:Class="Lemon.Template.Avalonia.Views.Tools.CronHangfireView"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:controls="clr-namespace:Material.Styles.Controls;assembly=Material.Styles"
+             xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             xmlns:loc="clr-namespace:Lemon.Template.Avalonia.Infrastructures.Localization"
+             xmlns:vm="clr-namespace:Lemon.Template.Avalonia.ViewModels.Tools"
+             mc:Ignorable="d"
+             d:DesignHeight="600" d:DesignWidth="1080"
+             x:DataType="vm:CronHangfireViewModel">
+    <!--
+        The dashboard opens in the system browser instead of an embedded web view: WebView2 is Windows-only,
+        and a browser works the same on Windows and macOS with no extra native dependency.
+    -->
+    <StackPanel Margin="10">
+        <controls:Card Padding="16">
+            <StackPanel Spacing="6">
+                <TextBlock Text="{loc:Localize Cron_Title}"
+                           FontSize="18"
+                           FontWeight="SemiBold" />
+                <TextBlock TextWrapping="Wrap"
+                           Foreground="{DynamicResource MaterialBodyLightBrush}"
+                           Text="{loc:Localize Cron_Description}" />
+
+                <SelectableTextBlock Classes="mono"
+                                     Margin="0,6,0,0"
+                                     TextWrapping="Wrap"
+                                     Text="{Binding DashboardUri}"
+                                     IsVisible="{Binding IsDashboardAvailable}" />
+                <TextBlock TextWrapping="Wrap"
+                           Foreground="{DynamicResource MaterialValidationErrorBrush}"
+                           Text="{loc:Localize Cron_DashboardUnavailable}"
+                           IsVisible="{Binding !IsDashboardAvailable}" />
+
+                <Button Margin="0,10,0,0"
+                        HorizontalAlignment="Left"
+                        Command="{Binding OpenDashboardCommand}">
+                    <StackPanel Orientation="Horizontal">
+                        <materialIcons:MaterialIcon Width="18" Height="18" VerticalAlignment="Center" Kind="OpenInNew" />
+                        <TextBlock Margin="8,0,0,0" VerticalAlignment="Center" Text="{loc:Localize Cron_OpenInBrowser}" />
+                    </StackPanel>
+                </Button>
+            </StackPanel>
+        </controls:Card>
+    </StackPanel>
+</UserControl>

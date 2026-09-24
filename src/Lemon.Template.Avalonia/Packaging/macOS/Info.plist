@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!-- Copied into <App>.app/Contents by bundle.sh. Adjust the identifier and version before shipping. -->
+<plist version="1.0">
+<dict>
+    <key>CFBundleName</key>
+    <string>Lemon.Template.Avalonia</string>
+    <key>CFBundleDisplayName</key>
+    <string>Lemon.Template.Avalonia</string>
+    <!-- Must match the published executable name (the assembly name). -->
+    <key>CFBundleExecutable</key>
+    <string>Lemon.Template.Avalonia</string>
+    <!-- Reverse-DNS and unique per app; replace example.com with your own domain. -->
+    <key>CFBundleIdentifier</key>
+    <string>com.example.Lemon.Template.Avalonia</string>
+    <key>CFBundlePackageType</key>
+    <string>APPL</string>
+    <key>CFBundleIconFile</key>
+    <string>AppIcon</string>
+    <key>CFBundleShortVersionString</key>
+    <string>1.0.0</string>
+    <key>CFBundleVersion</key>
+    <string>1</string>
+    <key>CFBundleInfoDictionaryVersion</key>
+    <string>6.0</string>
+    <!-- .NET 10's supported macOS floor; check the .NET supported-OS list when retargeting. -->
+    <key>LSMinimumSystemVersion</key>
+    <string>14.0</string>
+    <key>NSHighResolutionCapable</key>
+    <true/>
+    <key>NSPrincipalClass</key>
+    <string>NSApplication</string>
+</dict>
+</plist>

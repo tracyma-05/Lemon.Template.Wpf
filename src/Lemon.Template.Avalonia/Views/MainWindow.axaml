@@ -1,0 +1,221 @@
+<Window x:Class="Lemon.Template.Avalonia.Views.MainWindow"
+        xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        xmlns:controls="clr-namespace:Material.Styles.Controls;assembly=Material.Styles"
+        xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+        xmlns:dialogHost="clr-namespace:DialogHostAvalonia;assembly=DialogHost.Avalonia"
+        xmlns:nav="clr-namespace:Lemon.Template.Avalonia.Infrastructures.Navigations"
+        xmlns:model="clr-namespace:Lemon.Template.Avalonia.Models"
+        xmlns:vm="clr-namespace:Lemon.Template.Avalonia.ViewModels"
+        xmlns:constants="clr-namespace:Lemon.Template.Avalonia.Commons"
+        xmlns:loc="clr-namespace:Lemon.Template.Avalonia.Infrastructures.Localization"
+        x:DataType="vm:MainWindowViewModel"
+        Title="Lemon.Template.Avalonia"
+        Icon="/Assets/Images/logo.ico"
+        WindowStartupLocation="CenterScreen"
+        ExtendClientAreaToDecorationsHint="True"
+        ExtendClientAreaTitleBarHeightHint="44"
+        WindowDecorations="BorderOnly"
+        Background="{DynamicResource MaterialBackgroundBrush}"
+        FontSize="14"
+        Width="1280"
+        Height="800"
+        MinWidth="1080"
+        MinHeight="768">
+    <!--
+        The client area extends into the title bar and BorderOnly stops Avalonia drawing its own caption
+        (which printed the window title over the side-menu header). Windows gets the three caption buttons
+        below; macOS keeps its native traffic lights at the top left, so MainWindow.axaml.cs hides ours there
+        and moves the side-menu header out of their way.
+    -->
+    <dialogHost:DialogHost Identifier="Root">
+        <Grid ColumnDefinitions="Auto,*">
+
+            <controls:Card x:Name="SideMenu"
+                           Grid.Column="0"
+                           Width="240"
+                           Padding="0"
+                           CornerRadius="0"
+                           ClipToBounds="True"
+                           Background="{DynamicResource MaterialPaperBrush}">
+                <controls:Card.Transitions>
+                    <Transitions>
+                        <DoubleTransition Property="Width" Duration="0:0:0.22" Easing="CubicEaseInOut" />
+                    </Transitions>
+                </controls:Card.Transitions>
+
+                <Grid RowDefinitions="Auto,*">
+                    <!-- Also inside the title-bar band, so it drags the window like the strip on the right. -->
+                    <DockPanel x:Name="MenuHeader"
+                               Margin="12,15"
+                               LastChildFill="True"
+                               Background="Transparent"
+                               WindowDecorationProperties.ElementRole="TitleBar">
+                        <ToggleButton x:Name="ToggleMenuButton"
+                                      DockPanel.Dock="Right"
+                                      WindowDecorationProperties.ElementRole="User"
+                                      Classes="Flat icon"
+                                      VerticalAlignment="Center"
+                                      ToolTip.Tip="{loc:Localize Shell_MenuToggle_ToolTip}">
+                            <Panel>
+                                <materialIcons:MaterialIcon Kind="MenuOpen"
+                                                            Width="20" Height="20"
+                                                            IsVisible="{Binding !#ToggleMenuButton.IsChecked}" />
+                                <materialIcons:MaterialIcon Kind="ArrowRight"
+                                                            Width="20" Height="20"
+                                                            IsVisible="{Binding #ToggleMenuButton.IsChecked}" />
+                            </Panel>
+                        </ToggleButton>
+                        <Grid x:Name="StackHeader"
+                              ColumnDefinitions="Auto,*"
+                              VerticalAlignment="Center"
+                              Margin="0,0,8,0"
+                              IsHitTestVisible="False">
+                            <Grid.Transitions>
+                                <Transitions>
+                                    <DoubleTransition Property="Opacity" Duration="0:0:0.22" Easing="CubicEaseInOut" />
+                                </Transitions>
+                            </Grid.Transitions>
+                            <Image Grid.Column="0" Width="20" Height="20" VerticalAlignment="Center" Source="/Assets/Images/logo.png" />
+                            <TextBlock Grid.Column="1"
+                                       Text="Lemon.Template.Avalonia"
+                                       Margin="5,0"
+                                       VerticalAlignment="Center"
+                                       FontSize="14"
+                                       FontWeight="Bold"
+                                       TextTrimming="CharacterEllipsis"
+                                       TextWrapping="NoWrap" />
+                        </Grid>
+                    </DockPanel>
+
+                    <ScrollViewer Grid.Row="1"
+                                  VerticalScrollBarVisibility="Auto"
+                                  HorizontalScrollBarVisibility="Disabled">
+                        <ItemsControl Margin="10" ItemsSource="{Binding NavigationItems}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate x:DataType="model:NavigationItem">
+                                    <Panel>
+                                        <!-- A group with children renders as an expander... -->
+                                        <Expander Classes="nav-group"
+                                                  IsVisible="{Binding !!Items.Count}"
+                                                  IsExpanded="{Binding IsExpanded, Mode=TwoWay}">
+                                            <Expander.Header>
+                                                <StackPanel Orientation="Horizontal" ToolTip.Tip="{Binding DisplayTitle}">
+                                                    <materialIcons:MaterialIcon Width="24" Height="24" Kind="{Binding Icon}" />
+                                                    <TextBlock Classes="nav-label" FontSize="16" Text="{Binding DisplayTitle}" />
+                                                </StackPanel>
+                                            </Expander.Header>
+                                            <ItemsControl ItemsSource="{Binding Items}">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate x:DataType="model:NavigationItem">
+                                                        <RadioButton Classes="nav child"
+                                                                     GroupName="Menu"
+                                                                     IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                                                                     Command="{Binding $parent[Window].((vm:MainWindowViewModel)DataContext).NavigateCommand}"
+                                                                     CommandParameter="{Binding}"
+                                                                     ToolTip.Tip="{Binding DisplayTitle}">
+                                                            <StackPanel Orientation="Horizontal">
+                                                                <materialIcons:MaterialIcon Width="24" Height="24" Kind="{Binding Icon}" />
+                                                                <TextBlock Classes="nav-label" Text="{Binding DisplayTitle}" />
+                                                            </StackPanel>
+                                                        </RadioButton>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </Expander>
+
+                                        <!-- ...and one without children is the page entry itself. -->
+                                        <RadioButton Classes="nav root"
+                                                     IsVisible="{Binding !Items.Count}"
+                                                     GroupName="Menu"
+                                                     IsChecked="{Binding IsSelected, Mode=TwoWay}"
+                                                     Command="{Binding $parent[Window].((vm:MainWindowViewModel)DataContext).NavigateCommand}"
+                                                     CommandParameter="{Binding}"
+                                                     ToolTip.Tip="{Binding DisplayTitle}">
+                                            <StackPanel Orientation="Horizontal">
+                                                <materialIcons:MaterialIcon Width="24" Height="24" Kind="{Binding Icon}" />
+                                                <TextBlock Classes="nav-label" Text="{Binding DisplayTitle}" />
+                                            </StackPanel>
+                                        </RadioButton>
+                                    </Panel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </Grid>
+            </controls:Card>
+
+            <!-- Row 0 is the title-bar strip; keep it in step with ExtendClientAreaTitleBarHeightHint. -->
+            <Grid Grid.Column="1" RowDefinitions="44,*">
+
+                <!--
+                    Title bar strip. The TitleBar role hands dragging, double-click-to-maximise and edge snapping
+                    to the OS; every clickable control on top of it is marked User (or a caption role), otherwise
+                    the OS treats a click on it as a click on the title bar and the control never sees it.
+                -->
+                <Border x:Name="HeaderBorder"
+                        Grid.Row="0"
+                        WindowDecorationProperties.ElementRole="TitleBar"
+                        Background="{DynamicResource MaterialPaperBrush}" />
+
+                <DockPanel Grid.Row="0" HorizontalAlignment="Right">
+                    <StackPanel x:Name="CaptionButtons" DockPanel.Dock="Right" Orientation="Horizontal">
+                        <Button x:Name="MinimizeButton"
+                                Classes="Flat caption"
+                                ToolTip.Tip="{loc:Localize Shell_Minimize_ToolTip}"
+                                WindowDecorationProperties.ElementRole="MinimizeButton">
+                            <materialIcons:MaterialIcon Kind="WindowMinimize" Width="16" Height="16" />
+                        </Button>
+                        <Button x:Name="MaximizeButton"
+                                Classes="Flat caption"
+                                ToolTip.Tip="{loc:Localize Shell_Maximize_ToolTip}"
+                                WindowDecorationProperties.ElementRole="MaximizeButton">
+                            <materialIcons:MaterialIcon x:Name="MaximizeIcon" Kind="WindowMaximize" Width="16" Height="16" />
+                        </Button>
+                        <Button x:Name="CloseButton"
+                                Classes="Flat caption close"
+                                ToolTip.Tip="{loc:Localize Shell_Close_ToolTip}"
+                                WindowDecorationProperties.ElementRole="CloseButton">
+                            <materialIcons:MaterialIcon Kind="WindowClose" Width="16" Height="16" />
+                        </Button>
+                    </StackPanel>
+
+                    <StackPanel Margin="6,0,12,0"
+                                VerticalAlignment="Center"
+                                Orientation="Horizontal"
+                                WindowDecorationProperties.ElementRole="User">
+                        <Button Command="{Binding ToggleDarkThemeCommand}"
+                                Classes="Flat icon"
+                                ToolTip.Tip="{loc:Localize Shell_ThemeToggle_ToolTip}">
+                            <Panel Width="20" Height="20">
+                                <materialIcons:MaterialIcon Width="20" Height="20" Kind="WeatherNight" IsVisible="{Binding !IsDarkTheme}" />
+                                <materialIcons:MaterialIcon Width="20" Height="20" Kind="WhiteBalanceSunny" IsVisible="{Binding IsDarkTheme}" />
+                            </Panel>
+                        </Button>
+                    </StackPanel>
+                </DockPanel>
+
+                <!--
+                    Tabbed alternative: swap the ContentControl below for this to keep every visited page
+                    open in its own closable tab.
+
+                    <controls:TabControl Grid.Row="1"
+                                         xmlns:controls="clr-namespace:Lemon.Template.Avalonia.Themes.Controls"
+                                         nav:RegionManagerAttached.RegionName="{x:Static constants:Constants.MainRegion}" />
+
+                    and handle TabCloseItem.CloseClick in MainWindow.axaml.cs (see OnTabCloseClick).
+                -->
+                <!--
+                    A bounded area, not a ScrollViewer: each page scrolls itself, and a page given infinite
+                    space would let MaxWidth content overflow sideways and a log viewer grow without end.
+                -->
+                <Border Grid.Row="1" Background="{DynamicResource MaterialCardBackgroundBrush}">
+                    <ContentControl nav:RegionManagerAttached.RegionName="{x:Static constants:Constants.MainRegion}" />
+                </Border>
+            </Grid>
+        </Grid>
+    </dialogHost:DialogHost>
+</Window>

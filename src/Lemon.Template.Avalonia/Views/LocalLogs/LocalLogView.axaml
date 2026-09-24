@@ -1,0 +1,56 @@
+<UserControl x:Class="Lemon.Template.Avalonia.Views.LocalLogs.LocalLogView"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:controls="clr-namespace:Material.Styles.Controls;assembly=Material.Styles"
+             xmlns:loc="clr-namespace:Lemon.Template.Avalonia.Infrastructures.Localization"
+             xmlns:vm="clr-namespace:Lemon.Template.Avalonia.ViewModels.LocalLogs"
+             mc:Ignorable="d"
+             d:DesignHeight="600" d:DesignWidth="900"
+             x:DataType="vm:LocalLogViewModel">
+    <Grid Margin="10" RowDefinitions="Auto,Auto,*">
+        <controls:Card Grid.Row="0" Padding="12" Margin="10">
+            <Grid ColumnDefinitions="Auto,Auto,Auto">
+                <TextBlock Grid.Column="0"
+                           Text="{loc:Localize LocalLog_Date}"
+                           VerticalAlignment="Center"
+                           Margin="0,0,12,0" />
+                <CalendarDatePicker Grid.Column="1"
+                                    MinWidth="220"
+                                    SelectedDate="{Binding SelectedDate, Mode=TwoWay}"
+                                    PlaceholderText="{loc:Localize LocalLog_DateHint}" />
+                <Button Grid.Column="2"
+                        Margin="20,0,0,0"
+                        MinWidth="100"
+                        Content="{loc:Localize LocalLog_Load}"
+                        Command="{Binding LoadCommand}" />
+            </Grid>
+        </controls:Card>
+
+        <TextBlock Grid.Row="1"
+                   Margin="22,0,22,8"
+                   Text="{Binding StatusMessage}"
+                   IsVisible="{Binding !!StatusMessage.Length}"
+                   Opacity="0.7"
+                   TextWrapping="Wrap"
+                   TextTrimming="CharacterEllipsis" />
+
+        <controls:Card Grid.Row="2" Margin="10" Padding="0">
+            <TextBox x:Name="LogTextBox"
+                     Classes="mono"
+                     MinWidth="0"
+                     MinHeight="0"
+                     Text="{Binding LogContent}"
+                     IsReadOnly="True"
+                     TextWrapping="Wrap"
+                     AcceptsReturn="True"
+                     VerticalContentAlignment="Top"
+                     FontSize="12"
+                     Padding="12"
+                     BorderThickness="0"
+                     Background="Transparent"
+                     PlaceholderText="{loc:Localize LocalLog_ContentHint}" />
+        </controls:Card>
+    </Grid>
+</UserControl>
