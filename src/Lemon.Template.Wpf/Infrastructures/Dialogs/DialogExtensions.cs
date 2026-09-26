@@ -1,4 +1,5 @@
 ﻿using Lemon.Template.Wpf.Commons;
+using Lemon.Template.Wpf.Infrastructures.Localization;
 using System.Threading.Tasks;
 
 namespace Lemon.Template.Wpf.Infrastructures.Dialogs
@@ -16,7 +17,7 @@ namespace Lemon.Template.Wpf.Infrastructures.Dialogs
             string message,
             string IdentifierName = Constants.RootIdentifier)
         {
-            return await Question(hostDialogService, "Are You Sure?", message, IdentifierName);
+            return await Question(hostDialogService, LocalizationService.Instance.GetString("Dialog_ConfirmTitle"), message, IdentifierName);
         }
 
         /// <summary>
@@ -51,7 +52,7 @@ namespace Lemon.Template.Wpf.Infrastructures.Dialogs
         public static bool Question(this IDialogService dialogService, string title, string message)
         {
             if (string.IsNullOrWhiteSpace(title))
-                title = "Are You Sure?";
+                title = LocalizationService.Instance.GetString("Dialog_ConfirmTitle");
 
             DialogParameters parameters = new DialogParameters();
             parameters.Add("Title", title);

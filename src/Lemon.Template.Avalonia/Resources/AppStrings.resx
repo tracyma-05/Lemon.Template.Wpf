@@ -104,6 +104,15 @@
   <data name="Shell_ConfirmExit" xml:space="preserve">
     <value>Do you want to exit the application?</value>
   </data>
+  <data name="Dialog_Yes" xml:space="preserve">
+    <value>Yes</value>
+  </data>
+  <data name="Dialog_No" xml:space="preserve">
+    <value>No</value>
+  </data>
+  <data name="Dialog_ConfirmTitle" xml:space="preserve">
+    <value>Are you sure?</value>
+  </data>
 
   <!-- Home -->
   <data name="Home_Links" xml:space="preserve">

@@ -102,6 +102,15 @@
   <data name="Shell_ConfirmExit" xml:space="preserve">
     <value>确定要退出应用吗？</value>
   </data>
+  <data name="Dialog_Yes" xml:space="preserve">
+    <value>确定</value>
+  </data>
+  <data name="Dialog_No" xml:space="preserve">
+    <value>取消</value>
+  </data>
+  <data name="Dialog_ConfirmTitle" xml:space="preserve">
+    <value>确认操作</value>
+  </data>
   <data name="Shell_CheckForUpdates_ToolTip" xml:space="preserve">
     <value>检查更新</value>
   </data>

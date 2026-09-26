@@ -55,6 +55,8 @@
   <ItemGroup>
     <Content Include=".template.config\**\*" PackagePath="content/Lemon.Template.Wpf/.template.config/%(RecursiveDir)%(Filename)%(Extension)" />
     <Content Include="@(SharedTemplateFile)" PackagePath="content/Lemon.Template.Wpf/" />
+    <!-- The repository's own .gitignore carries repo-only entries; scaffolds get a generic one. -->
+    <Content Include="packaging\project.gitignore" PackagePath="content/Lemon.Template.Wpf/.gitignore" />
     <!-- Consumer-facing sln only (avoids tools/template-pack/.template.config nodes from the dev solution). -->
     <Content Include="packaging\Lemon.Template.Wpf.sln" PackagePath="content/Lemon.Template.Wpf/Lemon.Template.Wpf.sln" />
     <Content Include="src\Lemon.Template.Wpf\**\*" Exclude="src\**\bin\**;src\**\obj\**" PackagePath="content/Lemon.Template.Wpf/src/Lemon.Template.Wpf/%(RecursiveDir)%(Filename)%(Extension)" />
@@ -70,6 +72,7 @@
   <ItemGroup>
     <Content Include="templates\avalonia\.template.config\**\*" PackagePath="content/Lemon.Template.Avalonia/templates/avalonia/.template.config/%(RecursiveDir)%(Filename)%(Extension)" />
     <Content Include="@(SharedTemplateFile)" PackagePath="content/Lemon.Template.Avalonia/" />
+    <Content Include="packaging\project.gitignore" PackagePath="content/Lemon.Template.Avalonia/.gitignore" />
     <Content Include="packaging\Lemon.Template.Avalonia.sln" PackagePath="content/Lemon.Template.Avalonia/packaging/" />
     <Content Include="src\Lemon.Template.Avalonia\**\*" Exclude="src\**\bin\**;src\**\obj\**" PackagePath="content/Lemon.Template.Avalonia/src/Lemon.Template.Avalonia/%(RecursiveDir)%(Filename)%(Extension)" />
     <Content Include="tests\Lemon.Template.Avalonia.Tests\**\*" Exclude="tests\**\bin\**;tests\**\obj\**" PackagePath="content/Lemon.Template.Avalonia/tests/Lemon.Template.Avalonia.Tests/%(RecursiveDir)%(Filename)%(Extension)" />

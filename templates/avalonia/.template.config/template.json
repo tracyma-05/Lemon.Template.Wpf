@@ -62,6 +62,7 @@
             "include": [
                 "src/Lemon.Template.Avalonia/**",
                 "tests/Lemon.Template.Avalonia.Tests/**",
+                ".gitignore",
                 ".editorconfig",
                 "common.props",
                 "Directory.Build.props",

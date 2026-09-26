@@ -6,8 +6,24 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [1.2.1] - 2026-09-26
+
+Found while scaffolding a real project from 1.2.0.
+
 ### Fixed
 
+- **Generated projects had no `.gitignore`.** The repository's own file was never packed (and carries
+  repository-only entries). Both templates now ship `packaging/project.gitignore`: the standard .NET list
+  plus `Logs/`, the SQLite files and `artifacts/`.
+- **WPF: the home page's repository link was rewritten to the new project's name.** `dotnet new` replaces
+  every occurrence of the source name, so `github.com/tracyma-05/Lemon.Template.Wpf` became
+  `github.com/tracyma-05/<YourProject>`. The URL is now assembled so the rewrite cannot match it.
+- **Confirmation dialogs were English-only.** The Yes / No buttons of both message boxes and the default
+  title ("Are You Sure?", used by the exit confirmation) are localized now (`Dialog_Yes`, `Dialog_No`,
+  `Dialog_ConfirmTitle`), in both templates.
+- **`HangfireDashboard` stayed in `appsettings.json` with `--EnableHangfire false`.** The section is now
+  conditional, in both templates.
+- The CI round-trip checks all of the above, and scans `*.json` for leftover template directives.
 - **Packages built on Linux scattered the shared files.** The pack project wrote `PackagePath` with
   backslashes; NuGet on Linux does not read `\` as a separator and produced entries such as
   `content/Lemon.Template.Wpf//Directory.Packages.props`, which the template engine resolved to the drive

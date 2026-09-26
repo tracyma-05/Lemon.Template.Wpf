@@ -11,7 +11,9 @@ namespace Lemon.Template.Wpf.ViewModels.Home;
 
 public sealed partial class HomeViewModel : ObservableObject, ISingletonDependency
 {
-    private const string RepositoryUrl = "https://github.com/tracyma-05/Lemon.Template.Wpf";
+    // Split on purpose: "dotnet new" rewrites every occurrence of the template's source name, so a literal
+    // URL would come out as github.com/tracyma-05/<YourProject> in a generated project.
+    private const string RepositoryUrl = "https://github.com/tracyma-05/Lemon.Template" + ".Wpf";
     private const string MaterialDesignUrl = "https://github.com/MaterialDesignInXAML/MaterialDesignInXamlToolkit";
 
     private readonly IMenuNavigator _menuNavigator;

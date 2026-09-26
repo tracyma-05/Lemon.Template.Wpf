@@ -184,7 +184,7 @@ jobs:
           }
 
           # Unprocessed conditional markers mean a directive was malformed and shipped verbatim.
-          $leftovers = Get-ChildItem "$min" -Recurse -File -Include *.cs,*.csproj,*.xaml `
+          $leftovers = Get-ChildItem "$min" -Recurse -File -Include *.cs,*.csproj,*.xaml,*.json `
             | Where-Object { $_.FullName -notmatch '[\\/](bin|obj)[\\/]' } `
             | Select-String -Pattern '#if \(Enable', '#endif' -List
           foreach ($hit in $leftovers) { $failures += "leftover template directive in $($hit.Path)" }
@@ -193,6 +193,15 @@ jobs:
           $stray = Select-String -Path "$min/src/Acme.MinApp/Acme.MinApp.csproj" `
             -Pattern 'Hangfire', 'NotifyIcon', 'WebView2', 'Microsoft.AspNetCore.App'
           foreach ($hit in $stray) { $failures += "disabled dependency still referenced: $($hit.Line.Trim())" }
+
+          # Scaffold hygiene: the Hangfire settings go with Hangfire, a .gitignore ships, and the template's
+          # own links survive the source-name rewrite.
+          if (Select-String -Path "$min/src/Acme.MinApp/appsettings.json" -Pattern 'HangfireDashboard' -Quiet) {
+            $failures += 'HangfireDashboard section left in appsettings.json'
+          }
+          if (-not (Test-Path "$min/.gitignore")) { $failures += 'no .gitignore in the scaffold' }
+          $rewritten = Get-ChildItem "$min/src" -Recurse -File -Include *.cs | Select-String -Pattern 'tracyma-05/Acme' -List
+          foreach ($hit in $rewritten) { $failures += "template link rewritten to the project name in $($hit.Path)" }
 
           # The other template's sources must not leak into this one.
           $foreign = Get-ChildItem "${{ runner.temp }}/Full" -Recurse -File -Include *.axaml
@@ -268,7 +277,7 @@ jobs:
           }
 
           # Unprocessed conditional markers mean a directive was malformed and shipped verbatim.
-          $leftovers = Get-ChildItem "$min" -Recurse -File -Include *.cs,*.csproj,*.axaml `
+          $leftovers = Get-ChildItem "$min" -Recurse -File -Include *.cs,*.csproj,*.axaml,*.json `
             | Where-Object { $_.FullName -notmatch '[\\/](bin|obj)[\\/]' } `
             | Select-String -Pattern '#if \(Enable', '#endif' -List
           foreach ($hit in $leftovers) { $failures += "leftover template directive in $($hit.Path)" }
@@ -280,6 +289,15 @@ jobs:
           if (Select-String -Path "$min/src/Acme.MinApp/App.axaml.cs" -Pattern 'TrayIcon' -Quiet) {
             $failures += 'tray icon code still present in App.axaml.cs'
           }
+
+          # Scaffold hygiene: the Hangfire settings go with Hangfire, a .gitignore ships, and the template's
+          # own links survive the source-name rewrite.
+          if (Select-String -Path "$min/src/Acme.MinApp/appsettings.json" -Pattern 'HangfireDashboard' -Quiet) {
+            $failures += 'HangfireDashboard section left in appsettings.json'
+          }
+          if (-not (Test-Path "$min/.gitignore")) { $failures += 'no .gitignore in the scaffold' }
+          $rewritten = Get-ChildItem "$min/src" -Recurse -File -Include *.cs | Select-String -Pattern 'tracyma-05/Acme' -List
+          foreach ($hit in $rewritten) { $failures += "template link rewritten to the project name in $($hit.Path)" }
 
           # The other template's sources must not leak into this one.
           $foreign = Get-ChildItem "${{ runner.temp }}/Full" -Recurse -File -Include *.xaml
