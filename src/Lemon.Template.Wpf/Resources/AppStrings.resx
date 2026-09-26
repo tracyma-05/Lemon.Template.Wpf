@@ -104,6 +104,9 @@
   <data name="Shell_ConfirmExit" xml:space="preserve">
     <value>Do you want to exit the application?</value>
   </data>
+  <data name="Shell_CheckForUpdates_ToolTip" xml:space="preserve">
+    <value>Check for updates</value>
+  </data>
 
   <!-- Home -->
   <data name="Home_Links" xml:space="preserve">
@@ -246,5 +249,55 @@
   </data>
   <data name="Language_SystemDefault" xml:space="preserve">
     <value>System default</value>
+  </data>
+
+  <!-- Updates -->
+  <data name="Update_CurrentVersion" xml:space="preserve">
+    <value>Current version</value>
+  </data>
+  <data name="Update_LatestVersion" xml:space="preserve">
+    <value>Latest version</value>
+  </data>
+  <data name="Update_PublishedAt" xml:space="preserve">
+    <value>Published</value>
+  </data>
+  <data name="Update_ReleaseNotes" xml:space="preserve">
+    <value>What's new</value>
+  </data>
+  <data name="Update_Download" xml:space="preserve">
+    <value>Download</value>
+  </data>
+  <data name="Update_Later" xml:space="preserve">
+    <value>Later</value>
+  </data>
+  <data name="Update_Ok" xml:space="preserve">
+    <value>OK</value>
+  </data>
+  <data name="Update_Available_Title" xml:space="preserve">
+    <value>A new version is available</value>
+  </data>
+  <data name="Update_Available_Message" xml:space="preserve">
+    <value>Version {0} is ready. Download opens in your browser; install it after closing this app.</value>
+  </data>
+  <data name="Update_UpToDate_Title" xml:space="preserve">
+    <value>You're up to date</value>
+  </data>
+  <data name="Update_UpToDate_Message" xml:space="preserve">
+    <value>Version {0} is the latest version.</value>
+  </data>
+  <data name="Update_Failed_Title" xml:space="preserve">
+    <value>Couldn't check for updates</value>
+  </data>
+  <data name="Update_Error_NotConfigured" xml:space="preserve">
+    <value>Updates are not configured. Set Update:Enabled and Update:Url in appsettings.json.</value>
+  </data>
+  <data name="Update_Error_Network" xml:space="preserve">
+    <value>The update server could not be reached. Check your network connection and try again.</value>
+  </data>
+  <data name="Update_Error_Http" xml:space="preserve">
+    <value>The update server returned an error (HTTP {0}). Try again later.</value>
+  </data>
+  <data name="Update_Error_Format" xml:space="preserve">
+    <value>The update information from the server could not be read.</value>
   </data>
 </root>

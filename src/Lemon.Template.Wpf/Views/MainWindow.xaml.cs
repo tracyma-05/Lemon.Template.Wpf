@@ -3,6 +3,7 @@ using Lemon.Template.Wpf.Infrastructures.Dialogs;
 using Lemon.Template.Wpf.Infrastructures.Localization;
 using Lemon.Template.Wpf.Infrastructures.Navigations;
 using Lemon.Template.Wpf.Themes.Controls;
+using Lemon.Template.Wpf.ViewModels;
 using Serilog;
 using System;
 using System.Windows;
@@ -64,6 +65,23 @@ namespace Lemon.Template.Wpf.Views
             // would leave the arrow pointing one way and the menu sized the other.
             toggleMenuButton.Checked += (_, _) => SetMenuCollapsed(true);
             toggleMenuButton.Unchecked += (_, _) => SetMenuCollapsed(false);
+
+            ContentRendered += OnFirstContentRendered;
+        }
+
+        /// <summary>
+        /// Start-up update check. Waits for the first render so the splash is gone and the dialog host
+        /// exists before any "new version" prompt can appear.
+        /// </summary>
+        private async void OnFirstContentRendered(object? sender, EventArgs e)
+        {
+            ContentRendered -= OnFirstContentRendered;
+
+            if (DataContext is MainWindowViewModel viewModel)
+            {
+                // Handles its own failures; see CheckForUpdatesOnStartupAsync.
+                await viewModel.CheckForUpdatesOnStartupAsync();
+            }
         }
 
         public static readonly DependencyProperty IsMenuCollapsedProperty =

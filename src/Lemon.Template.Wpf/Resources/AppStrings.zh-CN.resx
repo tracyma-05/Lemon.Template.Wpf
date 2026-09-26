@@ -102,6 +102,9 @@
   <data name="Shell_ConfirmExit" xml:space="preserve">
     <value>确定要退出应用吗？</value>
   </data>
+  <data name="Shell_CheckForUpdates_ToolTip" xml:space="preserve">
+    <value>检查更新</value>
+  </data>
 
   <data name="Home_Links" xml:space="preserve">
     <value>相关链接：</value>
@@ -239,5 +242,55 @@
   </data>
   <data name="Language_SystemDefault" xml:space="preserve">
     <value>跟随系统</value>
+  </data>
+
+  <!-- Updates -->
+  <data name="Update_CurrentVersion" xml:space="preserve">
+    <value>当前版本</value>
+  </data>
+  <data name="Update_LatestVersion" xml:space="preserve">
+    <value>最新版本</value>
+  </data>
+  <data name="Update_PublishedAt" xml:space="preserve">
+    <value>发布时间</value>
+  </data>
+  <data name="Update_ReleaseNotes" xml:space="preserve">
+    <value>更新内容</value>
+  </data>
+  <data name="Update_Download" xml:space="preserve">
+    <value>下载</value>
+  </data>
+  <data name="Update_Later" xml:space="preserve">
+    <value>稍后</value>
+  </data>
+  <data name="Update_Ok" xml:space="preserve">
+    <value>确定</value>
+  </data>
+  <data name="Update_Available_Title" xml:space="preserve">
+    <value>发现新版本</value>
+  </data>
+  <data name="Update_Available_Message" xml:space="preserve">
+    <value>新版本 {0} 已发布。点击下载会在浏览器中打开下载链接，关闭本程序后再安装。</value>
+  </data>
+  <data name="Update_UpToDate_Title" xml:space="preserve">
+    <value>已是最新版本</value>
+  </data>
+  <data name="Update_UpToDate_Message" xml:space="preserve">
+    <value>当前版本 {0} 已是最新。</value>
+  </data>
+  <data name="Update_Failed_Title" xml:space="preserve">
+    <value>检查更新失败</value>
+  </data>
+  <data name="Update_Error_NotConfigured" xml:space="preserve">
+    <value>未配置更新：请在 appsettings.json 中设置 Update:Enabled 和 Update:Url。</value>
+  </data>
+  <data name="Update_Error_Network" xml:space="preserve">
+    <value>无法连接更新服务器，请检查网络后重试。</value>
+  </data>
+  <data name="Update_Error_Http" xml:space="preserve">
+    <value>更新服务器返回错误（HTTP {0}），请稍后重试。</value>
+  </data>
+  <data name="Update_Error_Format" xml:space="preserve">
+    <value>无法读取服务器返回的更新信息。</value>
   </data>
 </root>

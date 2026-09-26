@@ -13,6 +13,9 @@ namespace Lemon.Template.Wpf.Commons
 
         public const string MessageBox = "MessageBoxView";
 
+        /// <summary>Result of a check for updates (see <c>Services/Updates</c>).</summary>
+        public const string UpdateDialog = "UpdateDialogView";
+
         #endregion
 
         #region region

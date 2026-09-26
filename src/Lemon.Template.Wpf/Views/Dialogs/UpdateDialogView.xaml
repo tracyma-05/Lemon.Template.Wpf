@@ -1,0 +1,147 @@
+<UserControl x:Class="Lemon.Template.Wpf.Views.Dialogs.UpdateDialogView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:converters="clr-namespace:Lemon.Template.Wpf.Converters"
+             xmlns:loc="clr-namespace:Lemon.Template.Wpf.Infrastructures.Localization"
+             mc:Ignorable="d"
+             Width="480">
+    <UserControl.Resources>
+        <!-- Collapses a row whose bound text is null (no publish date, no release notes). -->
+        <Style x:Key="HideWhenNull" TargetType="FrameworkElement">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding Tag, RelativeSource={RelativeSource Self}}" Value="{x:Null}">
+                    <Setter Property="Visibility" Value="Collapsed" />
+                </DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Resources>
+
+    <Grid Margin="24,24,24,12">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <DockPanel>
+            <materialDesign:PackIcon Width="40"
+                                     Height="40"
+                                     VerticalAlignment="Center"
+                                     Foreground="{DynamicResource MaterialDesign.Brush.Primary}"
+                                     Kind="{Binding Icon}" />
+            <TextBlock Margin="12,0,0,0"
+                       VerticalAlignment="Center"
+                       d:Text="New version available"
+                       FontSize="18"
+                       FontWeight="Bold"
+                       Text="{Binding Title}"
+                       TextWrapping="Wrap" />
+        </DockPanel>
+
+        <TextBlock Grid.Row="1"
+                   Margin="0,12,0,0"
+                   d:Text="Version 1.2.0 is ready to download."
+                   Opacity="0.8"
+                   Text="{Binding Message}"
+                   TextWrapping="Wrap" />
+
+        <!-- Version facts: current always; latest and date only when the manifest was read. -->
+        <Grid Grid.Row="2" Margin="0,16,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="*" />
+            </Grid.ColumnDefinitions>
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="Auto" />
+            </Grid.RowDefinitions>
+            <Grid.Resources>
+                <Style TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
+                    <Setter Property="Margin" Value="0,2" />
+                </Style>
+            </Grid.Resources>
+
+            <TextBlock Opacity="0.6" Text="{loc:Localize Update_CurrentVersion}" />
+            <TextBlock Grid.Column="1" Margin="16,2,0,2" d:Text="1.1.0" Text="{Binding CurrentVersion}" />
+
+            <TextBlock Grid.Row="1"
+                       Opacity="0.6"
+                       Text="{loc:Localize Update_LatestVersion}"
+                       Visibility="{Binding IsUpdateAvailable, Converter={converters:BoolToVisibilityConverter}}" />
+            <TextBlock Grid.Row="1"
+                       Grid.Column="1"
+                       Margin="16,2,0,2"
+                       d:Text="1.2.0"
+                       FontWeight="Bold"
+                       Text="{Binding LatestVersion}"
+                       Visibility="{Binding IsUpdateAvailable, Converter={converters:BoolToVisibilityConverter}}" />
+
+            <TextBlock Grid.Row="2"
+                       Opacity="0.6"
+                       Tag="{Binding PublishedAt}"
+                       Style="{StaticResource HideWhenNull}"
+                       Text="{loc:Localize Update_PublishedAt}" />
+            <TextBlock Grid.Row="2"
+                       Grid.Column="1"
+                       Margin="16,2,0,2"
+                       d:Text="2026-09-26 16:00"
+                       Tag="{Binding PublishedAt}"
+                       Style="{StaticResource HideWhenNull}"
+                       Text="{Binding PublishedAt}" />
+        </Grid>
+
+        <StackPanel Grid.Row="3"
+                    Margin="0,16,0,0"
+                    Tag="{Binding ReleaseNotes}"
+                    Style="{StaticResource HideWhenNull}">
+            <TextBlock Margin="0,0,0,6" FontWeight="Bold" Text="{loc:Localize Update_ReleaseNotes}" />
+            <Border Padding="12,8"
+                    BorderBrush="{DynamicResource MaterialDesignDivider}"
+                    BorderThickness="1"
+                    CornerRadius="6">
+                <ScrollViewer MaxHeight="180" VerticalScrollBarVisibility="Auto">
+                    <TextBlock d:Text="- Fixed a crash on start-up&#10;- Faster log loading"
+                               Text="{Binding ReleaseNotes}"
+                               TextWrapping="Wrap" />
+                </ScrollViewer>
+            </Border>
+        </StackPanel>
+
+        <StackPanel Grid.Row="4"
+                    Margin="0,20,0,0"
+                    HorizontalAlignment="Right"
+                    Orientation="Horizontal">
+            <Button Command="{Binding CancelCommand}"
+                    Content="{loc:Localize Update_Later}"
+                    IsCancel="True"
+                    Style="{StaticResource MaterialDesignFlatButton}"
+                    Visibility="{Binding IsUpdateAvailable, Converter={converters:BoolToVisibilityConverter}}" />
+            <Button Margin="8,0,0,0"
+                    Command="{Binding SaveCommand}"
+                    Content="{loc:Localize Update_Download}"
+                    IsDefault="True"
+                    Visibility="{Binding IsUpdateAvailable, Converter={converters:BoolToVisibilityConverter}}" />
+            <!-- Nothing to download: a single acknowledgement closes the dialog. -->
+            <Button Command="{Binding CancelCommand}"
+                    Content="{loc:Localize Update_Ok}"
+                    IsDefault="True">
+                <Button.Style>
+                    <Style TargetType="Button" BasedOn="{StaticResource MaterialDesignRaisedButton}">
+                        <Setter Property="Visibility" Value="Collapsed" />
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsUpdateAvailable}" Value="False">
+                                <Setter Property="Visibility" Value="Visible" />
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
+        </StackPanel>
+    </Grid>
+</UserControl>

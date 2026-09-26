@@ -52,6 +52,7 @@ It is also packaged as **.NET project templates** (`.template.config/template.js
 | **Logs → Local-Logs** | View tail of **Serilog** rolling file logs under the application `Logs` folder, with a status line reporting path, size and truncation. |
 | **Tools → Cron** | Embedded **Hangfire Dashboard** (WebView2) against local storage; sample recurring job (`sample-heartbeat`) for demonstration. Optional — see template symbols. |
 | **Tray icon** | Optional system tray integration via **H.NotifyIcon.Wpf** (exit from context menu). |
+| **Check for updates** (WPF) | Title-bar button that reads a JSON update manifest and offers the download. Present only when `Update:Enabled` is `true` **and** `Update:Url` is set; can also check quietly on start-up. See [Check for updates](#check-for-updates-wpf). |
 | **Splash** | Lightweight splash on startup. |
 | **Navigation** | Pages discovered via `[NavigationRegister("Group/Name", ...)]` and grouped menus built at runtime; a single-segment key (`"Home"`) registers a top-level page with no children. Menu labels resolved from resources. |
 | **Localization** | `.resx`-backed strings, `{loc:Localize Key}` markup extension, live culture switching. |
@@ -328,6 +329,9 @@ dotnet new install Lemon.Templates.Wpf@1.0.1
 |-----|---------|
 | `App:SqliteDatabasePath` | Optional. Absolute path, or path relative to the app base directory. If empty, the database is created under `%LocalApplicationData%\<AssemblyName>\`. |
 | `HangfireDashboard:Url` | Optional. Base URL for the embedded Kestrel host (e.g. `http://127.0.0.1:5088`). If empty, **`http://127.0.0.1:0`** is used (dynamic port). |
+| `Update:Enabled` | WPF. `false` by default. Turns the check-for-updates feature on. |
+| `Update:Url` | WPF. Absolute http(s) URL of the update manifest. The title-bar button appears only when this is set **and** `Update:Enabled` is `true`. |
+| `Update:CheckOnStartup` | WPF. `true` by default. Check quietly once the main window is shown; a dialog appears only when a newer version exists. |
 
 Serilog writes rolling files to `Logs/log-YYYYMMDD.txt`, which is also where the Logs → Local-Logs page
 reads from: under the **application base directory** (`AppContext.BaseDirectory`) in the WPF app, and under
@@ -339,6 +343,38 @@ above, **Debug** records `Information` and above. The `Microsoft` namespace is c
 
 User state lives in the shared SQLite database: `app_theme` (base theme + primary/secondary ARGB) and
 `app_language` (selected culture name).
+
+### Check for updates (WPF)
+
+```json
+"Update": {
+  "Enabled": true,
+  "Url": "https://example.com/updates/myapp/latest.json",
+  "CheckOnStartup": true
+}
+```
+
+`Update:Url` must return the latest release as JSON (property names are case-insensitive):
+
+```json
+{
+  "version": "1.2.0",
+  "downloadUrl": "https://example.com/downloads/MyApp-1.2.0.zip",
+  "releaseNotes": "- Fixed …",
+  "publishedAt": "2026-09-26T08:00:00Z"
+}
+```
+
+- `version` and `downloadUrl` are required. `version` accepts `1.2`, `1.2.3`, `1.2.3.4` and a leading `v`;
+  SemVer suffixes (`-beta`, `+sha`) are ignored. It is compared with the app's own version, i.e. the
+  `Version` property of the project (inherited from `common.props` in a generated project).
+- `downloadUrl` may be relative to the manifest URL. Only http(s) links are accepted, because **Download**
+  opens it in the default browser.
+- A start-up check never shows an error: offline or unreachable servers are only logged. Clicking the
+  button reports "up to date", "new version" or a readable failure. A red dot on the button marks a pending
+  update.
+
+Any static file host works for the manifest.
 
 ### Adding a page
 

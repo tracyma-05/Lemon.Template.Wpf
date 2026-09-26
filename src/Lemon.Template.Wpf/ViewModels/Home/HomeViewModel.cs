@@ -2,9 +2,8 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Lemon.Template.Wpf.Commons;
 using Lemon.Template.Wpf.Infrastructures.Navigations;
+using Lemon.Template.Wpf.Infrastructures.Shell;
 using Lemon.Template.Wpf.Models;
-using Serilog;
-using System.Diagnostics;
 using System.Reflection;
 using Volo.Abp.DependencyInjection;
 
@@ -74,31 +73,7 @@ public sealed partial class HomeViewModel : ObservableObject, ISingletonDependen
     }
 
     [RelayCommand]
-    private static void OpenUrl(string? url)
-    {
-        if (string.IsNullOrWhiteSpace(url))
-        {
-            return;
-        }
-
-        // Restricted to http(s) on purpose: UseShellExecute happily launches file paths and custom
-        // protocol handlers, which is never what a link button on a page should do.
-        if (!Uri.TryCreate(url, UriKind.Absolute, out var uri) ||
-            (uri.Scheme != Uri.UriSchemeHttp && uri.Scheme != Uri.UriSchemeHttps))
-        {
-            Log.Warning("Refusing to open '{Url}': only http and https links are supported.", url);
-            return;
-        }
-
-        try
-        {
-            Process.Start(new ProcessStartInfo(uri.AbsoluteUri) { UseShellExecute = true });
-        }
-        catch (Exception ex)
-        {
-            Log.Error(ex, "Could not open {Url} in the default browser.", uri);
-        }
-    }
+    private static void OpenUrl(string? url) => BrowserLauncher.TryOpen(url);
 
     private static List<HomeShortcut> BuildShortcuts()
     {

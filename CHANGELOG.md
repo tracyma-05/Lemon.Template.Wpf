@@ -6,6 +6,31 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [1.2.0] - 2026-09-26
+
+### Added
+
+- **WPF: check for updates.** A title-bar button (next to the light/dark toggle) fetches a JSON update
+  manifest from `Update:Url` and shows the result: up to date, a new version with its release notes and a
+  **Download** button that opens the link in the default browser, or a readable failure. The button exists
+  only when `Update:Enabled` is `true` and `Update:Url` is an absolute http(s) URL, so projects that never
+  publish updates show nothing. With `Update:CheckOnStartup` (default `true`) the app checks quietly once
+  the main window is shown and prompts only when something newer exists; a red dot marks a pending update.
+  Manifest format and version rules are in the README (*Check for updates*). Covered by
+  `UpdateServiceTests`. The Avalonia template does not have this yet.
+- `Infrastructures/Shell/BrowserLauncher` in the WPF app (the Avalonia app already had one); the home page
+  links and the update download share it.
+
+### Fixed
+
+- **WPF: `InverseBoolToVisibilityConverter` was not inverted.** It returned `Visible` for `true`, the same as
+  `BoolToVisibilityConverter`. It now returns `Collapsed` for `true` and `Visible` otherwise. Nothing in the
+  template used it before this release.
+
+### Changed
+
+- Version bumped to `1.2.0`.
+
 ## [1.1.0] - 2026-09-24
 
 ### Added

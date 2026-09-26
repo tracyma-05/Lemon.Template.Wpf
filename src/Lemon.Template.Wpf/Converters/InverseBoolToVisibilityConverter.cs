@@ -5,15 +5,16 @@ using System.Windows.Markup;
 
 namespace Lemon.Template.Wpf.Converters
 {
+    /// <summary><c>false</c> → <see cref="Visibility.Visible"/>, <c>true</c> → <see cref="Visibility.Collapsed"/>.</summary>
     public class InverseBoolToVisibilityConverter : MarkupExtension, IValueConverter
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            if (value != null && bool.TryParse(value.ToString(), out bool result))
+            if (value != null && bool.TryParse(value.ToString(), out bool result) && result)
             {
-                if (result) return Visibility.Visible;
+                return Visibility.Collapsed;
             }
-            return Visibility.Collapsed;
+            return Visibility.Visible;
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
