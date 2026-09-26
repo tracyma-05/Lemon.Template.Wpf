@@ -111,6 +111,17 @@ jobs:
       - name: Pack
         run: dotnet pack Lemon.Template.Wpf.TemplatePack.csproj -c Release -o artifacts/package
 
+      # A malformed entry path ("content/X//file", a backslash, a leading slash) makes the template engine
+      # write that file outside the scaffold folder — it once put Directory.Packages.props at the drive root.
+      - name: Check package entry paths
+        run: |
+          bad=$(unzip -Z1 artifacts/package/*.nupkg | grep -E '//|\\|^/' || true)
+          if [ -n "$bad" ]; then
+            echo "::error::Malformed package entry paths:"
+            echo "$bad"
+            exit 1
+          fi
+
       - name: Upload template package
         uses: actions/upload-artifact@v4
         with:
