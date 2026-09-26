@@ -27,7 +27,10 @@ shift 2
 : "${NEXT_HUB_TOKEN:?NEXT_HUB_TOKEN is not set}"
 
 api="${NEXT_HUB_URL%/}/api/app/desktop-apps/${NEXT_HUB_APP}"
-chunk_limit=$((16 * 1024 * 1024))
+# Small on purpose: a request crossing Cloudflare to a slow origin is cut when it stays open too long (seen with
+# a 6 MB single request at ~150 KB/s), and a failed chunk only costs its own resend.
+chunk_limit=$((2 * 1024 * 1024))
+attempts=6
 
 work="$(mktemp -d)"
 trap 'rm -rf "$work"' EXIT
@@ -36,12 +39,27 @@ trap 'rm -rf "$work"' EXIT
 # or in a trace of this script.
 (umask 077 && printf 'X-Publish-Token: %s\n' "$NEXT_HUB_TOKEN" > "$work/auth")
 
-# Chunk uploads and starting an upload are safe to repeat, so they are retried; publishing is not.
+# Chunk uploads and starting an upload are safe to repeat, so they are retried; publishing is not. Each attempt
+# writes to a file, so a failed attempt's error page never reaches the caller's jq; only a success is printed.
 request() {
-    local method="$1" url="$2"
+    local method="$1" url="$2" attempt status
     shift 2
-    curl --fail-with-body --silent --show-error --retry 4 --retry-all-errors --retry-delay 5 \
-        -X "$method" -H @"$work/auth" "$@" "$url"
+    for ((attempt = 1; attempt <= attempts; attempt++)); do
+        rm -f "$work/response"
+        status="$(curl --silent --show-error --max-time 120 -o "$work/response" -w '%{http_code}' \
+            -X "$method" -H @"$work/auth" "$@" "$url")" || status=000
+        if [[ "$status" == 2?? ]]; then
+            cat "$work/response"
+            return 0
+        fi
+        echo "  attempt $attempt/$attempts: HTTP $status $(head -c 300 "$work/response" 2> /dev/null)" >&2
+        # A refused token or a rejected request will not pass on a second try; timeouts and 5xx might.
+        if [[ "$status" == 4?? && "$status" != 408 && "$status" != 429 ]]; then
+            return 1
+        fi
+        sleep $((attempt * 5))
+    done
+    return 1
 }
 
 packages='[]'
@@ -60,7 +78,8 @@ for file in "$@"; do
     echo "Uploading $name ($platform, $size bytes)"
     offset=0
     while [ "$offset" -lt "$size" ]; do
-        tail -c +"$((offset + 1))" "$file" | head -c "$chunk" > "$work/chunk"
+        # dd reads the byte range directly; `tail | head` dies of SIGPIPE under pipefail once head has enough.
+        dd if="$file" of="$work/chunk" bs=1M iflag=skip_bytes,count_bytes skip="$offset" count="$chunk" status=none
         received="$(request PUT "$api/uploads/$upload_id?offset=$offset" \
             -H "Content-Type: application/octet-stream" --data-binary @"$work/chunk" | jq -er .received)"
         if [ "$received" -le "$offset" ]; then

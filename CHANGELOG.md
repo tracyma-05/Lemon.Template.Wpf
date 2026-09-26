@@ -6,6 +6,21 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [1.3.1] - 2026-09-26
+
+Found by the first real run of a generated release workflow (Lemon.Hub.Wpf 1.2.0).
+
+### Fixed
+
+- **`publish-next-hub.sh` failed on any real package.** Chunks were cut with `tail | head`, and under
+  `pipefail` `tail` died of SIGPIPE as soon as `head` had its chunk; the mock test used files too small to
+  fill a pipe. Chunks are read with `dd` now.
+- **Uploads through Cloudflare were cut.** Chunks were up to 16 MB; a 6 MB request to a slow origin
+  (~150 KB/s) stayed open long enough to be dropped, and the runner saw 502s. Chunks are 2 MB.
+- **Retries fed error pages to `jq`.** curl's own `--retry` streamed each failed attempt's body into the
+  pipe. The script retries itself now, one response file per attempt, prints the server's message on a
+  failure, and stops at once on a 4xx other than 408 / 429 (a wrong token no longer retries for minutes).
+
 ## [1.3.0] - 2026-09-26
 
 Updates for Windows **and** macOS.
