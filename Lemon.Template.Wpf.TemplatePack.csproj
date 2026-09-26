@@ -45,15 +45,21 @@
     <SharedTemplateFile Include="Directory.Build.props;Directory.Packages.props" />
   </ItemGroup>
 
+  <!--
+    PackagePath uses forward slashes on purpose. CI packs on Linux, where NuGet does not treat a backslash as
+    a separator: "content\Lemon.Template.Wpf\" became "content/Lemon.Template.Wpf//.editorconfig", the
+    template engine read "/.editorconfig" as an absolute path, and the shared files were written to the
+    drive root instead of the scaffold folder. The pack job in ci.yml fails on any such entry.
+  -->
   <!-- lemon-wpf -->
   <ItemGroup>
-    <Content Include=".template.config\**\*" PackagePath="content\Lemon.Template.Wpf\.template.config\%(RecursiveDir)%(Filename)%(Extension)" />
-    <Content Include="@(SharedTemplateFile)" PackagePath="content\Lemon.Template.Wpf\" />
+    <Content Include=".template.config\**\*" PackagePath="content/Lemon.Template.Wpf/.template.config/%(RecursiveDir)%(Filename)%(Extension)" />
+    <Content Include="@(SharedTemplateFile)" PackagePath="content/Lemon.Template.Wpf/" />
     <!-- Consumer-facing sln only (avoids tools/template-pack/.template.config nodes from the dev solution). -->
-    <Content Include="packaging\Lemon.Template.Wpf.sln" PackagePath="content\Lemon.Template.Wpf\Lemon.Template.Wpf.sln" />
-    <Content Include="src\Lemon.Template.Wpf\**\*" Exclude="src\**\bin\**;src\**\obj\**" PackagePath="content\Lemon.Template.Wpf\src\Lemon.Template.Wpf\%(RecursiveDir)%(Filename)%(Extension)" />
+    <Content Include="packaging\Lemon.Template.Wpf.sln" PackagePath="content/Lemon.Template.Wpf/Lemon.Template.Wpf.sln" />
+    <Content Include="src\Lemon.Template.Wpf\**\*" Exclude="src\**\bin\**;src\**\obj\**" PackagePath="content/Lemon.Template.Wpf/src/Lemon.Template.Wpf/%(RecursiveDir)%(Filename)%(Extension)" />
     <!-- Shipped unless the consumer sets the IncludeTests option to false, which excludes tests/ at instantiation. -->
-    <Content Include="tests\Lemon.Template.Wpf.Tests\**\*" Exclude="tests\**\bin\**;tests\**\obj\**" PackagePath="content\Lemon.Template.Wpf\tests\Lemon.Template.Wpf.Tests\%(RecursiveDir)%(Filename)%(Extension)" />
+    <Content Include="tests\Lemon.Template.Wpf.Tests\**\*" Exclude="tests\**\bin\**;tests\**\obj\**" PackagePath="content/Lemon.Template.Wpf/tests/Lemon.Template.Wpf.Tests/%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
 
   <!--
@@ -62,10 +68,10 @@
     clone and for the installed package.
   -->
   <ItemGroup>
-    <Content Include="templates\avalonia\.template.config\**\*" PackagePath="content\Lemon.Template.Avalonia\templates\avalonia\.template.config\%(RecursiveDir)%(Filename)%(Extension)" />
-    <Content Include="@(SharedTemplateFile)" PackagePath="content\Lemon.Template.Avalonia\" />
-    <Content Include="packaging\Lemon.Template.Avalonia.sln" PackagePath="content\Lemon.Template.Avalonia\packaging\" />
-    <Content Include="src\Lemon.Template.Avalonia\**\*" Exclude="src\**\bin\**;src\**\obj\**" PackagePath="content\Lemon.Template.Avalonia\src\Lemon.Template.Avalonia\%(RecursiveDir)%(Filename)%(Extension)" />
-    <Content Include="tests\Lemon.Template.Avalonia.Tests\**\*" Exclude="tests\**\bin\**;tests\**\obj\**" PackagePath="content\Lemon.Template.Avalonia\tests\Lemon.Template.Avalonia.Tests\%(RecursiveDir)%(Filename)%(Extension)" />
+    <Content Include="templates\avalonia\.template.config\**\*" PackagePath="content/Lemon.Template.Avalonia/templates/avalonia/.template.config/%(RecursiveDir)%(Filename)%(Extension)" />
+    <Content Include="@(SharedTemplateFile)" PackagePath="content/Lemon.Template.Avalonia/" />
+    <Content Include="packaging\Lemon.Template.Avalonia.sln" PackagePath="content/Lemon.Template.Avalonia/packaging/" />
+    <Content Include="src\Lemon.Template.Avalonia\**\*" Exclude="src\**\bin\**;src\**\obj\**" PackagePath="content/Lemon.Template.Avalonia/src/Lemon.Template.Avalonia/%(RecursiveDir)%(Filename)%(Extension)" />
+    <Content Include="tests\Lemon.Template.Avalonia.Tests\**\*" Exclude="tests\**\bin\**;tests\**\obj\**" PackagePath="content/Lemon.Template.Avalonia/tests/Lemon.Template.Avalonia.Tests/%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>
 </Project>

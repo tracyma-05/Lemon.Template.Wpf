@@ -6,6 +6,15 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Fixed
+
+- **Packages built on Linux scattered the shared files.** The pack project wrote `PackagePath` with
+  backslashes; NuGet on Linux does not read `\` as a separator and produced entries such as
+  `content/Lemon.Template.Wpf//Directory.Packages.props`, which the template engine resolved to the drive
+  root. CI packs on Linux, so every template round-trip job had failed since 1.1.0 (packages published
+  from Windows were not affected). Paths now use forward slashes, and the CI pack job rejects malformed
+  entry paths.
+
 ## [1.2.0] - 2026-09-26
 
 ### Added
