@@ -3,6 +3,7 @@
 #
 #   bash Packaging/macOS/bundle.sh            # Apple Silicon (osx-arm64)
 #   bash Packaging/macOS/bundle.sh osx-x64    # Intel
+#   VERSION=1.2.0 bash Packaging/macOS/bundle.sh   # stamp a version on the app and the bundle
 #
 # Run on macOS: the icon is generated with sips and iconutil, which ship with the OS. The bundle is signed
 # ad hoc so it launches locally; distributing it to other Macs needs a Developer ID signature and
@@ -18,12 +19,18 @@ PROJECT_DIR="$(cd "$HERE/../.." && pwd)"
 OUT_DIR="$PROJECT_DIR/bin/$CONFIGURATION/bundle/$RID"
 APP="$OUT_DIR/$APP_NAME.app"
 
-dotnet publish "$PROJECT_DIR/$APP_NAME.csproj" -c "$CONFIGURATION" -r "$RID" --self-contained -o "$OUT_DIR/publish"
+dotnet publish "$PROJECT_DIR/$APP_NAME.csproj" -c "$CONFIGURATION" -r "$RID" --self-contained -o "$OUT_DIR/publish" \
+    ${VERSION:+"-p:Version=$VERSION"}
 
 rm -rf "$APP"
 mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 cp -R "$OUT_DIR/publish/." "$APP/Contents/MacOS/"
 cp "$HERE/Info.plist" "$APP/Contents/Info.plist"
+if [ -n "${VERSION:-}" ]; then
+    # Finder's "Get Info" and the About menu read these, not the assembly version.
+    /usr/libexec/PlistBuddy -c "Set :CFBundleShortVersionString $VERSION" "$APP/Contents/Info.plist"
+    /usr/libexec/PlistBuddy -c "Set :CFBundleVersion $VERSION" "$APP/Contents/Info.plist"
+fi
 
 # AppIcon.icns from the app logo. The source is 256 px, so larger slots are left out rather than upscaled.
 ICONSET="$OUT_DIR/AppIcon.iconset"

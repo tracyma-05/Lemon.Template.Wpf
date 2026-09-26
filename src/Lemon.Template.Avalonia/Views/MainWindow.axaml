@@ -187,6 +187,29 @@
                                 VerticalAlignment="Center"
                                 Orientation="Horizontal"
                                 WindowDecorationProperties.ElementRole="User">
+                        <!-- Only present when appsettings.json turns updates on and names a manifest URL or GitHub repository. -->
+                        <Button Command="{Binding CheckForUpdatesCommand}"
+                                Classes="Flat icon"
+                                AutomationProperties.Name="{loc:Localize Shell_CheckForUpdates_ToolTip}"
+                                IsVisible="{Binding IsUpdateCheckEnabled}"
+                                ToolTip.Tip="{loc:Localize Shell_CheckForUpdates_ToolTip}">
+                            <Panel Width="20" Height="20">
+                                <materialIcons:MaterialIcon Width="20" Height="20" Kind="Update" IsVisible="{Binding !IsCheckingForUpdates}" />
+                                <ProgressBar Width="16"
+                                             Height="16"
+                                             Classes="circular"
+                                             IsIndeterminate="True"
+                                             IsVisible="{Binding IsCheckingForUpdates}" />
+                                <!-- Badge: a newer version is waiting. -->
+                                <Ellipse Width="8"
+                                         Height="8"
+                                         Margin="0,-2,-2,0"
+                                         HorizontalAlignment="Right"
+                                         VerticalAlignment="Top"
+                                         Fill="{DynamicResource MaterialValidationErrorBrush}"
+                                         IsVisible="{Binding IsUpdateAvailable}" />
+                            </Panel>
+                        </Button>
                         <Button Command="{Binding ToggleDarkThemeCommand}"
                                 Classes="Flat icon"
                                 ToolTip.Tip="{loc:Localize Shell_ThemeToggle_ToolTip}">

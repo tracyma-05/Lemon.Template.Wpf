@@ -1,4 +1,4 @@
-using Lemon.Template.Wpf.Infrastructures.Localization;
+using Lemon.Template.Avalonia.Infrastructures.Localization;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -10,7 +10,7 @@ using System.Reflection;
 using System.Text.Json;
 using Volo.Abp.DependencyInjection;
 
-namespace Lemon.Template.Wpf.Services.Updates;
+namespace Lemon.Template.Avalonia.Services.Updates;
 
 /// <summary>
 /// Reads the latest release (an update manifest, or a GitHub Release; see <see cref="UpdateOptions"/>),

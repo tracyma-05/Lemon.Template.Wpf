@@ -1,4 +1,4 @@
-namespace Lemon.Template.Wpf.Services.Updates;
+namespace Lemon.Template.Avalonia.Services.Updates;
 
 public interface IUpdateService
 {

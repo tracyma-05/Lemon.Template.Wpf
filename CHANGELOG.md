@@ -6,6 +6,34 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [1.3.0] - 2026-09-26
+
+Updates for Windows **and** macOS.
+
+### Added
+
+- **Avalonia: check for updates.** The WPF feature from 1.2.0 is ported: title-bar button with a badge,
+  quiet start-up check, update dialog, same `Update` settings.
+- **A package per platform.** The manifest may list `downloads` keyed by platform (`win-x64`, `osx-arm64`,
+  `osx-x64`, `any`, …) and a `pageUrl`. The app picks the package for the machine it runs on, falls back to
+  the x64 build on arm64 and then to `any`, and opens `pageUrl` rather than another platform's file when
+  nothing fits. `downloadUrl` still works on its own, so 1.2 manifests are unchanged.
+- **GitHub Releases as an update source.** `"Provider": "GitHub"` with `"GitHubRepository": "owner/repo"`
+  reads the latest release; assets are matched to the platform by file name (`…-osx-arm64.zip`, and the
+  spellings other tools use: `macos`, `darwin`, `amd64`, `x86_64`, `aarch64`, `386`, `universal`).
+- **Release workflow in generated projects.** `.github/workflows/release.yml` builds on a `v*` tag (WPF:
+  `win-x64`; Avalonia: `win-x64`, `osx-arm64` and `osx-x64` `.app` bundles), stamps the tag as the version,
+  creates the GitHub Release, and, when `NEXT_HUB_URL` is set, publishes the packages to Next.Hub with a
+  publish token through `.github/scripts/publish-next-hub.sh` (chunked upload, one version with a package per
+  platform).
+- `Packaging/macOS/bundle.sh` takes `VERSION=` and stamps it on the app and `Info.plist`.
+
+### Changed
+
+- WPF template sources exclude `packaging/**` and `.github/**` when installed from a clone, so the template
+  repository's own CI no longer lands in a generated project.
+- The CI round-trip checks that both templates ship the release workflow and that it names the project.
+
 ## [1.2.1] - 2026-09-26
 
 Found while scaffolding a real project from 1.2.0.

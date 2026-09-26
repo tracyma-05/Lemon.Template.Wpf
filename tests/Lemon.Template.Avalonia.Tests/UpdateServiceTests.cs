@@ -3,12 +3,12 @@ using System.Globalization;
 using System.Net;
 using System.Net.Http;
 using System.Text;
-using Lemon.Template.Wpf.Infrastructures.Localization;
-using Lemon.Template.Wpf.Services.Updates;
+using Lemon.Template.Avalonia.Infrastructures.Localization;
+using Lemon.Template.Avalonia.Services.Updates;
 using Microsoft.Extensions.Configuration;
 using Xunit;
 
-namespace Lemon.Template.Wpf.Tests;
+namespace Lemon.Template.Avalonia.Tests;
 
 public class UpdateServiceTests
 {
@@ -84,7 +84,7 @@ public class UpdateServiceTests
     {
         var service = CreateService(true, ManifestUrl, _ => Json($$"""{ "version": "{{published}}", "downloadUrl": "https://x.test/a.zip" }"""));
 
-        var result = await service.CheckAsync();
+        var result = await service.CheckAsync(TestContext.Current.CancellationToken);
 
         Assert.Equal(expected, result.Status);
         Assert.Null(result.Error);
@@ -95,7 +95,7 @@ public class UpdateServiceTests
     {
         var service = CreateService(true, ManifestUrl, _ => new HttpResponseMessage(HttpStatusCode.NotFound));
 
-        var result = await service.CheckAsync();
+        var result = await service.CheckAsync(TestContext.Current.CancellationToken);
 
         Assert.Equal(UpdateCheckStatus.Failed, result.Status);
         Assert.Equal("Update_Error_Http:404", result.Error);
@@ -106,7 +106,7 @@ public class UpdateServiceTests
     {
         var service = CreateService(true, ManifestUrl, _ => throw new HttpRequestException("connection refused"));
 
-        var result = await service.CheckAsync();
+        var result = await service.CheckAsync(TestContext.Current.CancellationToken);
 
         Assert.Equal(UpdateCheckStatus.Failed, result.Status);
         Assert.Equal("Update_Error_Network", result.Error);
@@ -117,7 +117,7 @@ public class UpdateServiceTests
     {
         var service = CreateService(true, ManifestUrl, _ => Json("""{ "version": "soon" }"""));
 
-        var result = await service.CheckAsync();
+        var result = await service.CheckAsync(TestContext.Current.CancellationToken);
 
         Assert.Equal(UpdateCheckStatus.Failed, result.Status);
         Assert.Equal("Update_Error_Format", result.Error);
@@ -128,7 +128,7 @@ public class UpdateServiceTests
     {
         var service = CreateService(false, "", _ => throw new InvalidOperationException("no request expected"));
 
-        var result = await service.CheckAsync();
+        var result = await service.CheckAsync(TestContext.Current.CancellationToken);
 
         Assert.Equal(UpdateCheckStatus.Failed, result.Status);
         Assert.Equal("Update_Error_NotConfigured", result.Error);
@@ -203,7 +203,7 @@ public class UpdateServiceTests
     {
         var service = CreateService(true, ManifestUrl, _ => Json(PlatformManifest), platform: platform);
 
-        var result = await service.CheckAsync();
+        var result = await service.CheckAsync(TestContext.Current.CancellationToken);
 
         Assert.Equal(UpdateCheckStatus.UpdateAvailable, result.Status);
         Assert.Equal(expected, result.DownloadUrl!.AbsoluteUri);
@@ -218,7 +218,7 @@ public class UpdateServiceTests
             _ => Json("""{ "version": "1.3.0", "downloads": { "osx-arm64": "https://x.test/mac.zip" } }"""),
             platform: "win-x64");
 
-        var result = await service.CheckAsync();
+        var result = await service.CheckAsync(TestContext.Current.CancellationToken);
 
         Assert.Equal(UpdateCheckStatus.Failed, result.Status);
         Assert.Equal("Update_Error_NoPackage:1.3.0,win-x64", result.Error);
@@ -287,7 +287,7 @@ public class UpdateServiceTests
             },
             platform);
 
-        var result = await service.CheckAsync();
+        var result = await service.CheckAsync(TestContext.Current.CancellationToken);
 
         Assert.Equal("https://api.github.com/repos/acme/myapp/releases/latest", sent!.RequestUri!.AbsoluteUri);
         Assert.Contains(sent.Headers.Accept, x => x.MediaType == "application/vnd.github+json");
@@ -314,7 +314,7 @@ public class UpdateServiceTests
             new() { ["Update:Enabled"] = "true", ["Update:Provider"] = "GitHub", ["Update:GitHubRepository"] = "acme/myapp" },
             _ => new HttpResponseMessage(HttpStatusCode.NotFound));
 
-        var result = await service.CheckAsync();
+        var result = await service.CheckAsync(TestContext.Current.CancellationToken);
 
         Assert.Equal(UpdateCheckStatus.Failed, result.Status);
         Assert.Equal("Update_Error_NoRelease", result.Error);

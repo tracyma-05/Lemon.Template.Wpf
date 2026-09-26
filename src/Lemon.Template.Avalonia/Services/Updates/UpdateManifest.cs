@@ -1,4 +1,4 @@
-namespace Lemon.Template.Wpf.Services.Updates;
+namespace Lemon.Template.Avalonia.Services.Updates;
 
 /// <summary>
 /// The latest published release, read from the update manifest or from a GitHub Release.

@@ -205,6 +205,16 @@ jobs:
             | Select-String -Pattern 'tracyma-05/Acme' -List
           foreach ($hit in $rewritten) { $failures += "template link rewritten to the project name in $($hit.Path)" }
 
+          # The release workflow and Next.Hub script ship, name this project, and the repository's own CI stays behind.
+          foreach ($file in '.github/workflows/release.yml', '.github/scripts/publish-next-hub.sh') {
+            if (-not (Test-Path "$min/$file")) { $failures += "no $file in the scaffold" }
+          }
+          if ((Test-Path "$min/.github/workflows/release.yml") -and
+              -not (Select-String -Path "$min/.github/workflows/release.yml" -Pattern 'src/Acme.MinApp/Acme.MinApp.csproj' -SimpleMatch -Quiet)) {
+            $failures += 'release.yml does not point at the scaffolded project'
+          }
+          if (Test-Path "$min/.github/workflows/ci.yml") { $failures += "the template repository's ci.yml leaked into the scaffold" }
+
           # The other template's sources must not leak into this one.
           $foreign = Get-ChildItem "${{ runner.temp }}/Full" -Recurse -File -Include *.axaml
           foreach ($hit in $foreign) { $failures += "Avalonia file in the WPF scaffold: $($hit.FullName)" }
@@ -302,6 +312,16 @@ jobs:
             | Where-Object { $_.FullName -notmatch '[\\/](bin|obj)[\\/]' } `
             | Select-String -Pattern 'tracyma-05/Acme' -List
           foreach ($hit in $rewritten) { $failures += "template link rewritten to the project name in $($hit.Path)" }
+
+          # The release workflow and Next.Hub script ship, name this project, and the repository's own CI stays behind.
+          foreach ($file in '.github/workflows/release.yml', '.github/scripts/publish-next-hub.sh') {
+            if (-not (Test-Path "$min/$file")) { $failures += "no $file in the scaffold" }
+          }
+          if ((Test-Path "$min/.github/workflows/release.yml") -and
+              -not (Select-String -Path "$min/.github/workflows/release.yml" -Pattern 'src/Acme.MinApp/Acme.MinApp.csproj' -SimpleMatch -Quiet)) {
+            $failures += 'release.yml does not point at the scaffolded project'
+          }
+          if (Test-Path "$min/.github/workflows/ci.yml") { $failures += "the template repository's ci.yml leaked into the scaffold" }
 
           # The other template's sources must not leak into this one.
           $foreign = Get-ChildItem "${{ runner.temp }}/Full" -Recurse -File -Include *.xaml

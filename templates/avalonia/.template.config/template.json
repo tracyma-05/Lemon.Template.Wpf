@@ -117,6 +117,14 @@
             "include": [
                 "Lemon.Template.Avalonia.sln"
             ]
+        },
+        {
+            "source": "../../packaging/scaffold/",
+            "target": "./"
+        },
+        {
+            "source": "../../packaging/avalonia/",
+            "target": "./"
         }
     ],
     "primaryOutputs": [

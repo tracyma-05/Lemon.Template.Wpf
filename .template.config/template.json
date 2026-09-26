@@ -74,7 +74,8 @@
                 "src/Lemon.Template.Avalonia/**",
                 "tests/Lemon.Template.Avalonia.Tests/**",
                 "templates/**",
-                "packaging/Lemon.Template.Avalonia.sln"
+                "packaging/**",
+                ".github/**"
             ],
             "modifiers": [
                 {
@@ -92,6 +93,14 @@
                     ]
                 }
             ]
+        },
+        {
+            "source": "./packaging/scaffold/",
+            "target": "./"
+        },
+        {
+            "source": "./packaging/wpf/",
+            "target": "./"
         }
     ],
     "primaryOutputs": [

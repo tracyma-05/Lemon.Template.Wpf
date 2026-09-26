@@ -13,6 +13,8 @@ namespace Lemon.Template.Avalonia.Commons
 
         public const string MessageBox = "MessageBoxView";
 
+        public const string UpdateDialog = "UpdateDialogView";
+
         #endregion
 
         #region region

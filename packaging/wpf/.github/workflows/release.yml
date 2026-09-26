@@ -1,0 +1,115 @@
+# Builds the app when a version tag is pushed and publishes the package:
+#   - to a GitHub Release, always. The in-app update check reads it with "Provider": "GitHub".
+#   - to Next.Hub, when the NEXT_HUB_URL variable is set. The update check reads it with "Provider": "Manifest"
+#     and "Url": "<NEXT_HUB_URL>api/app/desktop-apps/<NEXT_HUB_APP>/latest".
+#
+# Release a version:
+#   git tag v1.2.0
+#   git push origin v1.2.0
+# The tag becomes the app's Version, so the running app and the update check agree on the number.
+#
+# Next.Hub (optional): create a publish token on the app's page in Next.Hub, then add to this repository
+# (Settings → Secrets and variables → Actions):
+#   secret   NEXT_HUB_TOKEN  the token
+#   variable NEXT_HUB_URL    the API base, e.g. https://example.com/hub-api/
+#   variable NEXT_HUB_APP    the app's key in Next.Hub
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write # create the release and upload its assets
+
+env:
+  PROJECT: src/Lemon.Template.Wpf/Lemon.Template.Wpf.csproj
+  APP_NAME: Lemon.Template.Wpf
+  # true bundles the .NET runtime (bigger download, runs on a bare machine); false needs the .NET Desktop
+  # Runtime installed.
+  SELF_CONTAINED: 'true'
+
+jobs:
+  build:
+    name: Build (${{ matrix.rid }})
+    strategy:
+      matrix:
+        include:
+          - rid: win-x64
+            os: windows-latest
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Read the version from the tag
+        id: version
+        shell: bash
+        run: echo "value=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Publish
+        shell: bash
+        run: >
+          dotnet publish "$PROJECT" -c Release -r ${{ matrix.rid }} --self-contained "$SELF_CONTAINED"
+          -p:Version=${{ steps.version.outputs.value }}
+          -o artifacts/publish
+
+      - name: Zip
+        shell: pwsh
+        run: >
+          Compress-Archive -Path artifacts/publish/*
+          -DestinationPath "artifacts/$env:APP_NAME-${{ steps.version.outputs.value }}-${{ matrix.rid }}.zip"
+
+      # Only a hand-over to the release job below: workflow artifacts need a GitHub login to download and
+      # expire, so the published copies are the release assets (and Next.Hub), not these.
+      - name: Hand the package to the release job
+        uses: actions/upload-artifact@v4
+        with:
+          name: package-${{ matrix.rid }}
+          path: artifacts/*.zip
+          if-no-files-found: error
+          retention-days: 3
+
+  release:
+    name: Publish the release
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Collect the packages
+        uses: actions/download-artifact@v4
+        with:
+          pattern: package-*
+          path: packages
+          merge-multiple: true
+
+      - name: Create the GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # A re-run replaces the assets of the release it created the first time.
+          if gh release view "$GITHUB_REF_NAME" > /dev/null 2>&1; then
+            gh release upload "$GITHUB_REF_NAME" packages/* --clobber
+          else
+            gh release create "$GITHUB_REF_NAME" packages/* --title "$GITHUB_REF_NAME" --generate-notes --verify-tag
+          fi
+
+      - name: Publish to Next.Hub
+        if: vars.NEXT_HUB_URL != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          NEXT_HUB_URL: ${{ vars.NEXT_HUB_URL }}
+          NEXT_HUB_APP: ${{ vars.NEXT_HUB_APP }}
+          NEXT_HUB_TOKEN: ${{ secrets.NEXT_HUB_TOKEN }}
+        run: |
+          gh release view "$GITHUB_REF_NAME" --json body --jq .body > release-notes.md
+          bash .github/scripts/publish-next-hub.sh "${GITHUB_REF_NAME#v}" release-notes.md packages/*

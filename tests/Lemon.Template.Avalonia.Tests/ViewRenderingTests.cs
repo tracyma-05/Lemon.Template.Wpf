@@ -3,10 +3,14 @@ using Avalonia.Controls;
 using Avalonia.Headless;
 using Avalonia.Headless.XUnit;
 using Avalonia.Media.Imaging;
+using Lemon.Template.Avalonia.Infrastructures.Dialogs;
 using Lemon.Template.Avalonia.Infrastructures.Localization;
 using Lemon.Template.Avalonia.Services.Localization;
 using Lemon.Template.Avalonia.Services.Theming;
+using Lemon.Template.Avalonia.Services.Updates;
+using Lemon.Template.Avalonia.ViewModels.Dialogs;
 using Lemon.Template.Avalonia.ViewModels.Settings;
+using Lemon.Template.Avalonia.Views.Dialogs;
 using Lemon.Template.Avalonia.Views.Settings;
 using Xunit;
 
@@ -44,6 +48,24 @@ public class ViewRenderingTests
         RenderAndSave(view, "language");
 
         Assert.NotEmpty(viewModel.Languages);
+    }
+
+    [AvaloniaFact]
+    public void UpdateDialogView_Renders()
+    {
+        var latest = new UpdateManifest(new Version(1, 3, 0, 0), null, "- macOS builds\n- Faster start-up", DateTimeOffset.UtcNow);
+        var result = new UpdateCheckResult(
+            UpdateCheckStatus.UpdateAvailable, new Version(1, 2, 1, 0), latest, null, new Uri("https://example.com/MyApp-1.3.0-osx-arm64.zip"));
+
+        // The host dialog service is only used to close the dialog, which this test never does.
+        var viewModel = new UpdateDialogViewModel(null!, LocalizationService.Instance);
+        viewModel.OnDialogOpened(new DialogParameters { { UpdateDialogViewModel.ResultParameter, result } });
+        var view = new UpdateDialogView { DataContext = viewModel };
+
+        RenderAndSave(view, "update-dialog");
+
+        Assert.True(viewModel.IsUpdateAvailable);
+        Assert.Equal("1.3.0", viewModel.LatestVersion);
     }
 
     private static void RenderAndSave(Control view, string name)

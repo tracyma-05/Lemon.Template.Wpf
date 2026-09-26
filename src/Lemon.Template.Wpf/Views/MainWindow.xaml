@@ -128,7 +128,7 @@
                             VerticalAlignment="Top"
                             Orientation="Horizontal">
 
-                    <!-- Only present when appsettings.json turns updates on and names a manifest URL. -->
+                    <!-- Only present when appsettings.json turns updates on and names a manifest URL or GitHub repository. -->
                     <Button Margin="5"
                             Padding="5"
                             VerticalAlignment="Center"

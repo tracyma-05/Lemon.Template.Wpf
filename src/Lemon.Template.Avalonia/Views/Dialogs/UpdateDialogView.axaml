@@ -1,0 +1,100 @@
+<UserControl x:Class="Lemon.Template.Avalonia.Views.Dialogs.UpdateDialogView"
+             xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:loc="clr-namespace:Lemon.Template.Avalonia.Infrastructures.Localization"
+             xmlns:materialIcons="clr-namespace:Material.Icons.Avalonia;assembly=Material.Icons.Avalonia"
+             xmlns:vm="clr-namespace:Lemon.Template.Avalonia.ViewModels.Dialogs"
+             mc:Ignorable="d"
+             x:DataType="vm:UpdateDialogViewModel"
+             Width="480">
+    <Grid Margin="24,24,24,12" RowDefinitions="Auto,Auto,Auto,Auto,Auto">
+        <DockPanel>
+            <materialIcons:MaterialIcon Width="40"
+                                        Height="40"
+                                        VerticalAlignment="Center"
+                                        Foreground="{DynamicResource MaterialPrimaryMidBrush}"
+                                        Kind="{Binding Icon}" />
+            <TextBlock Margin="12,0,0,0"
+                       VerticalAlignment="Center"
+                       FontSize="18"
+                       FontWeight="Bold"
+                       Text="{Binding Title}"
+                       TextWrapping="Wrap" />
+        </DockPanel>
+
+        <TextBlock Grid.Row="1"
+                   Margin="0,12,0,0"
+                   Opacity="0.8"
+                   Text="{Binding Message}"
+                   TextWrapping="Wrap" />
+
+        <!-- Version facts: current always; latest and date only when the release was read. -->
+        <Grid Grid.Row="2"
+              Margin="0,16,0,0"
+              ColumnDefinitions="Auto,*"
+              RowDefinitions="Auto,Auto,Auto">
+            <TextBlock Margin="0,2" Opacity="0.6" Text="{loc:Localize Update_CurrentVersion}" />
+            <TextBlock Grid.Column="1" Margin="16,2,0,2" Text="{Binding CurrentVersion}" />
+
+            <TextBlock Grid.Row="1"
+                       Margin="0,2"
+                       IsVisible="{Binding IsUpdateAvailable}"
+                       Opacity="0.6"
+                       Text="{loc:Localize Update_LatestVersion}" />
+            <TextBlock Grid.Row="1"
+                       Grid.Column="1"
+                       Margin="16,2,0,2"
+                       FontWeight="Bold"
+                       IsVisible="{Binding IsUpdateAvailable}"
+                       Text="{Binding LatestVersion}" />
+
+            <TextBlock Grid.Row="2"
+                       Margin="0,2"
+                       IsVisible="{Binding PublishedAt, Converter={x:Static ObjectConverters.IsNotNull}}"
+                       Opacity="0.6"
+                       Text="{loc:Localize Update_PublishedAt}" />
+            <TextBlock Grid.Row="2"
+                       Grid.Column="1"
+                       Margin="16,2,0,2"
+                       IsVisible="{Binding PublishedAt, Converter={x:Static ObjectConverters.IsNotNull}}"
+                       Text="{Binding PublishedAt}" />
+        </Grid>
+
+        <StackPanel Grid.Row="3"
+                    Margin="0,16,0,0"
+                    IsVisible="{Binding ReleaseNotes, Converter={x:Static ObjectConverters.IsNotNull}}">
+            <TextBlock Margin="0,0,0,6" FontWeight="Bold" Text="{loc:Localize Update_ReleaseNotes}" />
+            <Border Padding="12,8"
+                    BorderBrush="{DynamicResource MaterialDividerBrush}"
+                    BorderThickness="1"
+                    CornerRadius="6">
+                <ScrollViewer MaxHeight="180" VerticalScrollBarVisibility="Auto">
+                    <SelectableTextBlock Text="{Binding ReleaseNotes}" TextWrapping="Wrap" />
+                </ScrollViewer>
+            </Border>
+        </StackPanel>
+
+        <StackPanel Grid.Row="4"
+                    Margin="0,20,0,0"
+                    HorizontalAlignment="Right"
+                    Orientation="Horizontal"
+                    Spacing="8">
+            <Button Classes="Outline"
+                    Command="{Binding CancelCommand}"
+                    Content="{loc:Localize Update_Later}"
+                    IsCancel="True"
+                    IsVisible="{Binding IsUpdateAvailable}" />
+            <Button Command="{Binding SaveCommand}"
+                    Content="{loc:Localize Update_Download}"
+                    IsDefault="True"
+                    IsVisible="{Binding IsUpdateAvailable}" />
+            <!-- Nothing to download: a single acknowledgement closes the dialog. -->
+            <Button Command="{Binding CancelCommand}"
+                    Content="{loc:Localize Update_Ok}"
+                    IsDefault="True"
+                    IsVisible="{Binding !IsUpdateAvailable}" />
+        </StackPanel>
+    </Grid>
+</UserControl>

@@ -59,6 +59,9 @@
     <Content Include="packaging\project.gitignore" PackagePath="content/Lemon.Template.Wpf/.gitignore" />
     <!-- Consumer-facing sln only (avoids tools/template-pack/.template.config nodes from the dev solution). -->
     <Content Include="packaging\Lemon.Template.Wpf.sln" PackagePath="content/Lemon.Template.Wpf/Lemon.Template.Wpf.sln" />
+    <!-- Release workflow + Next.Hub publish script; template.json copies both folders to the scaffold root. -->
+    <Content Include="packaging\scaffold\**\*" PackagePath="content/Lemon.Template.Wpf/packaging/scaffold/%(RecursiveDir)%(Filename)%(Extension)" />
+    <Content Include="packaging\wpf\**\*" PackagePath="content/Lemon.Template.Wpf/packaging/wpf/%(RecursiveDir)%(Filename)%(Extension)" />
     <Content Include="src\Lemon.Template.Wpf\**\*" Exclude="src\**\bin\**;src\**\obj\**" PackagePath="content/Lemon.Template.Wpf/src/Lemon.Template.Wpf/%(RecursiveDir)%(Filename)%(Extension)" />
     <!-- Shipped unless the consumer sets the IncludeTests option to false, which excludes tests/ at instantiation. -->
     <Content Include="tests\Lemon.Template.Wpf.Tests\**\*" Exclude="tests\**\bin\**;tests\**\obj\**" PackagePath="content/Lemon.Template.Wpf/tests/Lemon.Template.Wpf.Tests/%(RecursiveDir)%(Filename)%(Extension)" />
@@ -74,6 +77,8 @@
     <Content Include="@(SharedTemplateFile)" PackagePath="content/Lemon.Template.Avalonia/" />
     <Content Include="packaging\project.gitignore" PackagePath="content/Lemon.Template.Avalonia/.gitignore" />
     <Content Include="packaging\Lemon.Template.Avalonia.sln" PackagePath="content/Lemon.Template.Avalonia/packaging/" />
+    <Content Include="packaging\scaffold\**\*" PackagePath="content/Lemon.Template.Avalonia/packaging/scaffold/%(RecursiveDir)%(Filename)%(Extension)" />
+    <Content Include="packaging\avalonia\**\*" PackagePath="content/Lemon.Template.Avalonia/packaging/avalonia/%(RecursiveDir)%(Filename)%(Extension)" />
     <Content Include="src\Lemon.Template.Avalonia\**\*" Exclude="src\**\bin\**;src\**\obj\**" PackagePath="content/Lemon.Template.Avalonia/src/Lemon.Template.Avalonia/%(RecursiveDir)%(Filename)%(Extension)" />
     <Content Include="tests\Lemon.Template.Avalonia.Tests\**\*" Exclude="tests\**\bin\**;tests\**\obj\**" PackagePath="content/Lemon.Template.Avalonia/tests/Lemon.Template.Avalonia.Tests/%(RecursiveDir)%(Filename)%(Extension)" />
   </ItemGroup>

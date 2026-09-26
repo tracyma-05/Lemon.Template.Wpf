@@ -52,7 +52,7 @@ It is also packaged as **.NET project templates** (`.template.config/template.js
 | **Logs → Local-Logs** | View tail of **Serilog** rolling file logs under the application `Logs` folder, with a status line reporting path, size and truncation. |
 | **Tools → Cron** | Embedded **Hangfire Dashboard** (WebView2) against local storage; sample recurring job (`sample-heartbeat`) for demonstration. Optional — see template symbols. |
 | **Tray icon** | Optional system tray integration via **H.NotifyIcon.Wpf** (exit from context menu). |
-| **Check for updates** (WPF) | Title-bar button that reads a JSON update manifest and offers the download. Present only when `Update:Enabled` is `true` **and** `Update:Url` is set; can also check quietly on start-up. See [Check for updates](#check-for-updates-wpf). |
+| **Check for updates** | Title-bar button that reads the latest release from a GitHub repository or a JSON manifest (such as Next.Hub's) and offers the package for the running platform (Windows / macOS, x64 / arm64). Present only when `Update:Enabled` is `true` **and** a source is configured; can also check quietly on start-up. Generated projects include a tag-triggered release workflow. See [Check for updates](#check-for-updates). |
 | **Splash** | Lightweight splash on startup. |
 | **Navigation** | Pages discovered via `[NavigationRegister("Group/Name", ...)]` and grouped menus built at runtime; a single-segment key (`"Home"`) registers a top-level page with no children. Menu labels resolved from resources. |
 | **Localization** | `.resx`-backed strings, `{loc:Localize Key}` markup extension, live culture switching. |
@@ -329,9 +329,11 @@ dotnet new install Lemon.Templates.Wpf@1.0.1
 |-----|---------|
 | `App:SqliteDatabasePath` | Optional. Absolute path, or path relative to the app base directory. If empty, the database is created under `%LocalApplicationData%\<AssemblyName>\`. |
 | `HangfireDashboard:Url` | Optional. Base URL for the embedded Kestrel host (e.g. `http://127.0.0.1:5088`). If empty, **`http://127.0.0.1:0`** is used (dynamic port). |
-| `Update:Enabled` | WPF. `false` by default. Turns the check-for-updates feature on. |
-| `Update:Url` | WPF. Absolute http(s) URL of the update manifest. The title-bar button appears only when this is set **and** `Update:Enabled` is `true`. |
-| `Update:CheckOnStartup` | WPF. `true` by default. Check quietly once the main window is shown; a dialog appears only when a newer version exists. |
+| `Update:Enabled` | `false` by default. Turns the check-for-updates feature on. |
+| `Update:Provider` | `Manifest` (default) reads `Update:Url`; `GitHub` reads the latest release of `Update:GitHubRepository`. |
+| `Update:Url` | Absolute http(s) URL of the update manifest, e.g. Next.Hub's `…/api/app/desktop-apps/<key>/latest`. |
+| `Update:GitHubRepository` | `owner/repo` (or its `https://github.com/owner/repo` address) for the `GitHub` provider. |
+| `Update:CheckOnStartup` | `true` by default. Check quietly once the main window is shown; a dialog appears only when a newer version exists. |
 
 Serilog writes rolling files to `Logs/log-YYYYMMDD.txt`, which is also where the Logs → Local-Logs page
 reads from: under the **application base directory** (`AppContext.BaseDirectory`) in the WPF app, and under
@@ -344,37 +346,92 @@ above, **Debug** records `Information` and above. The `Microsoft` namespace is c
 User state lives in the shared SQLite database: `app_theme` (base theme + primary/secondary ARGB) and
 `app_language` (selected culture name).
 
-### Check for updates (WPF)
+### Check for updates
+
+Both templates ship the same check. The title-bar button appears only when `Update:Enabled` is `true` **and**
+the chosen provider is configured, so an app that never publishes updates shows no dead button. A release
+can carry one package per platform; the app picks the one for the machine it runs on (`win-x64`,
+`win-arm64`, `osx-arm64`, `osx-x64`, …), falls back to the x64 build on arm64 (Windows on Arm emulation,
+Rosetta 2), then to a package for `any` platform, and otherwise opens the release page.
+
+**GitHub Releases** — nothing to host:
 
 ```json
 "Update": {
   "Enabled": true,
-  "Url": "https://example.com/updates/myapp/latest.json",
-  "CheckOnStartup": true
+  "Provider": "GitHub",
+  "GitHubRepository": "owner/myapp"
 }
 ```
 
-`Update:Url` must return the latest release as JSON (property names are case-insensitive):
+The app reads `https://api.github.com/repos/owner/myapp/releases/latest` (drafts and pre-releases are
+skipped). The tag is the version (`v1.2.0`), the release body the notes, and each asset is filed under the
+platform its name mentions: `MyApp-1.2.0-win-x64.zip`, `MyApp-1.2.0-osx-arm64.zip`; other tools' spellings
+(`windows`, `macos`, `darwin`, `amd64`, `x86_64`, `aarch64`, `universal`) work too, and an installer (`.msi`,
+`.exe`, `.dmg`, `.pkg`) wins over an archive for the same platform. The repository must be public:
+anonymous requests are what the app makes, limited by GitHub to 60 an hour per IP address.
+
+**Update manifest** — any static host, or Next.Hub:
+
+```json
+"Update": {
+  "Enabled": true,
+  "Url": "https://example.com/hub-api/api/app/desktop-apps/myapp/latest"
+}
+```
+
+`Update:Url` must return the latest release as JSON (property names are case-insensitive, links may be
+relative to the manifest URL):
 
 ```json
 {
   "version": "1.2.0",
-  "downloadUrl": "https://example.com/downloads/MyApp-1.2.0.zip",
+  "downloads": {
+    "win-x64": "https://example.com/downloads/MyApp-1.2.0-win-x64.zip",
+    "osx-arm64": "https://example.com/downloads/MyApp-1.2.0-osx-arm64.zip",
+    "osx-x64": "https://example.com/downloads/MyApp-1.2.0-osx-x64.zip"
+  },
+  "downloadUrl": "https://example.com/downloads/MyApp-1.2.0-win-x64.zip",
+  "pageUrl": "https://example.com/myapp",
   "releaseNotes": "- Fixed …",
   "publishedAt": "2026-09-26T08:00:00Z"
 }
 ```
 
-- `version` and `downloadUrl` are required. `version` accepts `1.2`, `1.2.3`, `1.2.3.4` and a leading `v`;
-  SemVer suffixes (`-beta`, `+sha`) are ignored. It is compared with the app's own version, i.e. the
-  `Version` property of the project (inherited from `common.props` in a generated project).
-- `downloadUrl` may be relative to the manifest URL. Only http(s) links are accepted, because **Download**
-  opens it in the default browser.
+- `version` is required, plus at least one of `downloads`, `downloadUrl` or `pageUrl`. `version` accepts
+  `1.2`, `1.2.3`, `1.2.3.4` and a leading `v`; SemVer suffixes (`-beta`, `+sha`) are ignored. It is compared
+  with the app's own version, i.e. the `Version` property of the project.
+- With `downloads`, the package comes from it and `downloadUrl` is ignored (it is there for clients from
+  template 1.2, which only know one link). A machine with no matching package is sent to `pageUrl`, never to
+  another platform's file.
+- Only http(s) links are accepted, because **Download** opens them in the default browser.
 - A start-up check never shows an error: offline or unreachable servers are only logged. Clicking the
   button reports "up to date", "new version" or a readable failure. A red dot on the button marks a pending
   update.
 
-Any static file host works for the manifest.
+#### Publishing releases from GitHub Actions
+
+A generated project contains `.github/workflows/release.yml`. Push a version tag and it builds the app,
+creates a GitHub Release with the packages, and optionally publishes the same packages to Next.Hub:
+
+```bash
+git tag v1.2.0
+git push origin v1.2.0
+```
+
+- The tag becomes the app's `Version` (`-p:Version=1.2.0`) and, on macOS, the bundle version, so the running
+  app and the update check agree on the number.
+- WPF builds `win-x64`. Avalonia builds `win-x64`, plus `osx-arm64` and `osx-x64` `.app` bundles (via
+  `Packaging/macOS/bundle.sh`, zipped with `ditto`).
+- The workflow's own artifacts only hand the packages from the build jobs to the release job: they need a
+  GitHub login to download and expire, so the app never points at them.
+- **Next.Hub** (optional): create a publish token on the app's page in Next.Hub, then add the secret
+  `NEXT_HUB_TOKEN` and the variables `NEXT_HUB_URL` (API base, e.g. `https://example.com/hub-api/`) and
+  `NEXT_HUB_APP` (the app key) to the repository. `.github/scripts/publish-next-hub.sh` uploads each package
+  in chunks and publishes them as one version with a package per platform.
+- **macOS signing:** the bundle is signed ad hoc, so Gatekeeper blocks it after a browser download; users
+  open it with right-click → **Open**. Distributing without that step needs a Developer ID certificate and
+  notarization, which the workflow does not do.
 
 ### Adding a page
 

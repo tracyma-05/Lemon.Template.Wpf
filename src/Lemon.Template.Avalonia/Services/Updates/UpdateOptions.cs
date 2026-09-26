@@ -1,6 +1,6 @@
 using System.Text.RegularExpressions;
 
-namespace Lemon.Template.Wpf.Services.Updates;
+namespace Lemon.Template.Avalonia.Services.Updates;
 
 /// <summary>
 /// The <c>Update</c> section of <c>appsettings.json</c>.

@@ -41,6 +41,23 @@ namespace Lemon.Template.Avalonia.Views
             // IsChecked without ever raising Click, which would leave the arrow pointing one way and the
             // menu sized the other.
             ToggleMenuButton.IsCheckedChanged += (_, _) => SetMenuCollapsed(ToggleMenuButton.IsChecked == true);
+
+            Opened += OnFirstOpened;
+        }
+
+        /// <summary>
+        /// Start-up update check. Waits until the window is open so the splash is gone and the dialog host
+        /// exists before any "new version" prompt can appear.
+        /// </summary>
+        private async void OnFirstOpened(object? sender, EventArgs e)
+        {
+            Opened -= OnFirstOpened;
+
+            if (DataContext is ViewModels.MainWindowViewModel viewModel)
+            {
+                // Handles its own failures; see CheckForUpdatesOnStartupAsync.
+                await viewModel.CheckForUpdatesOnStartupAsync();
+            }
         }
 
         public bool IsMenuCollapsed

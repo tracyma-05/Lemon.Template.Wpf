@@ -89,7 +89,7 @@ namespace Lemon.Template.Wpf.ViewModels
 
         /// <summary>
         /// Whether the title bar shows the check-for-updates button: only when <c>Update:Enabled</c> is
-        /// on and <c>Update:Url</c> is set. Decided once at start-up, like the rest of the shell.
+        /// on and an update source is configured. Decided once at start-up, like the rest of the shell.
         /// </summary>
         public bool IsUpdateCheckEnabled => _updateService.IsEnabled;
 
@@ -159,9 +159,9 @@ namespace Lemon.Template.Wpf.ViewModels
             var parameters = new DialogParameters { { UpdateDialogViewModel.ResultParameter, result } };
             var dialogResult = await _dialogService.ShowDialogAsync(Constants.UpdateDialog, parameters);
 
-            if (dialogResult.Result == ButtonResult.OK && result.Latest is not null)
+            if (dialogResult.Result == ButtonResult.OK && result.DownloadUrl is not null)
             {
-                BrowserLauncher.TryOpen(result.Latest.DownloadUrl.AbsoluteUri);
+                BrowserLauncher.TryOpen(result.DownloadUrl.AbsoluteUri);
             }
         }
 

@@ -1,0 +1,130 @@
+# Builds the app for Windows and macOS when a version tag is pushed and publishes the packages:
+#   - to a GitHub Release, always. The in-app update check reads it with "Provider": "GitHub" and picks the
+#     package for the running platform by file name (…-win-x64.zip, …-osx-arm64.zip, …-osx-x64.zip).
+#   - to Next.Hub, when the NEXT_HUB_URL variable is set, as one version with a package per platform. The
+#     update check reads it with "Provider": "Manifest" and
+#     "Url": "<NEXT_HUB_URL>api/app/desktop-apps/<NEXT_HUB_APP>/latest".
+#
+# Release a version:
+#   git tag v1.2.0
+#   git push origin v1.2.0
+# The tag becomes the app's Version (and the .app bundle's version), so the running app and the update check
+# agree on the number.
+#
+# macOS: the .app is signed ad hoc, not with a Developer ID, so Gatekeeper blocks it after a browser download.
+# Users open it with right-click → Open (or run `xattr -dr com.apple.quarantine <App>.app`). Signing and
+# notarizing need an Apple Developer account and are not done here.
+#
+# Next.Hub (optional): create a publish token on the app's page in Next.Hub, then add to this repository
+# (Settings → Secrets and variables → Actions):
+#   secret   NEXT_HUB_TOKEN  the token
+#   variable NEXT_HUB_URL    the API base, e.g. https://example.com/hub-api/
+#   variable NEXT_HUB_APP    the app's key in Next.Hub
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: write # create the release and upload its assets
+
+env:
+  PROJECT: src/Lemon.Template.Avalonia/Lemon.Template.Avalonia.csproj
+  APP_NAME: Lemon.Template.Avalonia
+
+jobs:
+  build:
+    name: Build (${{ matrix.rid }})
+    strategy:
+      matrix:
+        include:
+          - rid: win-x64
+            os: windows-latest
+          - rid: osx-arm64
+            os: macos-latest
+          # Built on the same Apple Silicon runner; the x64 build runs on Intel Macs and under Rosetta 2.
+          - rid: osx-x64
+            os: macos-latest
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Read the version from the tag
+        id: version
+        shell: bash
+        run: echo "value=${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+
+      - name: Publish (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          dotnet publish $env:PROJECT -c Release -r ${{ matrix.rid }} --self-contained `
+            -p:Version=${{ steps.version.outputs.value }} -o artifacts/publish
+          Compress-Archive -Path artifacts/publish/* `
+            -DestinationPath "artifacts/$env:APP_NAME-${{ steps.version.outputs.value }}-${{ matrix.rid }}.zip"
+
+      - name: Publish (macOS .app)
+        if: runner.os == 'macOS'
+        env:
+          VERSION: ${{ steps.version.outputs.value }}
+        run: |
+          bash src/$APP_NAME/Packaging/macOS/bundle.sh ${{ matrix.rid }}
+          # ditto keeps the bundle's symlinks, permissions and signature, which a plain zip can lose.
+          ditto -c -k --keepParent "src/$APP_NAME/bin/Release/bundle/${{ matrix.rid }}/$APP_NAME.app" \
+            "artifacts/$APP_NAME-$VERSION-${{ matrix.rid }}.zip"
+
+      # Only a hand-over to the release job below: workflow artifacts need a GitHub login to download and
+      # expire, so the published copies are the release assets (and Next.Hub), not these.
+      - name: Hand the package to the release job
+        uses: actions/upload-artifact@v4
+        with:
+          name: package-${{ matrix.rid }}
+          path: artifacts/*.zip
+          if-no-files-found: error
+          retention-days: 3
+
+  release:
+    name: Publish the release
+    needs: build
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Collect the packages
+        uses: actions/download-artifact@v4
+        with:
+          pattern: package-*
+          path: packages
+          merge-multiple: true
+
+      - name: Create the GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # A re-run replaces the assets of the release it created the first time.
+          if gh release view "$GITHUB_REF_NAME" > /dev/null 2>&1; then
+            gh release upload "$GITHUB_REF_NAME" packages/* --clobber
+          else
+            gh release create "$GITHUB_REF_NAME" packages/* --title "$GITHUB_REF_NAME" --generate-notes --verify-tag
+          fi
+
+      - name: Publish to Next.Hub
+        if: vars.NEXT_HUB_URL != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          NEXT_HUB_URL: ${{ vars.NEXT_HUB_URL }}
+          NEXT_HUB_APP: ${{ vars.NEXT_HUB_APP }}
+          NEXT_HUB_TOKEN: ${{ secrets.NEXT_HUB_TOKEN }}
+        run: |
+          gh release view "$GITHUB_REF_NAME" --json body --jq .body > release-notes.md
+          bash .github/scripts/publish-next-hub.sh "${GITHUB_REF_NAME#v}" release-notes.md packages/*

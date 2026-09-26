@@ -302,4 +302,10 @@
   <data name="Update_Error_Format" xml:space="preserve">
     <value>无法读取服务器返回的更新信息。</value>
   </data>
+  <data name="Update_Error_NoPackage" xml:space="preserve">
+    <value>版本 {0} 已发布，但没有适用于本机（{1}）的安装包。</value>
+  </data>
+  <data name="Update_Error_NoRelease" xml:space="preserve">
+    <value>尚未发布任何版本。</value>
+  </data>
 </root>
