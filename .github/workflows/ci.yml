@@ -200,7 +200,9 @@ jobs:
             $failures += 'HangfireDashboard section left in appsettings.json'
           }
           if (-not (Test-Path "$min/.gitignore")) { $failures += 'no .gitignore in the scaffold' }
-          $rewritten = Get-ChildItem "$min/src" -Recurse -File -Include *.cs | Select-String -Pattern 'tracyma-05/Acme' -List
+          $rewritten = Get-ChildItem "$min/src" -Recurse -File -Include *.cs `
+            | Where-Object { $_.FullName -notmatch '[\\/](bin|obj)[\\/]' } `
+            | Select-String -Pattern 'tracyma-05/Acme' -List
           foreach ($hit in $rewritten) { $failures += "template link rewritten to the project name in $($hit.Path)" }
 
           # The other template's sources must not leak into this one.
@@ -296,7 +298,9 @@ jobs:
             $failures += 'HangfireDashboard section left in appsettings.json'
           }
           if (-not (Test-Path "$min/.gitignore")) { $failures += 'no .gitignore in the scaffold' }
-          $rewritten = Get-ChildItem "$min/src" -Recurse -File -Include *.cs | Select-String -Pattern 'tracyma-05/Acme' -List
+          $rewritten = Get-ChildItem "$min/src" -Recurse -File -Include *.cs `
+            | Where-Object { $_.FullName -notmatch '[\\/](bin|obj)[\\/]' } `
+            | Select-String -Pattern 'tracyma-05/Acme' -List
           foreach ($hit in $rewritten) { $failures += "template link rewritten to the project name in $($hit.Path)" }
 
           # The other template's sources must not leak into this one.
