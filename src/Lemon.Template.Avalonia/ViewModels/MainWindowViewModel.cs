@@ -111,7 +111,6 @@ namespace Lemon.Template.Avalonia.ViewModels
         {
             var localization = LocalizationService.Instance;
             var name = localization.GetString("App_DisplayName");
-            // Named: with two strings the (message, identifier) overload would be picked.
             if (!await _dialogService.Question(
                     title: localization.GetString("Shortcut_Title"),
                     message: localization.Format("Shortcut_Confirm", name, DesktopShortcut.PathFor(name))))

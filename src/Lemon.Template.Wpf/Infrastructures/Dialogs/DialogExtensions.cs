@@ -11,13 +11,16 @@ namespace Lemon.Template.Wpf.Infrastructures.Dialogs
         /// </summary>
         /// <param name="hostDialogService"></param>
         /// <param name="message">提示消息</param>
-        /// <param name="IdentifierName">会话ID</param>
         /// <returns></returns>
+        /// <remarks>
+        /// Deliberately no dialog-identifier parameter here: with one, <c>Question("Title", "Message")</c> binds to
+        /// this overload as (message, identifier) and fails with "No loaded DialogHost". Pass a title to use another
+        /// DialogHost: <c>Question(title, message, identifier)</c>.
+        /// </remarks>
         public static async Task<bool> Question(this IHostDialogService hostDialogService,
-            string message,
-            string IdentifierName = Constants.RootIdentifier)
+            string message)
         {
-            return await Question(hostDialogService, LocalizationService.Instance.GetString("Dialog_ConfirmTitle"), message, IdentifierName);
+            return await Question(hostDialogService, LocalizationService.Instance.GetString("Dialog_ConfirmTitle"), message, Constants.RootIdentifier);
         }
 
         /// <summary>

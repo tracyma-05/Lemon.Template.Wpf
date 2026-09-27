@@ -6,6 +6,15 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [1.5.1] - 2026-09-27
+
+### Fixed
+
+- **`Question("Title", "Message")` never opened a dialog.** The one-message overload also took an optional
+  dialog identifier, so a two-string call bound to it as (message, identifier) and failed with "No loaded
+  DialogHost". That overload now takes only the message; a title and message always go to the root
+  DialogHost, and a third argument picks another one.
+
 ## [1.5.0] - 2026-09-27
 
 ### Added
