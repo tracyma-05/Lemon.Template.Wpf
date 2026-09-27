@@ -1,4 +1,5 @@
 using Avalonia;
+using Lemon.Template.Avalonia.Services.Updates;
 
 namespace Lemon.Template.Avalonia;
 
@@ -9,8 +10,17 @@ internal static class Program
     /// configured, so all start-up work lives in <see cref="App.OnFrameworkInitializationCompleted"/>.
     /// </summary>
     [STAThread]
-    public static int Main(string[] args) =>
-        BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
+    public static int Main(string[] args)
+    {
+        // Started by the previous version to install this one (see UpdateInstaller): swap the files, start
+        // the installed app and exit, without initializing Avalonia at all.
+        if (UpdateApplier.TryRun(args, out var updaterExitCode))
+        {
+            return updaterExitCode;
+        }
+
+        return BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
+    }
 
     /// <summary>Also used by the XAML previewer, which is why it must stay public and side-effect free.</summary>
     public static AppBuilder BuildAvaloniaApp() =>

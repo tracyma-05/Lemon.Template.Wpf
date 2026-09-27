@@ -1,3 +1,5 @@
+using Avalonia;
+using Avalonia.Controls.ApplicationLifetimes;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Lemon.Template.Avalonia.Commons;
@@ -21,6 +23,7 @@ namespace Lemon.Template.Avalonia.ViewModels
         private readonly IAppThemeService _appThemeService;
         private readonly IUpdateService _updateService;
         private readonly IHostDialogService _dialogService;
+        private readonly IUpdateInstaller _updateInstaller;
         private bool _muteIsDarkThemeCallback;
 
         public MainWindowViewModel(
@@ -28,13 +31,15 @@ namespace Lemon.Template.Avalonia.ViewModels
             IMenuNavigator menuNavigator,
             IAppThemeService appThemeService,
             IUpdateService updateService,
-            IHostDialogService dialogService)
+            IHostDialogService dialogService,
+            IUpdateInstaller updateInstaller)
         {
             _navigationService = navigationService;
             _menuNavigator = menuNavigator;
             _appThemeService = appThemeService;
             _updateService = updateService;
             _dialogService = dialogService;
+            _updateInstaller = updateInstaller;
             _appThemeService.DarkThemeChanged += OnAppDarkThemeChanged;
 
             NavigationItems = Constants.NavigationItems;
@@ -163,11 +168,40 @@ namespace Lemon.Template.Avalonia.ViewModels
             var parameters = new DialogParameters { { UpdateDialogViewModel.ResultParameter, result } };
             var dialogResult = await _dialogService.ShowDialogAsync(Constants.UpdateDialog, parameters);
 
-            // The browser downloads the package; on macOS the user then moves the .app out of the zip.
-            if (dialogResult.Result == ButtonResult.OK && result.DownloadUrl is not null)
+            if (dialogResult.Result != ButtonResult.OK)
             {
+                return;
+            }
+
+            if (dialogResult.Parameters.ContainsKey(UpdateDialogViewModel.PreparedParameter))
+            {
+                InstallAndRestart(dialogResult.Parameters.GetValue<PreparedUpdate>(UpdateDialogViewModel.PreparedParameter));
+            }
+            else if (result.DownloadUrl is not null)
+            {
+                // The browser downloads the package; on macOS the user then moves the .app out of the zip.
                 BrowserLauncher.TryOpen(result.DownloadUrl.AbsoluteUri);
             }
+        }
+
+        /// <summary>
+        /// Starts the new version's updater and exits: the updater waits for this process to end before it
+        /// swaps the files, then starts the new version. Shutdown runs the Exit handlers (ABP shutdown,
+        /// Serilog flush) and, being an application shutdown, skips the exit confirmation.
+        /// </summary>
+        private void InstallAndRestart(PreparedUpdate update)
+        {
+            try
+            {
+                _updateInstaller.Launch(update);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Could not start the updater for {Version}.", update.Version);
+                return;
+            }
+
+            (Application.Current?.ApplicationLifetime as IClassicDesktopStyleApplicationLifetime)?.Shutdown();
         }
 
         #endregion

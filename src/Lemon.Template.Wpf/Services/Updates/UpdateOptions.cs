@@ -36,6 +36,13 @@ public sealed partial class UpdateOptions
     /// <summary>Check quietly once the main window is shown, and prompt only when something newer exists.</summary>
     public bool CheckOnStartup { get; set; } = true;
 
+    /// <summary>
+    /// Download, install and restart from the update dialog when the package is a zip and the app folder is
+    /// writable (see <see cref="UpdateInstaller"/>). False, or an installer / read-only folder, falls back to
+    /// opening the download in the browser.
+    /// </summary>
+    public bool AutoInstall { get; set; } = true;
+
     public bool IsGitHub => string.Equals(Provider?.Trim(), GitHubProvider, StringComparison.OrdinalIgnoreCase);
 
     private bool IsManifest => string.IsNullOrWhiteSpace(Provider) ||

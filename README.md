@@ -52,7 +52,7 @@ It is also packaged as **.NET project templates** (`.template.config/template.js
 | **Logs → Local-Logs** | View tail of **Serilog** rolling file logs under the application `Logs` folder, with a status line reporting path, size and truncation. |
 | **Tools → Cron** | Embedded **Hangfire Dashboard** (WebView2) against local storage; sample recurring job (`sample-heartbeat`) for demonstration. Optional — see template symbols. |
 | **Tray icon** | Optional system tray integration via **H.NotifyIcon.Wpf** (exit from context menu). |
-| **Check for updates** | Title-bar button that reads the latest release from a GitHub repository or a JSON manifest (such as Next.Hub's) and offers the package for the running platform (Windows / macOS, x64 / arm64). Present only when `Update:Enabled` is `true` **and** a source is configured; can also check quietly on start-up. Generated projects include a tag-triggered release workflow. See [Check for updates](#check-for-updates). |
+| **Check for updates** | Title-bar button that reads the latest release from a GitHub repository or a JSON manifest (such as Next.Hub's) and offers the package for the running platform (Windows / macOS, x64 / arm64); a zip package is downloaded, installed in place and the app restarted, without a browser. Present only when `Update:Enabled` is `true` **and** a source is configured; can also check quietly on start-up. Generated projects include a tag-triggered release workflow. See [Check for updates](#check-for-updates). |
 | **Splash** | Lightweight splash on startup. |
 | **Navigation** | Pages discovered via `[NavigationRegister("Group/Name", ...)]` and grouped menus built at runtime; a single-segment key (`"Home"`) registers a top-level page with no children. Menu labels resolved from resources. |
 | **Localization** | `.resx`-backed strings, `{loc:Localize Key}` markup extension, live culture switching. |
@@ -334,6 +334,7 @@ dotnet new install Lemon.Templates.Wpf@1.0.1
 | `Update:Url` | Absolute http(s) URL of the update manifest, e.g. Next.Hub's `…/api/app/desktop-apps/<key>/latest`. |
 | `Update:GitHubRepository` | `owner/repo` (or its `https://github.com/owner/repo` address) for the `GitHub` provider. |
 | `Update:CheckOnStartup` | `true` by default. Check quietly once the main window is shown; a dialog appears only when a newer version exists. |
+| `Update:AutoInstall` | `true` by default. **Update and restart** downloads a zip package, verifies it and swaps it in; `false` always opens the download in the browser instead. See [Automatic install](#automatic-install). |
 
 Serilog writes rolling files to `Logs/log-YYYYMMDD.txt`, which is also where the Logs → Local-Logs page
 reads from: under the **application base directory** (`AppContext.BaseDirectory`) in the WPF app, and under
@@ -404,10 +405,51 @@ relative to the manifest URL):
 - With `downloads`, the package comes from it and `downloadUrl` is ignored (it is there for clients from
   template 1.2, which only know one link). A machine with no matching package is sent to `pageUrl`, never to
   another platform's file.
-- Only http(s) links are accepted, because **Download** opens them in the default browser.
+- Only http(s) links are accepted: **Download** opens them in the default browser, and **Update and restart**
+  downloads them.
 - A start-up check never shows an error: offline or unreachable servers are only logged. Clicking the
   button reports "up to date", "new version" or a readable failure. A red dot on the button marks a pending
   update.
+
+#### Automatic install
+
+When the package for this computer is a **zip** and the app folder can be written to, the dialog's button is
+**Update and restart** instead of **Download**:
+
+1. The app downloads the zip (progress bar, **Cancel**), checks its SHA-256 when the release publishes one,
+   and unpacks it into a work folder next to the app: `.MyApp.update` beside `MyApp\` on Windows,
+   `.MyApp.app.update` beside the bundle on macOS.
+2. It starts the new version from there with `--apply-update …` and exits.
+3. The new version, in that mode, waits for the old process to end, renames the app folder (or `.app`
+   bundle) to a backup, copies itself in, then copies back every file only the old installation had —
+   logs, a local database, files the package does not ship. The result is the same as unzipping the
+   package over the old folder, so a shipped `appsettings.json` replaces the local one.
+4. It starts the updated app and exits; the updated app deletes the work folder.
+
+If anything fails, the backup is renamed back and the old version started again, so the user is never left
+without a working app; the reason ends up in the app log ("The last update did not install"). The usual
+cause is another process holding a file in the app folder (a terminal whose working directory is inside
+it, for example).
+
+It falls back to opening the download in the browser when the package is an installer (`.msi`, `.exe`,
+`.dmg`, `.pkg`, …) or a web page, when the app runs from a folder the user cannot write to (`Program Files`,
+an admin-owned `/Applications`), when started through `dotnet App.dll`, when `Update:AutoInstall` is
+`false`, and after a failed attempt (the button then reads **Download**).
+
+Checksums are optional. In the manifest, a `downloads` entry can be an object with its own checksum, and a
+top-level `sha256` belongs to `downloadUrl` (and to the only `downloads` entry when there is exactly one,
+which is how Next.Hub answers). GitHub Releases provide a `digest` for every uploaded asset, which is used
+automatically.
+
+```json
+"downloads": {
+  "win-x64": { "url": "https://example.com/downloads/MyApp-1.2.0-win-x64.zip", "sha256": "…" }
+}
+```
+
+Keep machine-specific settings out of files the package ships (the package's `appsettings.json` wins), and
+keep data out of the app folder where you can: the Avalonia template already writes logs and the database
+under the user's application-data folder.
 
 #### Publishing releases from GitHub Actions
 

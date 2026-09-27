@@ -21,7 +21,7 @@ public sealed class UpdateService : IUpdateService, ISingletonDependency
     private static readonly TimeSpan RequestTimeout = TimeSpan.FromSeconds(15);
 
     // One client for the process lifetime: a new HttpClient per check would leak sockets.
-    private static readonly Lazy<HttpClient> SharedClient = new(CreateClient);
+    private static readonly Lazy<HttpClient> SharedClient = new(() => CreateClient(RequestTimeout, acceptJson: true));
 
     private readonly IConfiguration _configuration;
     private readonly ILocalizationService _localization;
@@ -76,6 +76,10 @@ public sealed class UpdateService : IUpdateService, ISingletonDependency
         try
         {
             using var request = new HttpRequestMessage(HttpMethod.Get, manifestUri);
+
+            // Manifests are often served with a short max-age; a proxy honouring it would hide a release
+            // published a moment ago from someone who clicks "check for updates" right after publishing.
+            request.Headers.CacheControl = new CacheControlHeaderValue { NoCache = true };
             if (isGitHub)
             {
                 request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/vnd.github+json"));
@@ -167,17 +171,42 @@ public sealed class UpdateService : IUpdateService, ISingletonDependency
             var pageUrl = ResolveLink(GetString(root, "pageUrl"), manifestUri);
 
             var downloads = new Dictionary<string, Uri>(StringComparer.OrdinalIgnoreCase);
+            var checksums = new Dictionary<Uri, string>();
             if (TryGetProperty(root, "downloads", out var map) && map.ValueKind == JsonValueKind.Object)
             {
                 foreach (var entry in map.EnumerateObject())
                 {
-                    var link = entry.Value.ValueKind == JsonValueKind.String
-                        ? ResolveLink(entry.Value.GetString(), manifestUri)
-                        : null;
+                    // A plain link, or { "url": "…", "sha256": "…" }.
+                    var (link, sha256) = entry.Value.ValueKind switch
+                    {
+                        JsonValueKind.String => (ResolveLink(entry.Value.GetString(), manifestUri), null),
+                        JsonValueKind.Object => (ResolveLink(GetString(entry.Value, "url"), manifestUri),
+                            NormalizeSha256(GetString(entry.Value, "sha256"))),
+                        _ => (null, null),
+                    };
                     if (link is not null && !string.IsNullOrWhiteSpace(entry.Name))
                     {
                         downloads[entry.Name.Trim().ToLowerInvariant()] = link;
+                        if (sha256 is not null)
+                        {
+                            checksums[link] = sha256;
+                        }
                     }
+                }
+            }
+
+            // The top-level checksum describes the release's single file: downloadUrl, and the one package
+            // when only one is listed. With several packages it cannot be told which one it belongs to.
+            if (NormalizeSha256(GetString(root, "sha256")) is { } releaseSha256)
+            {
+                if (downloadUrl is not null)
+                {
+                    checksums.TryAdd(downloadUrl, releaseSha256);
+                }
+
+                if (downloads.Count == 1)
+                {
+                    checksums.TryAdd(downloads.Values.First(), releaseSha256);
                 }
             }
 
@@ -190,6 +219,7 @@ public sealed class UpdateService : IUpdateService, ISingletonDependency
             {
                 Downloads = downloads,
                 PageUrl = pageUrl,
+                Checksums = checksums,
             };
         }
         catch (JsonException)
@@ -222,6 +252,7 @@ public sealed class UpdateService : IUpdateService, ISingletonDependency
             }
 
             var packages = new List<(string? Platform, int Rank, Uri Link)>();
+            var checksums = new Dictionary<Uri, string>();
             if (TryGetProperty(root, "assets", out var assets) && assets.ValueKind == JsonValueKind.Array)
             {
                 foreach (var asset in assets.EnumerateArray())
@@ -239,6 +270,14 @@ public sealed class UpdateService : IUpdateService, ISingletonDependency
                     }
 
                     packages.Add((UpdatePlatform.FromFileName(name), UpdatePlatform.PackageRank(name), link));
+
+                    // GitHub computes "digest": "sha256:…" for every asset uploaded since mid-2025.
+                    var digest = GetString(asset, "digest");
+                    if (digest is not null && digest.StartsWith("sha256:", StringComparison.OrdinalIgnoreCase) &&
+                        NormalizeSha256(digest["sha256:".Length..]) is { } sha256)
+                    {
+                        checksums[link] = sha256;
+                    }
                 }
             }
 
@@ -258,6 +297,7 @@ public sealed class UpdateService : IUpdateService, ISingletonDependency
             {
                 Downloads = downloads,
                 PageUrl = ResolveLink(GetString(root, "html_url"), null),
+                Checksums = checksums,
             };
         }
         catch (JsonException)
@@ -320,6 +360,13 @@ public sealed class UpdateService : IUpdateService, ISingletonDependency
         return uri.Scheme == Uri.UriSchemeHttp || uri.Scheme == Uri.UriSchemeHttps ? uri : null;
     }
 
+    /// <summary>64 hex digits, lower-cased; null for anything else.</summary>
+    internal static string? NormalizeSha256(string? value)
+    {
+        var text = value?.Trim();
+        return text is { Length: 64 } && text.All(Uri.IsHexDigit) ? text.ToLowerInvariant() : null;
+    }
+
     private static DateTimeOffset? ParseDate(string? value) =>
         DateTimeOffset.TryParse(value, CultureInfo.InvariantCulture, DateTimeStyles.AssumeUniversal, out var parsed)
             ? parsed
@@ -349,16 +396,20 @@ public sealed class UpdateService : IUpdateService, ISingletonDependency
         return Normalize(assembly.GetName().Version ?? new Version(1, 0, 0));
     }
 
-    private static HttpClient CreateClient()
+    /// <summary>A client that names the app in its User-Agent; also used by <see cref="UpdateInstaller"/> for downloads.</summary>
+    internal static HttpClient CreateClient(TimeSpan timeout, bool acceptJson)
     {
         // GitHub's API refuses requests without a User-Agent, so every request names the app.
-        var client = new HttpClient { Timeout = RequestTimeout };
+        var client = new HttpClient { Timeout = timeout };
 
         var assembly = Assembly.GetEntryAssembly() ?? typeof(UpdateService).Assembly;
         var name = assembly.GetName();
         client.DefaultRequestHeaders.UserAgent.Add(new ProductInfoHeaderValue(
             new ProductHeaderValue(name.Name ?? "App", name.Version?.ToString(3) ?? "1.0.0")));
-        client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+        if (acceptJson)
+        {
+            client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+        }
 
         return client;
     }

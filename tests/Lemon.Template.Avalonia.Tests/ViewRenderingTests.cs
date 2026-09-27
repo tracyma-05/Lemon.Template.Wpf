@@ -58,14 +58,40 @@ public class ViewRenderingTests
             UpdateCheckStatus.UpdateAvailable, new Version(1, 2, 1, 0), latest, null, new Uri("https://example.com/MyApp-1.3.0-osx-arm64.zip"));
 
         // The host dialog service is only used to close the dialog, which this test never does.
-        var viewModel = new UpdateDialogViewModel(null!, LocalizationService.Instance);
+        var viewModel = new UpdateDialogViewModel(null!, LocalizationService.Instance, new FakeInstaller());
         viewModel.OnDialogOpened(new DialogParameters { { UpdateDialogViewModel.ResultParameter, result } });
         var view = new UpdateDialogView { DataContext = viewModel };
 
         RenderAndSave(view, "update-dialog");
 
         Assert.True(viewModel.IsUpdateAvailable);
+        Assert.True(viewModel.CanInstall);
         Assert.Equal("1.3.0", viewModel.LatestVersion);
+
+        // Downloading, then a failed attempt that offers the manual download.
+        viewModel.IsInstalling = true;
+        viewModel.IsProgressIndeterminate = false;
+        viewModel.Progress = 42;
+        viewModel.ProgressText = "Downloading… 42% (2.6 MB of 6.1 MB)";
+        RenderAndSave(new UpdateDialogView { DataContext = viewModel }, "update-dialog-downloading");
+
+        viewModel.IsInstalling = false;
+        viewModel.InstallError = "The downloaded package is damaged (its checksum does not match).";
+        viewModel.CanInstall = false;
+        RenderAndSave(new UpdateDialogView { DataContext = viewModel }, "update-dialog-failed");
+        Assert.Equal(LocalizationService.Instance.GetString("Update_Download"), viewModel.PrimaryButtonText);
+    }
+
+    /// <summary>Says every update can be installed in place; the rendering tests never download.</summary>
+    private sealed class FakeInstaller : IUpdateInstaller
+    {
+        public bool CanInstall(UpdateCheckResult result) => true;
+
+        public Task<PreparedUpdate> PrepareAsync(
+            UpdateCheckResult result, IProgress<UpdateDownloadProgress>? progress, CancellationToken cancellationToken) =>
+            throw new NotSupportedException();
+
+        public void Launch(PreparedUpdate update) => throw new NotSupportedException();
     }
 
     private static void RenderAndSave(Control view, string name)

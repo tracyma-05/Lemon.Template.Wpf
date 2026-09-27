@@ -308,4 +308,37 @@
   <data name="Update_Error_NoRelease" xml:space="preserve">
     <value>尚未发布任何版本。</value>
   </data>
+  <data name="Update_Install" xml:space="preserve">
+    <value>更新并重启</value>
+  </data>
+  <data name="Update_Cancel" xml:space="preserve">
+    <value>取消</value>
+  </data>
+  <data name="Update_Available_Message_Install" xml:space="preserve">
+    <value>新版本 {0} 已发布。点击“更新并重启”会自动下载并安装，完成后重新打开程序。</value>
+  </data>
+  <data name="Update_Downloading" xml:space="preserve">
+    <value>正在下载更新…</value>
+  </data>
+  <data name="Update_DownloadingProgress" xml:space="preserve">
+    <value>正在下载… {0}%（{1} / {2}）</value>
+  </data>
+  <data name="Update_DownloadingBytes" xml:space="preserve">
+    <value>正在下载… {0}</value>
+  </data>
+  <data name="Update_Restarting" xml:space="preserve">
+    <value>正在安装并重启…</value>
+  </data>
+  <data name="Update_Error_Install" xml:space="preserve">
+    <value>无法自动安装更新：{0} 请点击“下载”手动安装。</value>
+  </data>
+  <data name="Update_Error_Checksum" xml:space="preserve">
+    <value>下载的安装包已损坏（校验和不匹配）。请重试，或点击“下载”手动安装。</value>
+  </data>
+  <data name="Update_Error_NotZip" xml:space="preserve">
+    <value>安装包不是 zip 压缩包，无法自动安装。请点击“下载”手动安装。</value>
+  </data>
+  <data name="Update_Error_PackageLayout" xml:space="preserve">
+    <value>安装包中没有 {0}，无法自动安装。请点击“下载”手动安装。</value>
+  </data>
 </root>

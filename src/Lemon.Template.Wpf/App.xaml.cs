@@ -14,8 +14,10 @@ using Lemon.Template.Wpf.Infrastructures.Exceptions;
 using Lemon.Template.Wpf.Infrastructures.Localization;
 using Lemon.Template.Wpf.Services.Localization;
 using Lemon.Template.Wpf.Services.Theming;
+using Lemon.Template.Wpf.Services.Updates;
 using Lemon.Template.Wpf.Views;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Serilog;
 using Serilog.Events;
 using System.IO;
@@ -54,6 +56,14 @@ public partial class App : Application
 
     protected override async void OnStartup(StartupEventArgs e)
     {
+        // Started by the previous version to install this one (see UpdateInstaller): swap the files, start
+        // the installed app and exit, before any logging, container or window exists.
+        if (UpdateApplier.TryRun(e.Args, out var updaterExitCode))
+        {
+            Shutdown(updaterExitCode);
+            return;
+        }
+
         Log.Logger = new LoggerConfiguration()
 #if DEBUG
             .MinimumLevel.Information()
@@ -137,6 +147,9 @@ public partial class App : Application
 #if (EnableTrayIcon)
             InitializeTrayIcon(mainWindow);
 #endif
+
+            // After an automatic update: log what the updater did and remove its backup and staging copy.
+            _ = UpdateInstaller.CleanUpAfterUpdateAsync(services.GetRequiredService<ILoggerFactory>().CreateLogger("Updates"));
         }
         catch (Exception ex)
         {

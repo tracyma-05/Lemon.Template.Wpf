@@ -6,6 +6,28 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [1.4.0] - 2026-09-27
+
+Automatic updates: no browser, no unzipping by hand.
+
+### Added
+
+- **Update and restart** (WPF and Avalonia, Windows and macOS). When the package for this computer is a zip
+  and the app folder is writable, the update dialog downloads it with progress and Cancel, verifies its
+  SHA-256 when the release publishes one, unpacks it next to the app and hands over to the new version,
+  which swaps the folder (or `.app` bundle) once the old process has exited and starts itself. Files only
+  the old installation had (logs, a local database) are kept; any failure restores the old installation
+  and starts it again. Installers, read-only folders and `Update:AutoInstall: false` keep the browser
+  download. See README → Automatic install.
+- **Checksums in the release.** Manifest `downloads` entries may be `{ "url", "sha256" }` objects, the
+  top-level `sha256` applies to `downloadUrl` and to a single `downloads` entry (Next.Hub), and GitHub asset
+  digests are read automatically.
+- `Update:AutoInstall` (default `true`).
+
+### Changed
+
+- The update check sends `Cache-Control: no-cache`, so a release published a moment ago is found at once.
+
 ## [1.3.1] - 2026-09-26
 
 Found by the first real run of a generated release workflow (Lemon.Hub.Wpf 1.2.0).

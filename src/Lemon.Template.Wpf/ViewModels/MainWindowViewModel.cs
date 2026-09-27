@@ -10,6 +10,7 @@ using Lemon.Template.Wpf.Services.Updates;
 using Lemon.Template.Wpf.ViewModels.Dialogs;
 using Serilog;
 using System.Collections.ObjectModel;
+using System.Windows;
 using Volo.Abp.DependencyInjection;
 
 namespace Lemon.Template.Wpf.ViewModels
@@ -21,6 +22,7 @@ namespace Lemon.Template.Wpf.ViewModels
         private readonly IAppThemeService _appThemeService;
         private readonly IUpdateService _updateService;
         private readonly IHostDialogService _dialogService;
+        private readonly IUpdateInstaller _updateInstaller;
         private bool _muteIsDarkThemeCallback;
 
         public MainWindowViewModel(
@@ -28,13 +30,15 @@ namespace Lemon.Template.Wpf.ViewModels
             IMenuNavigator menuNavigator,
             IAppThemeService appThemeService,
             IUpdateService updateService,
-            IHostDialogService dialogService)
+            IHostDialogService dialogService,
+            IUpdateInstaller updateInstaller)
         {
             _navigationService = navigationService;
             _menuNavigator = menuNavigator;
             _appThemeService = appThemeService;
             _updateService = updateService;
             _dialogService = dialogService;
+            _updateInstaller = updateInstaller;
             _appThemeService.DarkThemeChanged += OnAppDarkThemeChanged;
 
             NavigationItems = Constants.NavigationItems;
@@ -159,10 +163,39 @@ namespace Lemon.Template.Wpf.ViewModels
             var parameters = new DialogParameters { { UpdateDialogViewModel.ResultParameter, result } };
             var dialogResult = await _dialogService.ShowDialogAsync(Constants.UpdateDialog, parameters);
 
-            if (dialogResult.Result == ButtonResult.OK && result.DownloadUrl is not null)
+            if (dialogResult.Result != ButtonResult.OK)
+            {
+                return;
+            }
+
+            if (dialogResult.Parameters.ContainsKey(UpdateDialogViewModel.PreparedParameter))
+            {
+                InstallAndRestart(dialogResult.Parameters.GetValue<PreparedUpdate>(UpdateDialogViewModel.PreparedParameter));
+            }
+            else if (result.DownloadUrl is not null)
             {
                 BrowserLauncher.TryOpen(result.DownloadUrl.AbsoluteUri);
             }
+        }
+
+        /// <summary>
+        /// Starts the new version's updater and exits: the updater waits for this process to end before it
+        /// swaps the files, then starts the new version. Shutdown() still runs App.OnExit (ABP shutdown,
+        /// Serilog flush), and skips the close-to-tray and exit questions.
+        /// </summary>
+        private void InstallAndRestart(PreparedUpdate update)
+        {
+            try
+            {
+                _updateInstaller.Launch(update);
+            }
+            catch (Exception ex)
+            {
+                Log.Error(ex, "Could not start the updater for {Version}.", update.Version);
+                return;
+            }
+
+            Application.Current.Shutdown();
         }
 
         #endregion

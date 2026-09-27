@@ -16,8 +16,10 @@ using Lemon.Template.Avalonia.Infrastructures.Exceptions;
 using Lemon.Template.Avalonia.Infrastructures.Localization;
 using Lemon.Template.Avalonia.Services.Localization;
 using Lemon.Template.Avalonia.Services.Theming;
+using Lemon.Template.Avalonia.Services.Updates;
 using Lemon.Template.Avalonia.Views;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Serilog;
 using Serilog.Events;
 using System.IO;
@@ -152,6 +154,9 @@ public partial class App : Application
 #if (EnableTrayIcon)
             InitializeTrayIcon(desktop, mainWindow);
 #endif
+
+            // After an automatic update: log what the updater did and remove its backup and staging copy.
+            _ = UpdateInstaller.CleanUpAfterUpdateAsync(services.GetRequiredService<ILoggerFactory>().CreateLogger("Updates"));
         }
         catch (Exception ex)
         {

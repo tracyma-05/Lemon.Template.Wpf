@@ -315,4 +315,37 @@
   <data name="Update_Error_NoRelease" xml:space="preserve">
     <value>No release has been published yet.</value>
   </data>
+  <data name="Update_Install" xml:space="preserve">
+    <value>Update and restart</value>
+  </data>
+  <data name="Update_Cancel" xml:space="preserve">
+    <value>Cancel</value>
+  </data>
+  <data name="Update_Available_Message_Install" xml:space="preserve">
+    <value>Version {0} is ready. Update and restart downloads it, installs it in place and reopens the app.</value>
+  </data>
+  <data name="Update_Downloading" xml:space="preserve">
+    <value>Downloading the update…</value>
+  </data>
+  <data name="Update_DownloadingProgress" xml:space="preserve">
+    <value>Downloading… {0}% ({1} of {2})</value>
+  </data>
+  <data name="Update_DownloadingBytes" xml:space="preserve">
+    <value>Downloading… {0}</value>
+  </data>
+  <data name="Update_Restarting" xml:space="preserve">
+    <value>Installing and restarting…</value>
+  </data>
+  <data name="Update_Error_Install" xml:space="preserve">
+    <value>The update could not be installed automatically: {0} Use Download to install it by hand.</value>
+  </data>
+  <data name="Update_Error_Checksum" xml:space="preserve">
+    <value>The downloaded package is damaged (its checksum does not match). Try again, or use Download to install it by hand.</value>
+  </data>
+  <data name="Update_Error_NotZip" xml:space="preserve">
+    <value>The package is not a zip archive, so it cannot be installed automatically. Use Download to install it by hand.</value>
+  </data>
+  <data name="Update_Error_PackageLayout" xml:space="preserve">
+    <value>The package does not contain {0}, so it cannot be installed automatically. Use Download to install it by hand.</value>
+  </data>
 </root>

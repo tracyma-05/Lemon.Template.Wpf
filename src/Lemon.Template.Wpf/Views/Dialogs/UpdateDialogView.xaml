@@ -26,6 +26,7 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
         <DockPanel>
@@ -113,18 +114,37 @@
             </Border>
         </StackPanel>
 
-        <StackPanel Grid.Row="4"
+        <!-- Automatic install: download progress, or why it failed (the primary button then downloads manually). -->
+        <StackPanel Grid.Row="4" Margin="0,16,0,0">
+            <StackPanel Visibility="{Binding IsInstalling, Converter={converters:BoolToVisibilityConverter}}">
+                <TextBlock Margin="0,0,0,6"
+                           d:Text="Downloading… 42% (2.6 MB of 6.1 MB)"
+                           Opacity="0.8"
+                           Text="{Binding ProgressText}" />
+                <ProgressBar Height="4"
+                             IsIndeterminate="{Binding IsProgressIndeterminate}"
+                             Maximum="100"
+                             Value="{Binding Progress}" />
+            </StackPanel>
+            <TextBlock Foreground="{DynamicResource MaterialDesign.Brush.ValidationError}"
+                       Tag="{Binding InstallError}"
+                       Style="{StaticResource HideWhenNull}"
+                       Text="{Binding InstallError}"
+                       TextWrapping="Wrap" />
+        </StackPanel>
+
+        <StackPanel Grid.Row="5"
                     Margin="0,20,0,0"
                     HorizontalAlignment="Right"
                     Orientation="Horizontal">
             <Button Command="{Binding CancelCommand}"
-                    Content="{loc:Localize Update_Later}"
+                    Content="{Binding SecondaryButtonText}"
                     IsCancel="True"
                     Style="{StaticResource MaterialDesignFlatButton}"
                     Visibility="{Binding IsUpdateAvailable, Converter={converters:BoolToVisibilityConverter}}" />
             <Button Margin="8,0,0,0"
                     Command="{Binding SaveCommand}"
-                    Content="{loc:Localize Update_Download}"
+                    Content="{Binding PrimaryButtonText}"
                     IsDefault="True"
                     Visibility="{Binding IsUpdateAvailable, Converter={converters:BoolToVisibilityConverter}}" />
             <!-- Nothing to download: a single acknowledgement closes the dialog. -->
