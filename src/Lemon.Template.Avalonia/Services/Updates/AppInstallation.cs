@@ -28,6 +28,32 @@ public sealed record AppInstallation(string RootPath, string ExecutableRelativeP
     /// </summary>
     public static AppInstallation? Current { get; } = Detect(Environment.ProcessPath);
 
+    /// <summary>
+    /// Call at start-up: moves the working directory out of the installation (to the user's profile). Child
+    /// processes inherit it, and one that outlives the app (a browser started for sign-in, a terminal) would
+    /// keep the folder in use, so the next update could not swap it. The app itself reads and writes through
+    /// absolute paths (AppContext.BaseDirectory), never relative to the working directory.
+    /// </summary>
+    public static void MoveWorkingDirectoryOut()
+    {
+        try
+        {
+            var current = Path.GetFullPath(Environment.CurrentDirectory);
+            var root = Current?.RootPath ?? AppContext.BaseDirectory;
+            if (!current.StartsWith(Path.TrimEndingDirectorySeparator(Path.GetFullPath(root)), StringComparison.OrdinalIgnoreCase))
+            {
+                return;
+            }
+
+            var home = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+            Environment.CurrentDirectory = Directory.Exists(home) ? home : Path.GetTempPath();
+        }
+        catch (Exception ex) when (ex is IOException or UnauthorizedAccessException or System.Security.SecurityException)
+        {
+            // Not fatal: the next update falls back to replacing files in place.
+        }
+    }
+
     internal static AppInstallation? Detect(string? processPath)
     {
         if (string.IsNullOrEmpty(processPath) ||

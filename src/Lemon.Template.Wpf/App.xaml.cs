@@ -64,6 +64,10 @@ public partial class App : Application
             return;
         }
 
+        // Child processes inherit the working directory; one left inside the install folder (a browser
+        // opened from the app, a terminal) keeps it in use and the next update cannot swap the folder.
+        AppInstallation.MoveWorkingDirectoryOut();
+
         Log.Logger = new LoggerConfiguration()
 #if DEBUG
             .MinimumLevel.Information()

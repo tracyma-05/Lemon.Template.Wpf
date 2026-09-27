@@ -6,6 +6,26 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [1.4.1] - 2026-09-27
+
+Found by the first automatic updates of real apps (CodeLauncher, Lemon.Hub.Wpf).
+
+### Fixed
+
+- **An update rolled back whenever a child process held the app folder.** Programs the app starts (a
+  browser opened for sign-in, a terminal, an adb server) inherit its working directory and can outlive it;
+  the folder could then not be renamed and every update restored the old version. The app now moves its
+  working directory out of the installation at start-up, and the updater falls back to replacing the files
+  in place (each replaced file backed up, undone on failure) when the folder is still in use.
+- **Updates copied the app's data folder.** Whatever only the old installation had (logs, a local database)
+  was copied back from the backup, so a large data folder was duplicated on every update. It is moved now,
+  a rename on the same volume, with every move undone if a later step fails.
+
+### Changed
+
+- `UpdateInstaller.CleanUpAfterUpdateAsync` returns the updater's result (`UpdateCleanupResult`), so a shell
+  can tell the user which version is running or why the update did not install.
+
 ## [1.4.0] - 2026-09-27
 
 Automatic updates: no browser, no unzipping by hand.

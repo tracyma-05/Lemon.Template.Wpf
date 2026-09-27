@@ -19,6 +19,10 @@ internal static class Program
             return updaterExitCode;
         }
 
+        // Child processes inherit the working directory; one left inside the install folder (a browser
+        // opened from the app, a terminal) keeps it in use and the next update cannot swap the folder.
+        AppInstallation.MoveWorkingDirectoryOut();
+
         return BuildAvaloniaApp().StartWithClassicDesktopLifetime(args);
     }
 

@@ -21,6 +21,11 @@ public readonly record struct UpdateDownloadProgress(long Received, long? Total)
 /// <param name="NewRoot">The new version inside the staging folder (an app folder or a <c>.app</c> bundle).</param>
 public sealed record PreparedUpdate(AppInstallation Installation, string NewRoot, Version Version);
 
+/// <summary>What the updater reported for the last automatic update, read by the new version at start-up.</summary>
+/// <param name="Failed">The updater gave up and kept the previous version.</param>
+/// <param name="Log">The updater's log.</param>
+public sealed record UpdateCleanupResult(bool Failed, string Log);
+
 /// <summary>An update that could not be prepared; the message is meant for the user.</summary>
 public sealed class UpdateInstallException(string message, Exception? inner = null) : Exception(message, inner);
 
@@ -221,13 +226,16 @@ public sealed class UpdateInstaller : IUpdateInstaller, ISingletonDependency
     /// Called once the app is up: records what the updater did in the app log and removes the work folder
     /// (backup, staging, updater log). Retries for a while, as the updater may still be exiting.
     /// </summary>
-    public static async Task CleanUpAfterUpdateAsync(ILogger logger, AppInstallation? installation = null)
+    /// <returns>The updater's result right after an automatic update, so the shell can tell the user; null otherwise.</returns>
+    public static async Task<UpdateCleanupResult?> CleanUpAfterUpdateAsync(ILogger logger, AppInstallation? installation = null)
     {
         installation ??= AppInstallation.Current;
         if (installation is null || !Directory.Exists(installation.WorkPath))
         {
-            return;
+            return null;
         }
+
+        UpdateCleanupResult? result = null;
 
         var logFile = Path.Combine(installation.WorkPath, UpdateApplier.LogFileName);
         try
@@ -235,7 +243,8 @@ public sealed class UpdateInstaller : IUpdateInstaller, ISingletonDependency
             if (File.Exists(logFile))
             {
                 var text = await File.ReadAllTextAsync(logFile).ConfigureAwait(false);
-                if (text.Contains("FAILED", StringComparison.Ordinal))
+                result = new UpdateCleanupResult(text.Contains("FAILED", StringComparison.Ordinal), text);
+                if (result.Failed)
                 {
                     logger.LogWarning("The last update did not install:{NewLine}{UpdateLog}", Environment.NewLine, text);
                 }
@@ -256,11 +265,11 @@ public sealed class UpdateInstaller : IUpdateInstaller, ISingletonDependency
             try
             {
                 Directory.Delete(installation.WorkPath, recursive: true);
-                return;
+                return result;
             }
             catch (DirectoryNotFoundException)
             {
-                return;
+                return result;
             }
             catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
             {
@@ -269,6 +278,7 @@ public sealed class UpdateInstaller : IUpdateInstaller, ISingletonDependency
         }
 
         logger.LogWarning("Could not remove the update work folder {Path}; it is retried on the next start.", installation.WorkPath);
+        return result;
     }
 
     private async Task DownloadAsync(Uri url, string path, IProgress<UpdateDownloadProgress>? progress, CancellationToken cancellationToken)

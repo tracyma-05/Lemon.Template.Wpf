@@ -203,6 +203,86 @@ public sealed class UpdateInstallerTests : IDisposable
     }
 
     [Fact]
+    public void Apply_moves_what_only_the_old_installation_had_instead_of_copying_it()
+    {
+        var install = Path.Combine(_root, "MyApp");
+        WriteFile(Path.Combine(install, Exe), "old exe");
+        WriteFile(Path.Combine(install, "data", "2026", "big.bin"), "data");
+
+        var staged = Path.Combine(_root, "staging", "MyApp");
+        WriteFile(Path.Combine(staged, Exe), "new exe");
+
+        var backup = Path.Combine(_root, "backup");
+        Assert.False(UpdateApplier.Apply(install, staged, backup, CopyFile));
+
+        Assert.Equal("data", File.ReadAllText(Path.Combine(install, "data", "2026", "big.bin")));
+        // Renamed back, not copied: a large data folder must not be duplicated on every update.
+        Assert.False(Directory.Exists(Path.Combine(backup, "data")));
+    }
+
+    [Fact]
+    public void Apply_moves_carried_files_back_when_a_later_move_fails()
+    {
+        var install = Path.Combine(_root, "MyApp");
+        WriteFile(Path.Combine(install, Exe), "old exe");
+        WriteFile(Path.Combine(install, "a-settings.json"), "settings");
+        WriteFile(Path.Combine(install, "z-data", "big.bin"), "data");
+
+        var staged = Path.Combine(_root, "staging", "MyApp");
+        WriteFile(Path.Combine(staged, Exe), "new exe");
+
+        var moves = 0;
+        Assert.Throws<IOException>(() => UpdateApplier.Apply(install, staged, Path.Combine(_root, "backup"), CopyFile,
+            (source, destination) =>
+            {
+                // The first entry moves, the second fails: the first must be moved back before the restore.
+                if (++moves == 2)
+                {
+                    throw new IOException("locked");
+                }
+
+                if (Directory.Exists(source))
+                {
+                    Directory.Move(source, destination);
+                }
+                else
+                {
+                    File.Move(source, destination);
+                }
+            }));
+
+        Assert.Equal("old exe", File.ReadAllText(Path.Combine(install, Exe)));
+        Assert.Equal("settings", File.ReadAllText(Path.Combine(install, "a-settings.json")));
+        Assert.Equal("data", File.ReadAllText(Path.Combine(install, "z-data", "big.bin")));
+    }
+
+    [Fact]
+    public void Apply_replaces_files_in_place_when_something_holds_the_folder()
+    {
+        // An open file keeps the folder from being renamed (in real life: a browser or terminal the app
+        // started, with the folder as its working directory); the files can still be overwritten.
+        var install = Path.Combine(_root, "MyApp");
+        WriteFile(Path.Combine(install, Exe), "old exe");
+        WriteFile(Path.Combine(install, "settings.json"), "settings");
+        WriteFile(Path.Combine(install, "Logs", "log.txt"), "log");
+
+        var staged = Path.Combine(_root, "staging", "MyApp");
+        WriteFile(Path.Combine(staged, Exe), "new exe");
+        WriteFile(Path.Combine(staged, "New.dll"), "dll");
+
+        using (new FileStream(Path.Combine(install, "Logs", "log.txt"), FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+        {
+            Assert.True(UpdateApplier.Apply(install, staged, Path.Combine(_root, "backup"), CopyFile));
+        }
+
+        Assert.Equal("new exe", File.ReadAllText(Path.Combine(install, Exe)));
+        Assert.Equal("dll", File.ReadAllText(Path.Combine(install, "New.dll")));
+        Assert.Equal("settings", File.ReadAllText(Path.Combine(install, "settings.json")));
+        Assert.Equal("log", File.ReadAllText(Path.Combine(install, "Logs", "log.txt")));
+        Assert.Equal("old exe", File.ReadAllText(Path.Combine(_root, "backup", Exe)));
+    }
+
+    [Fact]
     public void TryRun_ignores_normal_start_up_and_rejects_unknown_protocols()
     {
         Assert.False(UpdateApplier.TryRun([], out _));
