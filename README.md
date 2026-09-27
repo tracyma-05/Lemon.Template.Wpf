@@ -53,6 +53,7 @@ It is also packaged as **.NET project templates** (`.template.config/template.js
 | **Tools → Cron** | Embedded **Hangfire Dashboard** (WebView2) against local storage; sample recurring job (`sample-heartbeat`) for demonstration. Optional — see template symbols. |
 | **Tray icon** | Optional system tray integration via **H.NotifyIcon.Wpf** (exit from context menu). |
 | **Check for updates** | Title-bar button that reads the latest release from a GitHub repository or a JSON manifest (such as Next.Hub's) and offers the package for the running platform (Windows / macOS, x64 / arm64); a zip package is downloaded, installed in place and the app restarted, without a browser. Present only when `Update:Enabled` is `true` **and** a source is configured; can also check quietly on start-up. Generated projects include a tag-triggered release workflow. See [Check for updates](#check-for-updates). |
+| **Desktop shortcut** | Title-bar button (Windows) that puts a shortcut to the running executable on the desktop, named after `App_DisplayName` in `AppStrings.resx`, after asking; one of the same name is replaced. Written through `IShellLinkW`, so non-ASCII names work on any system code page. Hidden on macOS and when the app runs under `dotnet App.dll`. |
 | **Splash** | Lightweight splash on startup. |
 | **Navigation** | Pages discovered via `[NavigationRegister("Group/Name", ...)]` and grouped menus built at runtime; a single-segment key (`"Home"`) registers a top-level page with no children. Menu labels resolved from resources. |
 | **Localization** | `.resx`-backed strings, `{loc:Localize Key}` markup extension, live culture switching. |
@@ -355,6 +356,15 @@ can carry one package per platform; the app picks the one for the machine it run
 `win-arm64`, `osx-arm64`, `osx-x64`, …), falls back to the x64 build on arm64 (Windows on Arm emulation,
 Rosetta 2), then to a package for `any` platform, and otherwise opens the release page.
 
+**Two kinds per platform.** A release can also carry a self-contained build next to the framework-dependent
+one, marked `-full` (`win-x64-full`, file `MyApp-1.2.0-win-x64-full.zip`; `self-contained` in a file name
+works too). The app tells which kind it is by where the .NET runtime loads from (the shared install, or its
+own folder / single-file bundle) and updates from its own kind: a self-contained install never receives a
+package that needs the runtime installed, and a framework-dependent one only falls back to `-full` when its
+own kind is missing. A release with no `-full` package for an operating system does not tell the kinds
+apart there (releases from before this, and macOS bundles, which are always self-contained), and a
+self-contained install takes its packages as they are.
+
 **GitHub Releases** — nothing to host:
 
 ```json
@@ -463,8 +473,9 @@ git push origin v1.2.0
 
 - The tag becomes the app's `Version` (`-p:Version=1.2.0`) and, on macOS, the bundle version, so the running
   app and the update check agree on the number.
-- WPF builds `win-x64`. Avalonia builds `win-x64`, plus `osx-arm64` and `osx-x64` `.app` bundles (via
-  `Packaging/macOS/bundle.sh`, zipped with `ditto`).
+- WPF builds `win-x64` (framework-dependent) and `win-x64-full` (self-contained). Avalonia builds the same
+  two, plus `osx-arm64` and `osx-x64` `.app` bundles (self-contained, via `Packaging/macOS/bundle.sh`,
+  zipped with `ditto`). Drop a matrix row to ship only one kind.
 - The workflow's own artifacts only hand the packages from the build jobs to the release job: they need a
   GitHub login to download and expire, so the app never points at them.
 - **Next.Hub** (optional): create a publish token on the app's page in Next.Hub, then add the secret

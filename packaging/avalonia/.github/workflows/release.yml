@@ -35,17 +35,29 @@ env:
 
 jobs:
   build:
-    name: Build (${{ matrix.rid }})
+    name: Build (${{ matrix.rid }}${{ matrix.suffix }})
     strategy:
       matrix:
+        # Two Windows packages: framework-dependent (small; needs the .NET Desktop Runtime installed) and
+        # self-contained ("-full": ships the runtime). An installed app updates from the kind it is. The macOS
+        # bundle is always self-contained and keeps its plain name: with no "-full" package for macOS in the
+        # release, a Mac install takes it as it is.
         include:
           - rid: win-x64
             os: windows-latest
+            self_contained: 'false'
+            suffix: ''
+          - rid: win-x64
+            os: windows-latest
+            self_contained: 'true'
+            suffix: '-full'
           - rid: osx-arm64
             os: macos-latest
+            suffix: ''
           # Built on the same Apple Silicon runner; the x64 build runs on Intel Macs and under Rosetta 2.
           - rid: osx-x64
             os: macos-latest
+            suffix: ''
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -66,10 +78,10 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: |
-          dotnet publish $env:PROJECT -c Release -r ${{ matrix.rid }} --self-contained `
+          dotnet publish $env:PROJECT -c Release -r ${{ matrix.rid }} --self-contained ${{ matrix.self_contained }} `
             -p:Version=${{ steps.version.outputs.value }} -o artifacts/publish
           Compress-Archive -Path artifacts/publish/* `
-            -DestinationPath "artifacts/$env:APP_NAME-${{ steps.version.outputs.value }}-${{ matrix.rid }}.zip"
+            -DestinationPath "artifacts/$env:APP_NAME-${{ steps.version.outputs.value }}-${{ matrix.rid }}${{ matrix.suffix }}.zip"
 
       - name: Publish (macOS .app)
         if: runner.os == 'macOS'
@@ -86,7 +98,7 @@ jobs:
       - name: Hand the package to the release job
         uses: actions/upload-artifact@v4
         with:
-          name: package-${{ matrix.rid }}
+          name: package-${{ matrix.rid }}${{ matrix.suffix }}
           path: artifacts/*.zip
           if-no-files-found: error
           retention-days: 3

@@ -10,10 +10,19 @@ namespace Lemon.Template.Avalonia.Services.Updates;
 /// Platforms are named like .NET runtime identifiers: <c>win-x64</c>, <c>win-arm64</c>, <c>osx-arm64</c>,
 /// <c>osx-x64</c>, <c>linux-x64</c>; <c>any</c> is a package that runs everywhere. A bare operating system
 /// (<c>osx</c>) stands for a package that covers every architecture of it, such as a universal macOS build.
+/// <para>
+/// A build that ships the .NET runtime (self-contained) adds <see cref="FullSuffix"/>: <c>win-x64-full</c>.
+/// A release can carry both kinds for one platform, and an installed app updates from the kind it is: a
+/// self-contained install never receives a package that needs the runtime installed, and a
+/// framework-dependent one only falls back to a self-contained package when its own kind is missing.
+/// </para>
 /// </remarks>
 public static partial class UpdatePlatform
 {
     public const string Any = "any";
+
+    /// <summary>Marks a self-contained package: <c>win-x64-full</c> runs without the .NET runtime installed.</summary>
+    public const string FullSuffix = "-full";
 
     // Longest first, so ".tar.gz" wins over ".gz".
     private static readonly string[] PackageExtensions =
@@ -22,30 +31,89 @@ public static partial class UpdatePlatform
     // Installers are preferred over archives when a release offers both for the same platform.
     private static readonly string[] InstallerExtensions = [".msi", ".msix", ".exe", ".dmg", ".pkg"];
 
-    /// <summary>This process's platform, e.g. <c>win-x64</c> or <c>osx-arm64</c>; <c>any</c> when it has no name here.</summary>
-    public static string Current { get; } = Describe(RuntimeInformation.ProcessArchitecture);
+    /// <summary>
+    /// True when this app ships its own .NET runtime (published self-contained). Declared before
+    /// <see cref="Current"/>, which reads it: static initializers run in declaration order.
+    /// </summary>
+#pragma warning disable IL3000 // An empty location is the answer for a single-file bundle, see IsSelfContainedRuntime.
+    public static bool IsSelfContained { get; } = IsSelfContainedRuntime(typeof(object).Assembly.Location, AppContext.BaseDirectory);
+#pragma warning restore IL3000
+
+    /// <summary>
+    /// This process's platform, e.g. <c>win-x64</c>, <c>osx-arm64</c>, or <c>win-x64-full</c> for a
+    /// self-contained install; <c>any</c> when it has no name here.
+    /// </summary>
+    public static string Current { get; } = Describe(RuntimeInformation.ProcessArchitecture, IsSelfContained);
 
     /// <summary>
     /// Keys to look for, best first: the exact platform; the x64 build on arm64 (Windows on Arm emulation,
     /// Rosetta 2 on Apple Silicon); a build for the whole operating system; a package for any platform.
+    /// A framework-dependent install then accepts the same list self-contained (it runs anywhere, only
+    /// larger); a self-contained one (<c>…-full</c>) accepts only self-contained packages, because the
+    /// computer may not have the runtime the others need.
     /// </summary>
-    public static IReadOnlyList<string> Candidates(string platform)
+    /// <param name="platform">The installed platform, see <see cref="Current"/>.</param>
+    /// <param name="published">
+    /// The release's platform keys. When none of its packages for this operating system is <c>-full</c>,
+    /// the release does not tell the two kinds apart there (published before they were, or a macOS build,
+    /// which is always self-contained), so a self-contained install takes those packages as they are.
+    /// </param>
+    public static IReadOnlyList<string> Candidates(string platform, IEnumerable<string>? published = null)
     {
-        var candidates = new List<string>();
-        var parts = platform.Split('-', 2);
+        var full = IsFull(platform);
+        var rid = full ? platform[..^FullSuffix.Length] : platform;
+
+        var native = new List<string>();
+        var parts = rid.Split('-', 2);
         if (parts.Length == 2)
         {
-            candidates.Add(platform);
+            native.Add(rid);
             if (parts[1] == "arm64")
             {
-                candidates.Add($"{parts[0]}-x64");
+                native.Add($"{parts[0]}-x64");
             }
 
-            candidates.Add(parts[0]);
+            native.Add(parts[0]);
         }
 
-        candidates.Add(Any);
-        return candidates;
+        var selfContained = native.Select(x => x + FullSuffix).ToList();
+        if (full)
+        {
+            var os = parts[0];
+            var distinguishes = published is null || published.Any(x =>
+                IsFull(x) && (x.StartsWith(os + "-", StringComparison.OrdinalIgnoreCase) ||
+                              string.Equals(x, os + FullSuffix, StringComparison.OrdinalIgnoreCase)));
+            return distinguishes ? selfContained : [.. native, Any];
+        }
+
+        return [.. native, Any, .. selfContained];
+    }
+
+    /// <summary>True for a self-contained platform key such as <c>win-x64-full</c>.</summary>
+    public static bool IsFull(string platform) => platform.EndsWith(FullSuffix, StringComparison.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// A framework-dependent app loads the runtime's own assemblies from the shared install
+    /// (<c>…/dotnet/shared/Microsoft.NETCore.App/10.0.x/</c>); a self-contained one from its own folder, or
+    /// from inside its single-file bundle, where an assembly has no location at all.
+    /// </summary>
+    internal static bool IsSelfContainedRuntime(string? coreLibraryLocation, string baseDirectory)
+    {
+        if (string.IsNullOrEmpty(coreLibraryLocation))
+        {
+            return true;
+        }
+
+        try
+        {
+            var folder = Path.TrimEndingDirectorySeparator(Path.GetFullPath(baseDirectory));
+            var location = Path.GetFullPath(coreLibraryLocation);
+            return location.StartsWith(folder + Path.DirectorySeparatorChar, StringComparison.OrdinalIgnoreCase);
+        }
+        catch (Exception ex) when (ex is ArgumentException or NotSupportedException or PathTooLongException)
+        {
+            return false;
+        }
     }
 
     /// <summary>The first candidate the release has a package for.</summary>
@@ -71,12 +139,14 @@ public static partial class UpdatePlatform
         InstallerExtensions.Any(x => fileName.EndsWith(x, StringComparison.OrdinalIgnoreCase)) ? 0 : 1;
 
     /// <summary>
-    /// The platform a file name mentions, such as <c>MyApp-1.2.0-osx-arm64.zip</c> → <c>osx-arm64</c>;
-    /// null when it names no operating system, or an architecture other than x64, x86 and arm64.
+    /// The platform a file name mentions, such as <c>MyApp-1.2.0-osx-arm64.zip</c> → <c>osx-arm64</c>, or
+    /// <c>MyApp-1.2.0-win-x64-full.zip</c> → <c>win-x64-full</c>; null when it names no operating system,
+    /// or an architecture other than x64, x86 and arm64.
     /// </summary>
     /// <remarks>
     /// Also understands the spellings other build tools use: windows / macos / mac / darwin, amd64 /
-    /// x86_64 / aarch64 / 386, win64, and "universal" for a macOS build covering both architectures.
+    /// x86_64 / aarch64 / 386, win64, "universal" for a macOS build covering both architectures, and
+    /// full / self-contained / selfcontained for a build that ships the runtime.
     /// </remarks>
     public static string? FromFileName(string fileName)
     {
@@ -91,8 +161,16 @@ public static partial class UpdatePlatform
 
         string? os = null;
         string? architecture = null;
+        var full = false;
+        var previous = string.Empty;
         foreach (var token in TokenSeparator().Split(name))
         {
+            if (token is "full" or "selfcontained" || (token == "contained" && previous == "self"))
+            {
+                full = true;
+            }
+
+            previous = token;
             switch (token)
             {
                 case "win" or "windows":
@@ -125,10 +203,11 @@ public static partial class UpdatePlatform
             return null;
         }
 
-        return architecture is null ? os : $"{os}-{architecture}";
+        var platform = architecture is null ? os : $"{os}-{architecture}";
+        return full ? platform + FullSuffix : platform;
     }
 
-    private static string Describe(Architecture architecture)
+    private static string Describe(Architecture architecture, bool selfContained)
     {
         var os = OperatingSystem.IsWindows() ? "win"
             : OperatingSystem.IsMacOS() ? "osx"
@@ -143,7 +222,12 @@ public static partial class UpdatePlatform
             _ => null,
         };
 
-        return os is null || arch is null ? Any : $"{os}-{arch}";
+        if (os is null || arch is null)
+        {
+            return Any;
+        }
+
+        return selfContained ? $"{os}-{arch}{FullSuffix}" : $"{os}-{arch}";
     }
 
     [GeneratedRegex("[^a-z0-9]+")]

@@ -187,6 +187,15 @@
                                 VerticalAlignment="Center"
                                 Orientation="Horizontal"
                                 WindowDecorationProperties.ElementRole="User">
+                        <!-- Windows only (and not under "dotnet App.dll"): a shortcut to this executable on the desktop. -->
+                        <Button Command="{Binding CreateDesktopShortcutCommand}"
+                                Classes="Flat icon"
+                                AutomationProperties.Name="{loc:Localize Shell_DesktopShortcut_ToolTip}"
+                                IsVisible="{Binding IsDesktopShortcutSupported}"
+                                ToolTip.Tip="{loc:Localize Shell_DesktopShortcut_ToolTip}">
+                            <materialIcons:MaterialIcon Width="20" Height="20" Kind="MonitorArrowDown" />
+                        </Button>
+
                         <!-- Only present when appsettings.json turns updates on and names a manifest URL or GitHub repository. -->
                         <Button Command="{Binding CheckForUpdatesCommand}"
                                 Classes="Flat icon"

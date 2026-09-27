@@ -3,8 +3,9 @@
 #
 #   publish-next-hub.sh <version> <release-notes-file> <package>...
 #
-# Each package's platform is read from its file name (MyApp-1.2.0-osx-arm64.zip → osx-arm64); a
-# name without one is published as "any". Uploads go in chunks, so packages larger than a proxy's request
+# Each package's platform is read from its file name (MyApp-1.2.0-osx-arm64.zip → osx-arm64, and
+# MyApp-1.2.0-win-x64-full.zip → win-x64-full for a self-contained build); a name without one is published
+# as "any". Uploads go in chunks, so packages larger than a proxy's request
 # limit (Cloudflare: 100 MB) still get through, and a chunk that fails is resent from the same offset.
 #
 # Needs curl, jq and sha256sum (all on GitHub's Ubuntu runners) and these environment variables:
@@ -65,7 +66,7 @@ request() {
 packages='[]'
 for file in "$@"; do
     name="$(basename "$file")"
-    platform="$(sed -nE 's/.*[-_.]((win|osx|linux)-(x64|x86|arm64))\.[A-Za-z0-9.]+$/\1/p' <<<"$name")"
+    platform="$(sed -nE 's/.*[-_.]((win|osx|linux)-(x64|x86|arm64)(-full)?)\.[A-Za-z0-9.]+$/\1/p' <<<"$name")"
     platform="${platform:-any}"
     size="$(stat -c %s "$file")"
     sha256="$(sha256sum "$file" | cut -d ' ' -f 1)"

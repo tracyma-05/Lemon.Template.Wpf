@@ -4,14 +4,17 @@ using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using Lemon.Template.Avalonia.Commons;
 using Lemon.Template.Avalonia.Infrastructures.Dialogs;
+using Lemon.Template.Avalonia.Infrastructures.Localization;
 using Lemon.Template.Avalonia.Infrastructures.Navigations;
 using Lemon.Template.Avalonia.Infrastructures.Shell;
 using Lemon.Template.Avalonia.Models;
+using Lemon.Template.Avalonia.Services.Shortcuts;
 using Lemon.Template.Avalonia.Services.Theming;
 using Lemon.Template.Avalonia.Services.Updates;
 using Lemon.Template.Avalonia.ViewModels.Dialogs;
 using Serilog;
 using System.Collections.ObjectModel;
+using System.IO;
 using Volo.Abp.DependencyInjection;
 
 namespace Lemon.Template.Avalonia.ViewModels
@@ -93,6 +96,45 @@ namespace Lemon.Template.Avalonia.ViewModels
         {
             _navigationService.Navigate(item.Title);
         }
+
+        #region desktop shortcut
+
+        /// <summary>Windows, and an app started from its own executable; see <see cref="DesktopShortcut.IsSupported"/>.</summary>
+        public bool IsDesktopShortcutSupported => DesktopShortcut.IsSupported;
+
+        /// <summary>
+        /// Asks first (naming the file, and that one of the same name is replaced), then puts a shortcut to this
+        /// executable on the desktop. It survives automatic updates, which replace the folder's files in place.
+        /// </summary>
+        [RelayCommand(AllowConcurrentExecutions = false)]
+        private async Task CreateDesktopShortcutAsync()
+        {
+            var localization = LocalizationService.Instance;
+            var name = localization.GetString("App_DisplayName");
+            // Named: with two strings the (message, identifier) overload would be picked.
+            if (!await _dialogService.Question(
+                    title: localization.GetString("Shortcut_Title"),
+                    message: localization.Format("Shortcut_Confirm", name, DesktopShortcut.PathFor(name))))
+            {
+                return;
+            }
+
+            try
+            {
+                var path = DesktopShortcut.Create(name, name);
+                Log.Information("Created the desktop shortcut {Path}.", path);
+            }
+            catch (Exception ex) when (ex is System.Runtime.InteropServices.COMException or IOException
+                                           or UnauthorizedAccessException or PlatformNotSupportedException)
+            {
+                Log.Warning(ex, "Could not create the desktop shortcut.");
+                await _dialogService.Question(
+                    title: localization.GetString("Shortcut_Title"),
+                    message: localization.Format("Shortcut_Failed", ex.Message));
+            }
+        }
+
+        #endregion
 
         #region updates
 

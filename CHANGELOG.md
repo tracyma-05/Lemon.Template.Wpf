@@ -6,6 +6,30 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [1.5.0] - 2026-09-27
+
+### Added
+
+- **Desktop shortcut.** A title-bar button (Windows) creates a shortcut to the running executable on the
+  desktop after asking, replacing one of the same name. The name is the new `App_DisplayName` string; the
+  link is written through `IShellLinkW`, so a Chinese name works on an English Windows. Hidden on macOS and
+  when the app runs through the `dotnet` host. Automatic updates keep the folder in place, so the shortcut
+  keeps working.
+- **Framework-dependent and self-contained packages side by side.** A release can carry `win-x64` and
+  `win-x64-full` (self-contained); an installed app tells which kind it is by where the .NET runtime loads
+  from and updates from its own kind, so a self-contained install is never replaced by a build that needs
+  the runtime installed. A release with no `-full` package for an operating system is taken as before
+  (older releases, macOS bundles). `release.yml` builds both kinds for Windows; `publish-next-hub.sh`
+  recognizes `-full` in file names. Next.Hub accepts the `-full` platforms and lists a checksum for every
+  package (`checksums`), which the update check now reads.
+
+### Upgrading
+
+- Apps that published **self-contained** packages as `…-win-x64.zip` (the WPF `release.yml` did): installs
+  from 1.4.1 or earlier do not know `-full` and keep taking `win-x64`. For the first release built with this
+  version, publish only the `-full` Windows package (drop the framework-dependent matrix row once), so those
+  installs update to a build that tells the kinds apart; ship both from the next release on.
+
 ## [1.4.1] - 2026-09-27
 
 Found by the first automatic updates of real apps (CodeLauncher, Lemon.Hub.Wpf).

@@ -25,18 +25,24 @@ permissions:
 env:
   PROJECT: src/Lemon.Template.Wpf/Lemon.Template.Wpf.csproj
   APP_NAME: Lemon.Template.Wpf
-  # true bundles the .NET runtime (bigger download, runs on a bare machine); false needs the .NET Desktop
-  # Runtime installed.
-  SELF_CONTAINED: 'true'
 
 jobs:
   build:
-    name: Build (${{ matrix.rid }})
+    name: Build (${{ matrix.rid }}${{ matrix.suffix }})
     strategy:
       matrix:
+        # Two Windows packages: framework-dependent (small; needs the .NET Desktop Runtime installed) and
+        # self-contained ("-full": ships the runtime, runs on a bare machine). An installed app updates from
+        # the kind it is, so both can be handed out.
         include:
           - rid: win-x64
             os: windows-latest
+            self_contained: 'false'
+            suffix: ''
+          - rid: win-x64
+            os: windows-latest
+            self_contained: 'true'
+            suffix: '-full'
     runs-on: ${{ matrix.os }}
 
     steps:
@@ -56,7 +62,7 @@ jobs:
       - name: Publish
         shell: bash
         run: >
-          dotnet publish "$PROJECT" -c Release -r ${{ matrix.rid }} --self-contained "$SELF_CONTAINED"
+          dotnet publish "$PROJECT" -c Release -r ${{ matrix.rid }} --self-contained ${{ matrix.self_contained }}
           -p:Version=${{ steps.version.outputs.value }}
           -o artifacts/publish
 
@@ -64,14 +70,14 @@ jobs:
         shell: pwsh
         run: >
           Compress-Archive -Path artifacts/publish/*
-          -DestinationPath "artifacts/$env:APP_NAME-${{ steps.version.outputs.value }}-${{ matrix.rid }}.zip"
+          -DestinationPath "artifacts/$env:APP_NAME-${{ steps.version.outputs.value }}-${{ matrix.rid }}${{ matrix.suffix }}.zip"
 
       # Only a hand-over to the release job below: workflow artifacts need a GitHub login to download and
       # expire, so the published copies are the release assets (and Next.Hub), not these.
       - name: Hand the package to the release job
         uses: actions/upload-artifact@v4
         with:
-          name: package-${{ matrix.rid }}
+          name: package-${{ matrix.rid }}${{ matrix.suffix }}
           path: artifacts/*.zip
           if-no-files-found: error
           retention-days: 3

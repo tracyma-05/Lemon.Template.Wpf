@@ -125,7 +125,7 @@ public sealed class UpdateService : IUpdateService, ISingletonDependency
             return new UpdateCheckResult(UpdateCheckStatus.UpToDate, CurrentVersion, manifest, null);
         }
 
-        var downloadUrl = SelectDownload(manifest, UpdatePlatform.Candidates(_platform));
+        var downloadUrl = SelectDownload(manifest, UpdatePlatform.Candidates(_platform, manifest.Downloads.Keys));
         if (downloadUrl is null)
         {
             _logger.LogWarning("Release {Version} has no package for {Platform}.", manifest.Version, _platform);
@@ -191,6 +191,20 @@ public sealed class UpdateService : IUpdateService, ISingletonDependency
                         {
                             checksums[link] = sha256;
                         }
+                    }
+                }
+            }
+
+            // Next.Hub lists each package's checksum by platform beside "downloads".
+            if (TryGetProperty(root, "checksums", out var sums) && sums.ValueKind == JsonValueKind.Object)
+            {
+                foreach (var entry in sums.EnumerateObject())
+                {
+                    if (entry.Value.ValueKind == JsonValueKind.String &&
+                        downloads.TryGetValue(entry.Name.Trim(), out var link) &&
+                        NormalizeSha256(entry.Value.GetString()) is { } sha256)
+                    {
+                        checksums.TryAdd(link, sha256);
                     }
                 }
             }

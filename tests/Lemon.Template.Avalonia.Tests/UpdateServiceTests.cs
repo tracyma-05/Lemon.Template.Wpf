@@ -137,11 +137,14 @@ public class UpdateServiceTests
     #region platforms
 
     [Theory]
-    [InlineData("win-x64", "win-x64,win,any")]
-    [InlineData("win-arm64", "win-arm64,win-x64,win,any")]
-    [InlineData("osx-arm64", "osx-arm64,osx-x64,osx,any")]
-    [InlineData("osx-x64", "osx-x64,osx,any")]
+    [InlineData("win-x64", "win-x64,win,any,win-x64-full,win-full")]
+    [InlineData("win-arm64", "win-arm64,win-x64,win,any,win-arm64-full,win-x64-full,win-full")]
+    [InlineData("osx-arm64", "osx-arm64,osx-x64,osx,any,osx-arm64-full,osx-x64-full,osx-full")]
+    [InlineData("osx-x64", "osx-x64,osx,any,osx-x64-full,osx-full")]
     [InlineData("any", "any")]
+    // Self-contained: never a package that needs the runtime installed, not even "any".
+    [InlineData("win-x64-full", "win-x64-full,win-full")]
+    [InlineData("osx-arm64-full", "osx-arm64-full,osx-x64-full,osx-full")]
     public void Platform_candidates_fall_back_from_exact_to_emulated_to_any(string platform, string expected)
     {
         Assert.Equal(expected.Split(','), UpdatePlatform.Candidates(platform));
@@ -160,14 +163,124 @@ public class UpdateServiceTests
     [InlineData("MyApp-1.2.0.zip", null)]
     [InlineData("Winamp-1.0.zip", null)]
     [InlineData("gh_2.101.0_linux_armv6.deb", null)]
+    [InlineData("MyApp-1.2.0-win-x64-full.zip", "win-x64-full")]
+    [InlineData("MyApp-1.2.0-win-x64-self-contained.zip", "win-x64-full")]
+    [InlineData("MyApp_1.2.0_osx_arm64_selfcontained.zip", "osx-arm64-full")]
+    [InlineData("MyApp-1.2.0-self-win-x64.zip", "win-x64")]
+    [InlineData("MyApp-full-1.2.0.zip", null)]
     public void Platform_is_read_from_package_file_names(string fileName, string? expected)
     {
         Assert.Equal(expected, UpdatePlatform.FromFileName(fileName));
     }
 
+    [Theory]
+    [InlineData(@"C:\Program Files\dotnet\shared\Microsoft.NETCore.App\10.0.0\System.Private.CoreLib.dll", @"C:\Apps\MyApp\", false)]
+    [InlineData(@"C:\Apps\MyApp\System.Private.CoreLib.dll", @"C:\Apps\MyApp\", true)]
+    [InlineData(@"C:\Apps\MyApp2\System.Private.CoreLib.dll", @"C:\Apps\MyApp\", false)]
+    // Single-file bundle: the runtime is inside the exe and has no location.
+    [InlineData("", @"C:\Apps\MyApp\", true)]
+    [InlineData(null, @"C:\Apps\MyApp\", true)]
+    public void Self_contained_is_told_by_where_the_runtime_is_loaded_from(string? coreLibrary, string baseDirectory, bool expected)
+    {
+        Assert.SkipUnless(OperatingSystem.IsWindows(), "Windows paths.");
+
+        Assert.Equal(expected, UpdatePlatform.IsSelfContainedRuntime(coreLibrary, baseDirectory));
+    }
+
+    [Fact]
+    public void Test_host_runs_on_the_shared_runtime()
+    {
+        // dotnet test uses the installed runtime, so this process is framework-dependent.
+        Assert.False(UpdatePlatform.IsSelfContained);
+        Assert.False(UpdatePlatform.IsFull(UpdatePlatform.Current));
+    }
+
     #endregion
 
     #region per-platform manifests
+
+    private const string BothKindsManifest = """
+        {
+          "version": "1.3.0",
+          "downloadUrl": "releases/1.3.0/download",
+          "sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+          "downloads": {
+            "win-x64": "releases/1.3.0/download/win-x64",
+            "win-x64-full": "releases/1.3.0/download/win-x64-full"
+          },
+          "checksums": {
+            "win-x64": "1111111111111111111111111111111111111111111111111111111111111111",
+            "win-x64-full": "2222222222222222222222222222222222222222222222222222222222222222"
+          }
+        }
+        """;
+
+    [Theory]
+    [InlineData("win-x64", "https://updates.example.com/myapp/releases/1.3.0/download/win-x64")]
+    [InlineData("win-x64-full", "https://updates.example.com/myapp/releases/1.3.0/download/win-x64-full")]
+    [InlineData("win-arm64-full", "https://updates.example.com/myapp/releases/1.3.0/download/win-x64-full")]
+    public async Task CheckAsync_picks_the_package_of_the_installed_kind(string platform, string expected)
+    {
+        var service = CreateService(true, ManifestUrl, _ => Json(BothKindsManifest), platform: platform);
+
+        var result = await service.CheckAsync(TestContext.Current.CancellationToken);
+
+        Assert.Equal(UpdateCheckStatus.UpdateAvailable, result.Status);
+        Assert.Equal(expected, result.DownloadUrl!.AbsoluteUri);
+    }
+
+    [Fact]
+    public async Task CheckAsync_does_not_offer_a_self_contained_install_a_package_without_the_runtime()
+    {
+        // The release tells the kinds apart on Windows (it has a -full package), just not for x64.
+        var service = CreateService(
+            true,
+            ManifestUrl,
+            _ => Json("""{ "version": "1.3.0", "downloads": { "win-x64": "https://x.test/a.zip", "any": "https://x.test/b.zip", "win-arm64-full": "https://x.test/c.zip" } }"""),
+            platform: "win-x64-full");
+
+        var result = await service.CheckAsync(TestContext.Current.CancellationToken);
+
+        Assert.Equal(UpdateCheckStatus.Failed, result.Status);
+        Assert.Equal("Update_Error_NoPackage:1.3.0,win-x64-full", result.Error);
+    }
+
+    [Fact]
+    public async Task CheckAsync_gives_a_self_contained_install_the_package_of_a_release_without_kinds()
+    {
+        // Published before "-full" existed: the win-x64 package is whatever the pipeline builds.
+        var service = CreateService(
+            true,
+            ManifestUrl,
+            _ => Json("""{ "version": "1.3.0", "downloads": { "win-x64": "https://x.test/a.zip" } }"""),
+            platform: "win-x64-full");
+
+        var result = await service.CheckAsync(TestContext.Current.CancellationToken);
+
+        Assert.Equal(UpdateCheckStatus.UpdateAvailable, result.Status);
+        Assert.Equal("https://x.test/a.zip", result.DownloadUrl!.AbsoluteUri);
+    }
+
+    [Theory]
+    [InlineData("win-x64-full", "win-x64,osx-x64", "win-x64,win,any")]
+    [InlineData("win-x64-full", "win-x64,osx-x64-full", "win-x64,win,any")]
+    [InlineData("win-x64-full", "win-x64,win-arm64-full", "win-x64-full,win-full")]
+    [InlineData("osx-arm64-full", "osx-arm64,win-x64,win-x64-full", "osx-arm64,osx-x64,osx,any")]
+    [InlineData("win-x64", "win-x64", "win-x64,win,any,win-x64-full,win-full")]
+    public void Platform_candidates_depend_on_whether_the_release_tells_kinds_apart(string platform, string published, string expected)
+    {
+        Assert.Equal(expected.Split(','), UpdatePlatform.Candidates(platform, published.Split(',')));
+    }
+
+    [Fact]
+    public void ParseManifest_reads_the_checksum_of_every_package()
+    {
+        var manifest = UpdateService.ParseManifest(BothKindsManifest, new Uri(ManifestUrl));
+
+        Assert.NotNull(manifest);
+        Assert.Equal(new string('1', 64), manifest.Checksums[manifest.Downloads["win-x64"]]);
+        Assert.Equal(new string('2', 64), manifest.Checksums[manifest.Downloads["win-x64-full"]]);
+    }
 
     private const string PlatformManifest = """
         {

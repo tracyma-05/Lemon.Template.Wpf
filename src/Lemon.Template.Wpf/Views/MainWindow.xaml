@@ -128,6 +128,18 @@
                             VerticalAlignment="Top"
                             Orientation="Horizontal">
 
+                    <!-- Windows only (and not under "dotnet App.dll"): a shortcut to this executable on the desktop. -->
+                    <Button Margin="5"
+                            Padding="5"
+                            VerticalAlignment="Center"
+                            AutomationProperties.Name="{loc:Localize Shell_DesktopShortcut_ToolTip}"
+                            Command="{Binding CreateDesktopShortcutCommand}"
+                            Style="{StaticResource MaterialDesignFlatButton}"
+                            ToolTip="{loc:Localize Shell_DesktopShortcut_ToolTip}"
+                            Visibility="{Binding IsDesktopShortcutSupported, Converter={converters:BoolToVisibilityConverter}}">
+                        <materialDesign:PackIcon Width="20" Height="20" Kind="MonitorArrowDown" />
+                    </Button>
+
                     <!-- Only present when appsettings.json turns updates on and names a manifest URL or GitHub repository. -->
                     <Button Margin="5"
                             Padding="5"

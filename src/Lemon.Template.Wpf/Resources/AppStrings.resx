@@ -348,4 +348,26 @@
   <data name="Update_Error_PackageLayout" xml:space="preserve">
     <value>The package does not contain {0}, so it cannot be installed automatically. Use Download to install it by hand.</value>
   </data>
+  <data name="App_DisplayName" xml:space="preserve">
+    <value>Lemon.Template.Wpf</value>
+  </data>
+  <data name="Shell_DesktopShortcut_ToolTip" xml:space="preserve">
+    <value>Create a desktop shortcut</value>
+  </data>
+  <data name="Shortcut_Title" xml:space="preserve">
+    <value>Desktop shortcut</value>
+  </data>
+  <data name="Shortcut_Confirm" xml:space="preserve">
+    <value>Create a shortcut to {0} on the desktop?
+
+{1}
+
+A shortcut with the same name is replaced.</value>
+  </data>
+  <data name="Shortcut_Created" xml:space="preserve">
+    <value>Shortcut created on the desktop: {0}</value>
+  </data>
+  <data name="Shortcut_Failed" xml:space="preserve">
+    <value>The shortcut could not be created: {0}</value>
+  </data>
 </root>
