@@ -6,16 +6,7 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
-### Fixed
-
-- **Long text widened the page (WPF).** The main region's ScrollViewer allowed horizontal scrolling, so pages
-  were measured with unlimited width and wrapping text (Markdown release notes, descriptions) ran off to the
-  right with a horizontal scroll bar. Pages now always get the window's width. From Lemon.Hub.Wpf 1.4.1.
-- **Generated solution.** `dotnet new install .` from a clone copied the repository's developer solution into
-  the scaffold (both apps, the template pack and the publisher tool), so building or testing the generated
-  `.sln` failed on the missing Avalonia projects; the template pack and `tools/` came along too. Both install
-  paths now write the slim `packaging/*.sln`, which also lists the test project, so `dotnet test` on the
-  generated solution runs the tests (the project is left out with `--IncludeTests false`).
+## [1.6.0] - 2026-09-28
 
 ### Added
 
@@ -25,6 +16,9 @@ All notable changes to this project are documented here. The format follows
 - **`LocalizationCoverageTests`**: fails when the English and Chinese resx files have different keys, or when
   code uses a key neither defines.
 - `CLAUDE.md` with the localization rules for new menus and pages (repository only, not part of the template).
+- **WPF: single instance** with the tray icon. A second launch in the same login session asks the running
+  instance to show its window and exits, so two copies never write the same settings database. The update
+  restart is unaffected: the updater starts the new version only after the old one has exited.
 
 ### Changed
 
@@ -36,11 +30,16 @@ All notable changes to this project are documented here. The format follows
 - Quitting goes through the new `App.Quit()` (tray Exit, update restart, Windows sign-out), which lets the
   main window close instead of hiding.
 
-### Added
+### Fixed
 
-- **WPF: single instance** with the tray icon. A second launch in the same login session asks the running
-  instance to show its window and exits, so two copies never write the same settings database. The update
-  restart is unaffected: the updater starts the new version only after the old one has exited.
+- **Long text widened the page (WPF).** The main region's ScrollViewer allowed horizontal scrolling, so pages
+  were measured with unlimited width and wrapping text (Markdown release notes, descriptions) ran off to the
+  right with a horizontal scroll bar. Pages now always get the window's width. From Lemon.Hub.Wpf 1.4.1.
+- **Generated solution.** `dotnet new install .` from a clone copied the repository's developer solution into
+  the scaffold (both apps, the template pack and the publisher tool), so building or testing the generated
+  `.sln` failed on the missing Avalonia projects; the template pack and `tools/` came along too. Both install
+  paths now write the slim `packaging/*.sln`, which also lists the test project, so `dotnet test` on the
+  generated solution runs the tests (the project is left out with `--IncludeTests false`).
 
 ## [1.5.1] - 2026-09-27
 
