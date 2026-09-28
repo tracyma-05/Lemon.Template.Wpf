@@ -244,7 +244,8 @@
                     </TabControl.ItemTemplate>
                 </controls:TabControl>-->
 
-                <ScrollViewer Grid.Row="1" Background="{DynamicResource MaterialDesignCardBackground}" HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
+                <!-- No horizontal scrolling: pages get the window's width, so long text (Markdown, descriptions) wraps. -->
+                <ScrollViewer Grid.Row="1" Background="{DynamicResource MaterialDesignCardBackground}" HorizontalScrollBarVisibility="Disabled" VerticalScrollBarVisibility="Auto">
                     <ContentControl nav:RegionManagerAttached.RegionName="{x:Static constants:Constants.MainRegion}" />
                 </ScrollViewer>
 

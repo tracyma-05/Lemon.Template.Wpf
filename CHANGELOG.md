@@ -6,6 +6,12 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Fixed
+
+- **Long text widened the page (WPF).** The main region's ScrollViewer allowed horizontal scrolling, so pages
+  were measured with unlimited width and wrapping text (Markdown release notes, descriptions) ran off to the
+  right with a horizontal scroll bar. Pages now always get the window's width. From Lemon.Hub.Wpf 1.4.1.
+
 ## [1.5.1] - 2026-09-27
 
 ### Fixed
