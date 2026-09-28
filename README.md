@@ -51,7 +51,7 @@ It is also packaged as **.NET project templates** (`.template.config/template.js
 | **Settings → Language** | Runtime language switching (English / 简体中文) with no restart; choice persisted to SQLite (`app_language`). |
 | **Logs → Local-Logs** | View tail of **Serilog** rolling file logs under the application `Logs` folder, with a status line reporting path, size and truncation. |
 | **Tools → Cron** | Embedded **Hangfire Dashboard** (WebView2) against local storage; sample recurring job (`sample-heartbeat`) for demonstration. Optional — see template symbols. |
-| **Tray icon** | Optional system tray integration via **H.NotifyIcon.Wpf** (exit from context menu). |
+| **Tray icon** | Optional close-to-tray via **H.NotifyIcon.Wpf**: closing hides the window, double-click the icon or **Open** brings it back, **Exit** quits. Comes with a single-instance guard. |
 | **Check for updates** | Title-bar button that reads the latest release from a GitHub repository or a JSON manifest (such as Next.Hub's) and offers the package for the running platform (Windows / macOS, x64 / arm64); a zip package is downloaded, installed in place and the app restarted, without a browser. Present only when `Update:Enabled` is `true` **and** a source is configured; can also check quietly on start-up. Generated projects include a tag-triggered release workflow. See [Check for updates](#check-for-updates). |
 | **Desktop shortcut** | Title-bar button (Windows) that puts a shortcut to the running executable on the desktop, named after `App_DisplayName` in `AppStrings.resx`, after asking; one of the same name is replaced. Written through `IShellLinkW`, so non-ASCII names work on any system code page. Hidden on macOS and when the app runs under `dotnet App.dll`. |
 | **Splash** | Lightweight splash on startup. |
@@ -89,7 +89,7 @@ It is also packaged as **.NET project templates** (`.template.config/template.js
 - **Single SQLite file** (default: `%LocalApplicationData%\<AssemblyName>\<AssemblyName>.db`) holds the Hangfire schema and app tables (`app_theme`, `app_language`). Path is overridable via configuration.
 - **Regions**: main content uses `RegionManagerAttached` with a central `INavigationService` mapping route names to views.
 - **ViewModel lifetime**: `ViewModelLocator.AutoWireViewModel` creates a DI scope per view; `ViewModelLocator.ReleaseViewModel` disposes the ViewModel and its scope. Release is driven by the navigation layer (`INavigationService.RemoveView`, and content replacement in a `ContentControl` region) rather than by `Unloaded`, which WPF also raises when a view is only temporarily detached.
-- **Shutdown**: closing the window or choosing tray → Exit calls `Application.Shutdown()`, so `App.OnExit` runs the ABP shutdown (stopping the Hangfire server and dashboard) before `Log.CloseAndFlush()`. Avoid `Environment.Exit`, which skips all of it and loses buffered log entries.
+- **Shutdown**: with the tray icon, closing the window (title bar, Alt+F4, taskbar) only hides it; tray → Exit calls `App.Quit()`, which marks the app as exiting and calls `Application.Shutdown()` (without the tray, closing asks and then does the same), so `App.OnExit` runs the ABP shutdown (stopping the Hangfire server and dashboard) before `Log.CloseAndFlush()`. Avoid `Environment.Exit`, which skips all of it and loses buffered log entries.
 - **Localization**: `LocalizationService` resolves `Resources/AppStrings*.resx` for the active culture and raises `Binding.IndexerName` on change, which is what lets `{loc:Localize Key}` bindings refresh without a restart. Menu labels come from `Menu_<RouteName>` keys, so routing keys stay culture-independent.
 
 ---
@@ -227,7 +227,7 @@ Install from a **local clone** of this repository (the folder that contains `.te
 dotnet new install .
 ```
 
-The repository root **`Lemon.Template.Wpf.sln`** is the full developer solution (both apps, both test projects, the template pack and the publisher tool). Each template ships a slimmer solution that only loads its app and a few shared files—see **`packaging/Lemon.Template.Wpf.sln`** and **`packaging/Lemon.Template.Avalonia.sln`** (paths are written for the generated layout, not for opening from `packaging/` on disk).
+The repository root **`Lemon.Template.Wpf.sln`** is the full developer solution (both apps, both test projects, the template pack and the publisher tool). Each template ships a slimmer solution that only loads its app, its test project (unless `--IncludeTests false`) and a few shared files, so `dotnet test` on the generated solution runs the tests—see **`packaging/Lemon.Template.Wpf.sln`** and **`packaging/Lemon.Template.Avalonia.sln`** (paths are written for the generated layout, not for opening from `packaging/` on disk).
 
 Create a new project (default `sourceName` is `Lemon.Template.Wpf`; replace `-n` / `-o` with your app name):
 
@@ -246,7 +246,7 @@ dotnet new lemon-avalonia -n MyCompany.MyApp -o MyCompany.MyApp
 | Option | Default | Effect |
 |--------|---------|--------|
 | `--EnableHangfire` | `true` | Hangfire job server and the dashboard page (embedded with WebView2 in WPF, opened in the browser in Avalonia). Off also drops the `Microsoft.AspNetCore.App` framework reference, WebView2 (WPF) and both Hangfire packages, and omits `Services/Hangfire`, `Views/Tools` and `ViewModels/Tools`. |
-| `--EnableTrayIcon` | `true` | Tray icon with an Exit command; restores the window on left click. WPF uses `H.NotifyIcon.Wpf`; Avalonia uses its built-in `TrayIcon` (a menu bar extra on macOS, where a click opens the menu). |
+| `--EnableTrayIcon` | `true` | Close hides the window in the tray instead of quitting (a one-time balloon says so); double-click the icon to reopen, right-click for Open / Exit. The WPF app also allows one instance per session — a second launch brings the running one forward. WPF uses `H.NotifyIcon.Wpf`; Avalonia uses its built-in `TrayIcon` (a menu bar extra on macOS, where a click opens the menu). |
 | `--EnableDesktopShortcut` | `false` | Recreates a desktop shortcut on every launch. Off by default because silently writing to the user's desktop is surprising for a fresh app. Windows only; the Avalonia app skips it on macOS. |
 | `--IncludeTests` | `true` | The xUnit test project under `tests/`. |
 | `--skipRestore` | `false` | Skip the implicit `dotnet restore` after creation. |

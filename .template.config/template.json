@@ -13,6 +13,25 @@
     },
     "sourceName": "Lemon.Template.Wpf",
     "preferNameDirectory": true,
+    "_comment": "The .sln files carry #if (IncludeTests) lines; SpecialCustomOperations below makes the engine evaluate them.",
+    "SpecialCustomOperations": {
+        "**/*.sln": {
+            "operations": [
+                {
+                    "type": "conditional",
+                    "configuration": {
+                        "if": [ "#if" ],
+                        "else": [ "#else" ],
+                        "elseif": [ "#elseif" ],
+                        "endif": [ "#endif" ],
+                        "trim": true,
+                        "wholeLine": true,
+                        "evaluator": "C++"
+                    }
+                }
+            ]
+        }
+    },
     "symbols": {
         "EnableHangfire": {
             "type": "parameter",
@@ -26,7 +45,7 @@
             "datatype": "bool",
             "defaultValue": "true",
             "displayName": "System tray icon",
-            "description": "Show a tray icon with an Exit command, and restore the window on left click."
+            "description": "Close hides the window in the system tray instead of quitting: double-click the tray icon to reopen, right-click for Open / Exit. Also limits the app to one instance per session (a second launch brings the running one forward)."
         },
         "EnableDesktopShortcut": {
             "type": "parameter",
@@ -75,7 +94,11 @@
                 "tests/Lemon.Template.Avalonia.Tests/**",
                 "templates/**",
                 "packaging/**",
-                ".github/**"
+                ".github/**",
+                "Lemon.Template.Wpf.sln",
+                "Lemon.Template.Wpf.TemplatePack.csproj",
+                "CLAUDE.md",
+                "tools/**"
             ],
             "modifiers": [
                 {
@@ -87,11 +110,25 @@
                     ]
                 },
                 {
+                    "condition": "(!EnableTrayIcon)",
+                    "exclude": [
+                        "src/Lemon.Template.Wpf/Infrastructures/Shell/AppTrayIcon.cs",
+                        "src/Lemon.Template.Wpf/Infrastructures/Shell/SingleInstance.cs"
+                    ]
+                },
+                {
                     "condition": "(!IncludeTests)",
                     "exclude": [
                         "tests/**"
                     ]
                 }
+            ]
+        },
+        {
+            "source": "./packaging/",
+            "target": "./",
+            "include": [
+                "Lemon.Template.Wpf.sln"
             ]
         },
         {

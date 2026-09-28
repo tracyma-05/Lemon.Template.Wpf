@@ -102,6 +102,15 @@
   <data name="Shell_ConfirmExit" xml:space="preserve">
     <value>确定要退出应用吗？</value>
   </data>
+  <data name="Tray_Open" xml:space="preserve">
+    <value>打开主窗口</value>
+  </data>
+  <data name="Tray_Exit" xml:space="preserve">
+    <value>退出</value>
+  </data>
+  <data name="Tray_HiddenHint" xml:space="preserve">
+    <value>程序仍在托盘中运行。双击图标打开，右键选择“退出”才会关闭。</value>
+  </data>
   <data name="Dialog_Yes" xml:space="preserve">
     <value>确定</value>
   </data>

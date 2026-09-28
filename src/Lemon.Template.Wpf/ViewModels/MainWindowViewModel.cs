@@ -221,7 +221,7 @@ namespace Lemon.Template.Wpf.ViewModels
 
         /// <summary>
         /// Starts the new version's updater and exits: the updater waits for this process to end before it
-        /// swaps the files, then starts the new version. Shutdown() still runs App.OnExit (ABP shutdown,
+        /// swaps the files, then starts the new version. App.Quit() still runs App.OnExit (ABP shutdown,
         /// Serilog flush), and skips the close-to-tray and exit questions.
         /// </summary>
         private void InstallAndRestart(PreparedUpdate update)
@@ -236,7 +236,7 @@ namespace Lemon.Template.Wpf.ViewModels
                 return;
             }
 
-            Application.Current.Shutdown();
+            App.Quit();
         }
 
         #endregion

@@ -57,8 +57,12 @@
     <Content Include="@(SharedTemplateFile)" PackagePath="content/Lemon.Template.Wpf/" />
     <!-- The repository's own .gitignore carries repo-only entries; scaffolds get a generic one. -->
     <Content Include="packaging\project.gitignore" PackagePath="content/Lemon.Template.Wpf/.gitignore" />
-    <!-- Consumer-facing sln only (avoids tools/template-pack/.template.config nodes from the dev solution). -->
-    <Content Include="packaging\Lemon.Template.Wpf.sln" PackagePath="content/Lemon.Template.Wpf/Lemon.Template.Wpf.sln" />
+    <!--
+      Consumer-facing sln only (avoids the Avalonia projects, tools/template-pack/.template.config nodes from the
+      dev solution). Packed under packaging/ like the Avalonia one: template.json copies it to the scaffold root,
+      so `dotnet new install .` from a clone and the installed package produce the same solution.
+    -->
+    <Content Include="packaging\Lemon.Template.Wpf.sln" PackagePath="content/Lemon.Template.Wpf/packaging/" />
     <!-- Release workflow + Next.Hub publish script; template.json copies both folders to the scaffold root. -->
     <Content Include="packaging\scaffold\**\*" PackagePath="content/Lemon.Template.Wpf/packaging/scaffold/%(RecursiveDir)%(Filename)%(Extension)" />
     <Content Include="packaging\wpf\**\*" PackagePath="content/Lemon.Template.Wpf/packaging/wpf/%(RecursiveDir)%(Filename)%(Extension)" />

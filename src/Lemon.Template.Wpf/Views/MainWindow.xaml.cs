@@ -2,13 +2,22 @@
 using Lemon.Template.Wpf.Infrastructures.Dialogs;
 using Lemon.Template.Wpf.Infrastructures.Localization;
 using Lemon.Template.Wpf.Infrastructures.Navigations;
+#if (EnableTrayIcon)
+using Lemon.Template.Wpf.Infrastructures.Shell;
+#endif
 using Lemon.Template.Wpf.Themes.Controls;
 using Lemon.Template.Wpf.ViewModels;
 using Serilog;
 using System;
+#if (EnableTrayIcon)
+using System.ComponentModel;
+#endif
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+#if (EnableTrayIcon)
+using System.Windows.Interop;
+#endif
 using System.Windows.Media.Animation;
 using Volo.Abp.DependencyInjection;
 
@@ -19,6 +28,13 @@ namespace Lemon.Template.Wpf.Views
     {
         private readonly IHostDialogService _dialog;
         private readonly INavigationService _navigationService;
+#if (EnableTrayIcon)
+        private readonly AppTrayIcon _trayIcon;
+
+        // What to return to when shown from the tray or restored from the taskbar: setting Normal blindly would
+        // turn a window that was maximized before it was minimized into a small one.
+        private WindowState _restoreState = WindowState.Normal;
+#endif
 
         public MainWindow(IHostDialogService dialog, INavigationService navigationService)
         {
@@ -67,7 +83,78 @@ namespace Lemon.Template.Wpf.Views
             toggleMenuButton.Unchecked += (_, _) => SetMenuCollapsed(false);
 
             ContentRendered += OnFirstContentRendered;
+#if (EnableTrayIcon)
+
+            _trayIcon = new AppTrayIcon(open: ShowFromTray, exit: App.Quit);
+            StateChanged += (_, _) =>
+            {
+                if (WindowState != WindowState.Minimized)
+                {
+                    _restoreState = WindowState;
+                }
+            };
+#endif
         }
+#if (EnableTrayIcon)
+
+        protected override void OnSourceInitialized(EventArgs e)
+        {
+            base.OnSourceInitialized(e);
+
+            // A second launch posts this message (see SingleInstance) and exits; this instance shows itself instead.
+            HwndSource.FromHwnd(new WindowInteropHelper(this).Handle)?.AddHook(OnWindowMessage);
+        }
+
+        private IntPtr OnWindowMessage(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
+        {
+            if ((uint)msg == SingleInstance.ShowExistingMessage)
+            {
+                ShowFromTray();
+                handled = true;
+            }
+
+            return IntPtr.Zero;
+        }
+
+        /// <summary>
+        /// Close hides the window in the tray; only <see cref="App.Quit"/> (the tray's Exit command, an update
+        /// restart) or Windows signing out really closes it. Intercepted here rather than on the title-bar button
+        /// because Alt+F4, the taskbar's "Close window" and the system menu all arrive through OnClosing too.
+        /// </summary>
+        protected override void OnClosing(CancelEventArgs e)
+        {
+            if (!App.IsExiting)
+            {
+                e.Cancel = true;
+                // Hide also removes the taskbar button, so ShowInTaskbar needs no change.
+                Hide();
+                _trayIcon.ShowHiddenHintOnce();
+                return;
+            }
+
+            base.OnClosing(e);
+        }
+
+        protected override void OnClosed(EventArgs e)
+        {
+            _trayIcon.Dispose();
+            base.OnClosed(e);
+        }
+
+        private void ShowFromTray()
+        {
+            Show();
+            if (WindowState == WindowState.Minimized)
+            {
+                WindowState = _restoreState;
+            }
+
+            // Activate alone is sometimes refused while another app is in the foreground; a Topmost toggle is not.
+            Topmost = true;
+            Topmost = false;
+            Activate();
+        }
+#endif
 
         /// <summary>
         /// Start-up update check. Waits for the first render so the splash is gone and the dialog host
@@ -97,15 +184,20 @@ namespace Lemon.Template.Wpf.Views
             set => SetValue(IsMenuCollapsedProperty, value);
         }
 
+#if (EnableTrayIcon)
+        private void BtnClose_Click(object sender, RoutedEventArgs e)
+        {
+            // Hides in the tray (see OnClosing); quitting is the tray menu's Exit command.
+            Close();
+        }
+#else
         private async void BtnClose_Click(object sender, RoutedEventArgs e)
         {
             try
             {
                 if (await _dialog.Question(LocalizationService.Instance.GetString("Shell_ConfirmExit")))
                 {
-                    // Shutdown() runs App.OnExit (ABP shutdown, Hangfire stop, Serilog flush).
-                    // Environment.Exit would skip all of it and lose buffered log entries.
-                    Application.Current.Shutdown();
+                    App.Quit();
                 }
             }
             catch (Exception ex)
@@ -114,6 +206,7 @@ namespace Lemon.Template.Wpf.Views
                 Log.Error(ex, "Close confirmation failed.");
             }
         }
+#endif
 
         private void BtnMax_Click(object sender, RoutedEventArgs e)
         {

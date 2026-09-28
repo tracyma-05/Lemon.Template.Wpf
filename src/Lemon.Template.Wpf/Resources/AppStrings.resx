@@ -104,6 +104,15 @@
   <data name="Shell_ConfirmExit" xml:space="preserve">
     <value>Do you want to exit the application?</value>
   </data>
+  <data name="Tray_Open" xml:space="preserve">
+    <value>Open</value>
+  </data>
+  <data name="Tray_Exit" xml:space="preserve">
+    <value>Exit</value>
+  </data>
+  <data name="Tray_HiddenHint" xml:space="preserve">
+    <value>Still running in the notification area. Double-click the icon to open it; right-click it and choose Exit to quit.</value>
+  </data>
   <data name="Dialog_Yes" xml:space="preserve">
     <value>Yes</value>
   </data>

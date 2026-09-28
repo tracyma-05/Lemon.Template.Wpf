@@ -81,7 +81,7 @@ dotnet new lemon-avalonia -n Acme.FullApp -o /tmp/AvaloniaFull
 dotnet new lemon-avalonia -n Acme.MinApp -o /tmp/AvaloniaMin --EnableHangfire false --EnableTrayIcon false --IncludeTests false
 ```
 
-Then build **both** outputs of each template, and run the scaffolded tests for the full ones. Watch for:
+Then run `dotnet test` on the generated `.sln` of **both** outputs of each template (it builds the minimal ones and runs the tests of the full ones). Watch for:
 
 - leftover `#if (Enable...)` / `<!--#if ... -->` markers in the generated files;
 - references to a feature you disabled (packages, `using` directives, `FrameworkReference`);

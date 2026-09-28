@@ -5,6 +5,10 @@ VisualStudioVersion = 18.6.11723.189
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lemon.Template.Wpf", "src\Lemon.Template.Wpf\Lemon.Template.Wpf.csproj", "{7CC4F9BA-520E-4D2E-92A5-8B91BFA08CBF}"
 EndProject
+#if (IncludeTests)
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lemon.Template.Wpf.Tests", "tests\Lemon.Template.Wpf.Tests\Lemon.Template.Wpf.Tests.csproj", "{B33A8AD3-BD87-415A-9B8E-82FA1E5B9BFB}"
+EndProject
+#endif
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "solution-items", "solution-items", "{3F490618-CA01-4F6D-A75B-00EB67792063}"
 	ProjectSection(SolutionItems) = preProject
 		common.props = common.props
@@ -22,6 +26,12 @@ Global
 		{7CC4F9BA-520E-4D2E-92A5-8B91BFA08CBF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7CC4F9BA-520E-4D2E-92A5-8B91BFA08CBF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7CC4F9BA-520E-4D2E-92A5-8B91BFA08CBF}.Release|Any CPU.Build.0 = Release|Any CPU
+#if (IncludeTests)
+		{B33A8AD3-BD87-415A-9B8E-82FA1E5B9BFB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B33A8AD3-BD87-415A-9B8E-82FA1E5B9BFB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B33A8AD3-BD87-415A-9B8E-82FA1E5B9BFB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B33A8AD3-BD87-415A-9B8E-82FA1E5B9BFB}.Release|Any CPU.Build.0 = Release|Any CPU
+#endif
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -5,6 +5,10 @@ VisualStudioVersion = 18.6.11723.189
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lemon.Template.Avalonia", "src\Lemon.Template.Avalonia\Lemon.Template.Avalonia.csproj", "{5B2E8A91-3C47-4F0D-9E61-2A7D4C8B1F36}"
 EndProject
+#if (IncludeTests)
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Lemon.Template.Avalonia.Tests", "tests\Lemon.Template.Avalonia.Tests\Lemon.Template.Avalonia.Tests.csproj", "{40F79884-C39E-4052-874B-1B393F9DDB25}"
+EndProject
+#endif
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "solution-items", "solution-items", "{8D14C6E2-7A35-4B9F-A2C8-6E0F31D59B47}"
 	ProjectSection(SolutionItems) = preProject
 		common.props = common.props
@@ -22,6 +26,12 @@ Global
 		{5B2E8A91-3C47-4F0D-9E61-2A7D4C8B1F36}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{5B2E8A91-3C47-4F0D-9E61-2A7D4C8B1F36}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{5B2E8A91-3C47-4F0D-9E61-2A7D4C8B1F36}.Release|Any CPU.Build.0 = Release|Any CPU
+#if (IncludeTests)
+		{40F79884-C39E-4052-874B-1B393F9DDB25}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{40F79884-C39E-4052-874B-1B393F9DDB25}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{40F79884-C39E-4052-874B-1B393F9DDB25}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{40F79884-C39E-4052-874B-1B393F9DDB25}.Release|Any CPU.Build.0 = Release|Any CPU
+#endif
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

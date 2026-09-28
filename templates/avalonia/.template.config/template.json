@@ -18,6 +18,25 @@
     },
     "sourceName": "Lemon.Template.Avalonia",
     "preferNameDirectory": true,
+    "_comment": "The .sln files carry #if (IncludeTests) lines; SpecialCustomOperations below makes the engine evaluate them.",
+    "SpecialCustomOperations": {
+        "**/*.sln": {
+            "operations": [
+                {
+                    "type": "conditional",
+                    "configuration": {
+                        "if": [ "#if" ],
+                        "else": [ "#else" ],
+                        "elseif": [ "#elseif" ],
+                        "endif": [ "#endif" ],
+                        "trim": true,
+                        "wholeLine": true,
+                        "evaluator": "C++"
+                    }
+                }
+            ]
+        }
+    },
     "symbols": {
         "EnableHangfire": {
             "type": "parameter",

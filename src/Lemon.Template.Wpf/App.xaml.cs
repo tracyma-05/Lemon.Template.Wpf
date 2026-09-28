@@ -1,11 +1,4 @@
-﻿#if (EnableTrayIcon)
-using H.NotifyIcon;
-using H.NotifyIcon.Core;
-using System.Windows.Controls;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-#endif
-#if (EnableDesktopShortcut)
+﻿#if (EnableTrayIcon || EnableDesktopShortcut)
 using Lemon.Template.Wpf.Infrastructures.Shell;
 #endif
 using Lemon.Template.Wpf.Infrastructures;
@@ -33,11 +26,25 @@ public partial class App : Application
     private static readonly TimeSpan ShutdownTimeout = TimeSpan.FromSeconds(10);
 
     private IAbpApplicationWithInternalServiceProvider? _abpApplication;
-#if (EnableTrayIcon)
-    private TaskbarIcon? _taskbarIcon;
-#endif
 
     private static IServiceProvider? _serviceProvider;
+
+    /// <summary>
+    /// Set once the application is really quitting (<see cref="Quit"/>, Windows sign-out), so the main window
+    /// lets itself close instead of hiding in the tray.
+    /// </summary>
+    internal static bool IsExiting { get; private set; }
+
+    /// <summary>
+    /// Quits the application. Use this rather than <c>Application.Current.Shutdown()</c>: it also tells the main
+    /// window not to hide in the tray. Shutdown() runs <see cref="OnExit"/> (ABP shutdown, Hangfire stop, Serilog
+    /// flush); Environment.Exit would skip all of it.
+    /// </summary>
+    internal static void Quit()
+    {
+        IsExiting = true;
+        Current.Shutdown();
+    }
 
     /// <summary>
     /// Ambient container for the few WPF extension points that cannot take constructor injection
@@ -68,6 +75,17 @@ public partial class App : Application
         // opened from the app, a terminal) keeps it in use and the next update cannot swap the folder.
         AppInstallation.MoveWorkingDirectoryOut();
 
+#if (EnableTrayIcon)
+        // After the updater check: the updater runs while the previous version still holds the lock, and it
+        // only starts the new version once that process has exited.
+        if (!SingleInstance.TryAcquire())
+        {
+            SingleInstance.SignalExistingInstance();
+            Shutdown(0);
+            return;
+        }
+
+#endif
         Log.Logger = new LoggerConfiguration()
 #if DEBUG
             .MinimumLevel.Information()
@@ -148,9 +166,6 @@ public partial class App : Application
             mainWindow.Show();
 
             Current.MainWindow = mainWindow;
-#if (EnableTrayIcon)
-            InitializeTrayIcon(mainWindow);
-#endif
 
             // After an automatic update: log what the updater did and remove its backup and staging copy.
             _ = UpdateInstaller.CleanUpAfterUpdateAsync(services.GetRequiredService<ILoggerFactory>().CreateLogger("Updates"));
@@ -171,13 +186,20 @@ public partial class App : Application
         }
     }
 
+    protected override void OnSessionEnding(SessionEndingCancelEventArgs e)
+    {
+        // Sign-out or shutdown: WPF closes the windows next, and the main window must not hide itself instead.
+        IsExiting = true;
+        base.OnSessionEnding(e);
+    }
+
     protected override void OnExit(ExitEventArgs e)
     {
-#if (EnableTrayIcon)
-        DisposeTrayIcon();
-#endif
         ShutdownAbpApplication();
         Log.CloseAndFlush();
+#if (EnableTrayIcon)
+        SingleInstance.Release();
+#endif
 
         base.OnExit(e);
     }
@@ -207,81 +229,6 @@ public partial class App : Application
             Log.Error(ex, "ABP shutdown failed.");
         }
     }
-
-#if (EnableTrayIcon)
-    private void DisposeTrayIcon()
-    {
-        _taskbarIcon?.Dispose();
-        _taskbarIcon = null;
-    }
-
-    private void InitializeTrayIcon(MainWindow mainWindow)
-    {
-        var assembly = Assembly.GetEntryAssembly() ?? typeof(App).Assembly;
-        var title = assembly.GetCustomAttribute<AssemblyTitleAttribute>()?.Title
-                    ?? assembly.GetName().Name
-                    ?? "Application";
-
-        var contextMenu = new ContextMenu();
-        var exitItem = new MenuItem { Header = "Exit" };
-        // Shutdown() runs OnExit (ABP shutdown, Hangfire stop, Serilog flush); Environment.Exit skips all of it.
-        exitItem.Click += (_, _) => Shutdown();
-        contextMenu.Items.Add(exitItem);
-
-        ImageSource? iconSource = null;
-        try
-        {
-            iconSource = new BitmapImage(new Uri("pack://application:,,,/Assets/Images/logo.ico", UriKind.Absolute));
-        }
-        catch (Exception ex)
-        {
-            Log.Warning(ex, "Failed to load tray icon resource.");
-        }
-
-        _taskbarIcon = new TaskbarIcon
-        {
-            ToolTipText = title,
-            IconSource = iconSource,
-            ContextMenu = contextMenu,
-            MenuActivation = PopupActivationMode.RightClick,
-            NoLeftClickDelay = true,
-        };
-
-        _taskbarIcon.TrayLeftMouseDown += (_, _) => BringMainWindowToFront(mainWindow);
-
-        _taskbarIcon.ForceCreate();
-    }
-
-    private static void BringMainWindowToFront(MainWindow mainWindow)
-    {
-        var dispatcher = mainWindow.Dispatcher;
-        if (dispatcher.CheckAccess())
-        {
-            ActivateMainWindow(mainWindow);
-        }
-        else
-        {
-            _ = dispatcher.InvokeAsync(() => ActivateMainWindow(mainWindow), DispatcherPriority.Normal);
-        }
-    }
-
-    private static void ActivateMainWindow(MainWindow mainWindow)
-    {
-        if (mainWindow.WindowState == WindowState.Minimized)
-        {
-            mainWindow.WindowState = WindowState.Normal;
-        }
-
-        mainWindow.Show();
-
-        // Brief Topmost toggle helps foreground when Activate() alone is ignored.
-        var wasTopmost = mainWindow.Topmost;
-        mainWindow.Topmost = true;
-        mainWindow.Topmost = wasTopmost;
-
-        _ = mainWindow.Activate();
-    }
-#endif
 
     private void ExceptionHandler(ExceptionHandler handler)
     {

@@ -11,6 +11,36 @@ All notable changes to this project are documented here. The format follows
 - **Long text widened the page (WPF).** The main region's ScrollViewer allowed horizontal scrolling, so pages
   were measured with unlimited width and wrapping text (Markdown release notes, descriptions) ran off to the
   right with a horizontal scroll bar. Pages now always get the window's width. From Lemon.Hub.Wpf 1.4.1.
+- **Generated solution.** `dotnet new install .` from a clone copied the repository's developer solution into
+  the scaffold (both apps, the template pack and the publisher tool), so building or testing the generated
+  `.sln` failed on the missing Avalonia projects; the template pack and `tools/` came along too. Both install
+  paths now write the slim `packaging/*.sln`, which also lists the test project, so `dotnet test` on the
+  generated solution runs the tests (the project is left out with `--IncludeTests false`).
+
+### Added
+
+- **Localization helpers (WPF).** `FormatConverter` and `FirstNonEmptyConverter` build text from a localized
+  format string and bound values in a `MultiBinding`, so it follows a language switch (`StringFormat` and
+  `TargetNullValue` cannot); `LocalizeExtension` gains an element form (`<loc:LocalizeExtension Key="…" />`).
+- **`LocalizationCoverageTests`**: fails when the English and Chinese resx files have different keys, or when
+  code uses a key neither defines.
+- `CLAUDE.md` with the localization rules for new menus and pages (repository only, not part of the template).
+
+### Changed
+
+- **WPF: close to tray** (`--EnableTrayIcon`). Closing the main window — title-bar button, Alt+F4, the
+  taskbar's "Close window" — now hides it in the tray instead of asking to exit; the first time, a balloon
+  says the app is still running. Double-click the tray icon or choose **Open** to bring it back (restoring a
+  maximized window as maximized); **Exit** quits. A single click no longer restores the window. The menu
+  items have icons and follow the interface language.
+- Quitting goes through the new `App.Quit()` (tray Exit, update restart, Windows sign-out), which lets the
+  main window close instead of hiding.
+
+### Added
+
+- **WPF: single instance** with the tray icon. A second launch in the same login session asks the running
+  instance to show its window and exits, so two copies never write the same settings database. The update
+  restart is unaffected: the updater starts the new version only after the old one has exited.
 
 ## [1.5.1] - 2026-09-27
 
