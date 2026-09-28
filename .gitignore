@@ -257,3 +257,6 @@ src/Lemon.Template.Wpf.ConsoleApp/Logs/logs.txt
 # Local NuGet publish secrets
 tools/NuGet.TemplatePublisher/secret.json
 
+
+# CodeGraph index (local, rebuilt with codegraph init/sync)
+.codegraph/
